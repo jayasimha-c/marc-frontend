@@ -14,6 +14,10 @@ import { RiskDetailComponent } from './risks/risk-detail/risk-detail.component';
 import { ConsistencyCheckComponent } from './risks/consistency-check/consistency-check.component';
 import { VariantRulesComponent } from './variant/variant-rules/variant-rules.component';
 import { VariantRisksComponent } from './variant/variant-risks/variant-risks.component';
+import { ImportComponent } from './import/import.component';
+import { ImportRulesComponent } from './import/import-rules.component';
+import { ImportRisksComponent } from './import/import-risks.component';
+import { ImportErrorDialogComponent } from './import/import-error-dialog.component';
 
 const routes: Routes = [
   {
@@ -25,6 +29,7 @@ const routes: Routes = [
       { path: 'risks', component: RisksComponent },
       { path: 'variant/rules', component: VariantRulesComponent },
       { path: 'variant/risk', component: VariantRisksComponent },
+      { path: 'import/rules', component: ImportComponent },
     ],
   },
 ];
@@ -44,6 +49,10 @@ const routes: Routes = [
     ConsistencyCheckComponent,
     VariantRulesComponent,
     VariantRisksComponent,
+    ImportComponent,
+    ImportRulesComponent,
+    ImportRisksComponent,
+    ImportErrorDialogComponent,
   ],
   imports: [SharedModule, RouterModule.forChild(routes)],
 })

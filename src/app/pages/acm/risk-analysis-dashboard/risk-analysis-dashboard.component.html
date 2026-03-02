@@ -1,0 +1,42 @@
+<app-page-panel header="Risk Analysis Dashboard">
+  <div headerSection>
+    <nz-space>
+      <nz-select *nzSpaceItem [(ngModel)]="selectedSystemId" nzPlaceHolder="Select System"
+                 nzShowSearch nzAllowClear style="width: 200px">
+        <nz-option *ngFor="let sys of sapSystems" [nzValue]="sys.id" [nzLabel]="sys.destinationName"></nz-option>
+      </nz-select>
+      <nz-range-picker *nzSpaceItem [(ngModel)]="dateRange"
+                       (ngModelChange)="onDateRangeChange()"></nz-range-picker>
+      <nz-radio-group *nzSpaceItem [(ngModel)]="selectedPreset"
+                      (ngModelChange)="setDatePreset($event)" nzButtonStyle="solid" nzSize="small">
+        <label nz-radio-button nzValue="7d">7 Days</label>
+        <label nz-radio-button nzValue="30d">30 Days</label>
+        <label nz-radio-button nzValue="90d">90 Days</label>
+        <label nz-radio-button nzValue="1y">1 Year</label>
+      </nz-radio-group>
+    </nz-space>
+  </div>
+
+  <nz-tabset [(nzSelectedIndex)]="selectedTabIndex" style="margin-top: 16px">
+    <nz-tab nzTitle="SoD Risk Summary">
+      <app-sod-risk-summary *ngIf="selectedTabIndex === 0 && selectedSystemId"
+        [systemId]="selectedSystemId" [startDate]="startDateStr" [endDate]="endDateStr">
+      </app-sod-risk-summary>
+    </nz-tab>
+    <nz-tab nzTitle="Sensitive Access Overview">
+      <app-sensitive-access-overview *ngIf="selectedTabIndex === 1 && selectedSystemId"
+        [systemId]="selectedSystemId" [startDate]="startDateStr" [endDate]="endDateStr">
+      </app-sensitive-access-overview>
+    </nz-tab>
+    <nz-tab nzTitle="Role-Based SoD Risk">
+      <app-role-based-sod *ngIf="selectedTabIndex === 2 && selectedSystemId"
+        [systemId]="selectedSystemId" [startDate]="startDateStr" [endDate]="endDateStr">
+      </app-role-based-sod>
+    </nz-tab>
+    <nz-tab nzTitle="User-Based SoD Analysis">
+      <app-user-based-analysis *ngIf="selectedTabIndex === 3 && selectedSystemId"
+        [systemId]="selectedSystemId" [startDate]="startDateStr" [endDate]="endDateStr">
+      </app-user-based-analysis>
+    </nz-tab>
+  </nz-tabset>
+</app-page-panel>

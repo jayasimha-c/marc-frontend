@@ -1,0 +1,32 @@
+<nz-spin [nzSpinning]="loading">
+  <div nz-row [nzGutter]="[16, 16]">
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <app-statistics-card title="Total SoD Violations" [value]="totalViolations"
+                           icon="warning" color="#f5222d" [loading]="loading"></app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <app-statistics-card title="Critical Violations" [value]="criticalViolations"
+                           icon="close-circle" color="#fa8c16" [loading]="loading"></app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <app-statistics-card title="Affected Users" [value]="affectedUsers"
+                           icon="team" color="#1890ff" [loading]="loading"></app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <app-statistics-card title="Selected Risks" [value]="selectedRisks"
+                           icon="rise" color="#52c41a" [loading]="loading"></app-statistics-card>
+    </div>
+  </div>
+
+  <div nz-row [nzGutter]="[16, 16]" style="margin-top: 16px">
+    <div nz-col nzXs="24" nzMd="8">
+      <common-apx-chart [chartOptions]="riskDistributionChart" [loading]="loading" size="md"></common-apx-chart>
+    </div>
+    <div nz-col nzXs="24" nzMd="8">
+      <common-apx-chart [chartOptions]="violationTrendsChart" [loading]="loading" size="md"></common-apx-chart>
+    </div>
+    <div nz-col nzXs="24" nzMd="8">
+      <common-apx-chart [chartOptions]="topViolationsChart" [loading]="loading" size="md"></common-apx-chart>
+    </div>
+  </div>
+</nz-spin>

@@ -1,0 +1,62 @@
+.bpmn-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.bpmn-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.bpmn-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bpmn-canvas {
+  width: 100%;
+  height: calc(100vh - 160px);
+  min-height: 500px;
+  position: relative;
+  user-select: none;
+
+  * {
+    user-select: none;
+  }
+}
+
+// Reduce BPMN palette size
+::ng-deep .bpmn-canvas {
+  .djs-palette .entry,
+  .djs-palette .djs-palette-toggle {
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    font-size: 22px;
+  }
+
+  .djs-palette {
+    width: 36px;
+    left: 10px;
+    top: 10px;
+  }
+
+  .djs-palette.two-column.open {
+    width: 70px;
+  }
+}
+
+.bpmn-rules-section {
+  padding: 16px;
+}
+
+::ng-deep .highlight:not(.djs-connection) .djs-visual > :nth-child(1) {
+  stroke: #1890ff !important;
+  stroke-width: 3px !important;
+  fill: #e6f7ff !important;
+}

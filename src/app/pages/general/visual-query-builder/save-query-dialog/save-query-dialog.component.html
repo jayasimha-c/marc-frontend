@@ -1,0 +1,58 @@
+<form [formGroup]="queryDetailsForm">
+  <nz-form-item style="width:100%">
+    <nz-form-control nzErrorTip="Query name is required">
+      <div class="nz-float-label" [class.has-value]="queryDetailsForm.get('name')?.value">
+        <input nz-input placeholder=" " type="text" formControlName="name" />
+        <label>Query Name</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item style="width:100%">
+    <nz-form-control nzErrorTip="Description is required">
+      <div class="nz-float-label" [class.has-value]="queryDetailsForm.get('description')?.value">
+        <textarea nz-input placeholder=" " formControlName="description"
+                  [nzAutosize]="{ minRows: 3, maxRows: 7 }"></textarea>
+        <label>Description</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div class="sql-preview-section" *ngIf="data.extractionSQL || data.ruleSQL">
+    <div style="display:flex;gap:20px">
+      <div style="flex:1" *ngIf="data.extractionSQL">
+        <div class="preview-label">
+          <span nz-icon nzType="filter" nzTheme="outline" style="color:#1890ff"></span>
+          <span>Extraction Filter</span>
+          <button nz-button nzType="text" nzShape="circle"
+                  [cdkCopyToClipboard]="data.extractionSQL"
+                  (click)="onCopy('Extraction SQL')" nz-tooltip nzTooltipTitle="Copy SQL">
+            <span nz-icon nzType="copy" nzTheme="outline"></span>
+          </button>
+        </div>
+        <pre class="sql-output">{{ data.extractionSQL }}</pre>
+      </div>
+      <div style="flex:1" *ngIf="data.ruleSQL">
+        <div class="preview-label">
+          <span nz-icon nzType="audit" nzTheme="outline" style="color:#fa8c16"></span>
+          <span>Business Rule</span>
+          <button nz-button nzType="text" nzShape="circle"
+                  [cdkCopyToClipboard]="data.ruleSQL"
+                  (click)="onCopy('Rule SQL')" nz-tooltip nzTooltipTitle="Copy SQL">
+            <span nz-icon nzType="copy" nzTheme="outline"></span>
+          </button>
+        </div>
+        <pre class="sql-output">{{ data.ruleSQL }}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="copy-message" *ngIf="copiedMessage">
+    <span nz-icon nzType="check-circle" nzTheme="outline"></span> {{ copiedMessage }}
+  </div>
+</form>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="onCancel()">Close</button>
+  <button nz-button nzType="primary" (click)="onConfirm()">Save</button>
+</div>

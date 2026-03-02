@@ -3,6 +3,60 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResponse } from '../../../core/models/api-response';
 
+// ── REM Dashboard Models ──────────────────────────────────
+
+export interface RemDashboardFilterRequest {
+  sapDestinationName?: string;
+  startDate?: string;   // dd/MM/yyyy
+  endDate?: string;     // dd/MM/yyyy
+  riskLevels?: string[];
+  riskTypes?: string[];
+  businessProcesses?: string[];
+  userIds?: string[];
+  page?: number;
+  size?: number;
+  sortField?: string;
+  sortDirection?: string;
+}
+
+export interface ChartDataItem {
+  label: string;
+  value: number;
+  percentage: number;
+}
+
+export interface TrendDataItem {
+  date: string;
+  count: number;
+}
+
+export interface TopItem {
+  id: string;
+  name: string;
+  description: string;
+  count: number;
+}
+
+export interface RemDashboardStatsVO {
+  totalExecutions: number;
+  uniqueRisks: number;
+  uniqueUsers: number;
+  sodCount: number;
+  otherCount: number;
+  criticalCount: number;
+  highCount: number;
+  mediumCount: number;
+  lowCount: number;
+  riskTypeDistribution: ChartDataItem[];
+  riskLevelDistribution: ChartDataItem[];
+  businessProcessDistribution: ChartDataItem[];
+  trendData: TrendDataItem[];
+  topUsers: TopItem[];
+  topRisks: TopItem[];
+  availableBusinessProcesses: string[];
+  availableUsers: string[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class ReportService {
   private readonly timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -156,5 +210,154 @@ export class ReportService {
 
   findNonAbapRiskUsers(jobId: string): Observable<ApiResponse> {
     return this.http.get<ApiResponse>(`systemAnalysis/findRiskUsers/${jobId}`);
+  }
+
+  // ── REM Dashboard ─────────────────────────────────────────
+
+  getRemSysNames(): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>('riskExecution/getSysNames');
+  }
+
+  getRemDashboardStats(request: RemDashboardFilterRequest): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>('riskExecution/dashboard/stats', request);
+  }
+
+  getRemDashboardExecutions(request: RemDashboardFilterRequest): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>('riskExecution/dashboard/executions', request);
+  }
+
+  // ── Tcode Execution ─────────────────────────────────────
+
+  getTransactionExecution(event: any): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `transactionExecution/getTransactions?first=${event.first}&rows=${event.rows}&sortOrder=${event.sortOrder}&sortField=${event.sortField || ''}&filters=${encodeURI(JSON.stringify(event.filters || []))}`
+    );
+  }
+
+  getTCodeExeToExport(event: any): Observable<ArrayBuffer> {
+    return this.http.get(
+      `transactionExecution/exportTransactionSummary?first=${event.first}&rows=${event.rows}&sortOrder=${event.sortOrder}&sortField=${event.sortField || ''}&filters=${encodeURI(JSON.stringify(event.filters || []))}`,
+      { responseType: 'arraybuffer' }
+    );
+  }
+
+  autoCompleteSapSystem(search: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`sapSystem/autoComplete?search=${search}`);
+  }
+
+  transactionExecutionFindByUser(key: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`transactionExecution/findByUser/${key}`);
+  }
+
+  transactionExecutionFindBySystemName(key: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`transactionExecution/findBySystemName/${key}`);
+  }
+
+  // ── Risk Execution ──────────────────────────────────────
+
+  getRisks(event: any): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `riskExecution/getRisks?first=${event.first}&rows=${event.rows}&sortOrder=${event.sortOrder}&sortField=${event.sortField || ''}&filters=${encodeURI(JSON.stringify(event.filters || []))}`
+    );
+  }
+
+  getRiskExeToExport(event: any): Observable<ArrayBuffer> {
+    return this.http.get(
+      `riskExecution/exportRiskSummary?first=${event.first}&rows=${event.rows}&sortOrder=${event.sortOrder}&sortField=${event.sortField || ''}&filters=${encodeURI(JSON.stringify(event.filters || []))}`,
+      { responseType: 'arraybuffer' }
+    );
+  }
+
+  riskExecutionFindByUser(key: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`riskExecution/findByUser/${key}`);
+  }
+
+  riskExecutionFindByRisk(key: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`riskExecution/findByRisk/${key}`);
+  }
+
+  riskExecutionFindBySystemName(key: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`riskExecution/findBySystemName/${key}`);
+  }
+
+  // ── Rule Execution ──────────────────────────────────────
+
+  getExecutionRules(event: any): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `ruleExecution/getRules?first=${event.first}&rows=${event.rows}&sortOrder=${event.sortOrder}&sortField=${event.sortField || ''}&filters=${encodeURI(JSON.stringify(event.filters || []))}`
+    );
+  }
+
+  getRuleExeToExport(event: any): Observable<ArrayBuffer> {
+    return this.http.get(
+      `ruleExecution/exportRuleSummary?first=${event.first}&rows=${event.rows}&sortOrder=${event.sortOrder}&sortField=${event.sortField || ''}&filters=${encodeURI(JSON.stringify(event.filters || []))}`,
+      { responseType: 'arraybuffer' }
+    );
+  }
+
+  ruleExecutionFindByUser(key: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`ruleExecution/findByUser/${key}`);
+  }
+
+  ruleExecutionFindBySystemName(key: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`ruleExecution/findBySystemName/${key}`);
+  }
+
+  // ── Risk Analysis Dashboard ─────────────────────────────
+
+  getSapSystems(): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>('util/getSAPSystems');
+  }
+
+  getDashboardSodRiskSummary(sapSystemId: number, startDate: string, endDate: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `riskAnalysisDashboard/sodRiskSummary?sapSystemId=${sapSystemId}&startDate=${startDate}&endDate=${endDate}`
+    );
+  }
+
+  getDashboardSensitiveAccess(sapSystemId: number, startDate: string, endDate: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `riskAnalysisDashboard/sensitiveRiskSummary?sapSystemId=${sapSystemId}&startDate=${startDate}&endDate=${endDate}`
+    );
+  }
+
+  getDashboardRoleBasedSod(sapSystemId: number, startDate: string, endDate: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `riskAnalysisDashboard/roleBasedSOD?sapSystemId=${sapSystemId}&startDate=${startDate}&endDate=${endDate}`
+    );
+  }
+
+  getDashboardUserBasedSod(sapSystemId: number, startDate: string, endDate: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `riskAnalysisDashboard/userBasedSOD?sapSystemId=${sapSystemId}&startDate=${startDate}&endDate=${endDate}`
+    );
+  }
+
+  getDashboardRisksTable(event: any): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `riskAnalysisDashboard/getRisks?first=${event.first}&rows=${event.rows}&sortOrder=${event.sortOrder}&sortField=${event.sortField || ''}&filters=${encodeURI(JSON.stringify(event.filters || []))}&timeZone=${this.timezone}`
+    );
+  }
+
+  getDashboardRoleDetails(event: any): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `riskAnalysisDashboard/roleDetails?first=${event.first}&rows=${event.rows}&sortOrder=${event.sortOrder}&sortField=${event.sortField || ''}&sapSystemId=${event.sapSystemId || ''}&startDate=${event.startDate || ''}&endDate=${event.endDate || ''}&filters=${encodeURI(JSON.stringify(event.filters || []))}&timeZone=${this.timezone}`
+    );
+  }
+
+  getDashboardUserDetails(event: any): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `riskAnalysisDashboard/userAnalysisDetails?first=${event.first}&rows=${event.rows}&sortOrder=${event.sortOrder}&sortField=${event.sortField || ''}&sapSystemId=${event.sapSystemId || ''}&startDate=${event.startDate || ''}&endDate=${event.endDate || ''}&filters=${encodeURI(JSON.stringify(event.filters || []))}&timeZone=${this.timezone}`
+    );
+  }
+
+  getDashboardViolationDetails(payload: any): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `riskAnalysisDashboard/violationDetails?jobId=${payload.jobId || ''}&bname=${payload.bname || ''}&roleName=${payload.roleName || ''}&riskLevel=${payload.riskLevel || ''}`
+    );
+  }
+
+  addDashboardUserReviewJob(payload: any): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>('arc/job/addFromSOD', payload);
   }
 }

@@ -1,0 +1,189 @@
+<form [formGroup]="filterForm" class="filter-dialog-form">
+
+  <!-- Field Selector (for rule filters with joined tables) -->
+  <nz-form-item *ngIf="showFieldSelector" class="full-width">
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="filterForm.get('field')?.value">
+        <nz-select formControlName="field" nzPlaceHolder=" " nzShowSearch
+                   (ngModelChange)="onFieldChange($event)">
+          <nz-option *ngFor="let field of availableFields" [nzValue]="field.name"
+                     [nzLabel]="field.formattedFieldName || field.name"></nz-option>
+        </nz-select>
+        <label>Select Field</label>
+      </div>
+      <small class="hint-text">Select a field from any joined table</small>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Field (Read-only for extraction filters) -->
+  <nz-form-item *ngIf="!showFieldSelector" class="full-width">
+    <nz-form-control>
+      <div class="nz-float-label has-value">
+        <input nz-input placeholder=" " [value]="getFieldDisplayName()" readonly/>
+        <label>Field</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Function Selection (Optional) -->
+  <nz-form-item class="full-width">
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="filterForm.get('function')?.value">
+        <nz-select formControlName="function" nzPlaceHolder=" ">
+          <nz-option *ngFor="let func of functions" [nzValue]="func.value" [nzLabel]="func.label"></nz-option>
+        </nz-select>
+        <label>Function (Optional)</label>
+      </div>
+      <small class="hint-text">Apply a function to the field value</small>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Function Parameters -->
+  <div *ngIf="showFunctionParams" class="function-params">
+    <ng-container *ngFor="let i of [1, 2, 3, 4, 5]">
+      <nz-form-item *ngIf="i <= paramCount" class="param-field">
+        <nz-form-control>
+          <div class="nz-float-label" [class.has-value]="filterForm.get('param' + i)?.value">
+            <input nz-input placeholder=" " [formControlName]="'param' + i" type="text">
+            <label>Parameter {{ i }}</label>
+          </div>
+          <small class="hint-text" *ngIf="filterForm.get('function')?.value === 'substr' && i === 1">Start Position</small>
+          <small class="hint-text" *ngIf="filterForm.get('function')?.value === 'substr' && i === 2">Length</small>
+          <small class="hint-text" *ngIf="filterForm.get('function')?.value === 'current_date-n' && i === 1">Days Ago</small>
+          <small class="hint-text" *ngIf="filterForm.get('function')?.value === 'left' && i === 1">Number of characters</small>
+          <small class="hint-text" *ngIf="filterForm.get('function')?.value === 'right' && i === 1">Number of characters</small>
+          <small class="hint-text" *ngIf="filterForm.get('function')?.value === 'lpad' && i === 1">Total length</small>
+          <small class="hint-text" *ngIf="filterForm.get('function')?.value === 'lpad' && i === 2">Padding character</small>
+          <small class="hint-text" *ngIf="filterForm.get('function')?.value === 'rpad' && i === 1">Total length</small>
+          <small class="hint-text" *ngIf="filterForm.get('function')?.value === 'rpad' && i === 2">Padding character</small>
+          <small class="hint-text" *ngIf="filterForm.get('function')?.value === 'fieldComp' && i === 1">Field to compare</small>
+        </nz-form-control>
+      </nz-form-item>
+    </ng-container>
+  </div>
+
+  <!-- Operator -->
+  <nz-form-item class="full-width">
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="filterForm.get('operator')?.value">
+        <nz-select formControlName="operator" nzPlaceHolder=" ">
+          <nz-option *ngFor="let op of operators" [nzValue]="op" [nzLabel]="op"></nz-option>
+        </nz-select>
+        <label>Operator</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Value with Multi-Value Button -->
+  <div *ngIf="showValue()" class="value-input-container">
+    <nz-form-item *ngIf="isDateField()" class="value-field">
+      <nz-form-control>
+        <div class="nz-float-label" [class.has-value]="filterForm.get('value')?.value">
+          <nz-date-picker formControlName="value" nzPlaceHolder=" " style="width:100%"></nz-date-picker>
+          <label>Value</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item *ngIf="!isDateField()" class="value-field">
+      <nz-form-control>
+        <div class="nz-float-label" [class.has-value]="filterForm.get('value')?.value">
+          <input nz-input placeholder=" " formControlName="value"
+                 [type]="getFieldBaseType() === 'number' ? 'number' : 'text'">
+          <label>Value</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+    <button *ngIf="shouldShowValueButton()" nz-button nzType="default" type="button"
+            class="value-panel-btn" (click)="openValuePanel()">
+      <span nz-icon nzType="unordered-list" nzTheme="outline"></span>
+      Multi-Value
+    </button>
+  </div>
+
+  <!-- Value 2 (for BETWEEN) -->
+  <nz-form-item *ngIf="showValue2() && isDateField()" class="full-width">
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="filterForm.get('value2')?.value">
+        <nz-date-picker formControlName="value2" nzPlaceHolder=" " style="width:100%"></nz-date-picker>
+        <label>Value 2 (To)</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item *ngIf="showValue2() && !isDateField()" class="full-width">
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="filterForm.get('value2')?.value">
+        <input nz-input placeholder=" " formControlName="value2"
+               [type]="getFieldBaseType() === 'number' ? 'number' : 'text'">
+        <label>Value 2 (To)</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Logical Operator -->
+  <nz-form-item class="full-width">
+    <nz-form-control>
+      <div class="nz-float-label has-value">
+        <nz-select formControlName="logicalOperator" nzPlaceHolder=" ">
+          <nz-option nzValue="AND" nzLabel="AND"></nz-option>
+          <nz-option nzValue="OR" nzLabel="OR"></nz-option>
+        </nz-select>
+        <label>Combine with</label>
+      </div>
+      <small class="hint-text">How to combine with other filters</small>
+    </nz-form-control>
+  </nz-form-item>
+</form>
+
+<!-- Value Input Panel -->
+<div *ngIf="showValuePanel" class="value-panel-overlay">
+  <div class="value-panel">
+    <div class="value-panel-header">
+      <h3>Add Multiple Values</h3>
+      <button nz-button nzType="text" nzShape="circle" (click)="cancelValuePanel()">
+        <span nz-icon nzType="close" nzTheme="outline"></span>
+      </button>
+    </div>
+    <div class="value-panel-content">
+      <div class="value-input-row">
+        <nz-input-group class="value-input-field">
+          <input nz-input [(ngModel)]="newValue" [ngModelOptions]="{standalone: true}"
+                 (keyup.enter)="addValue()" placeholder="Type value and press + or Enter">
+        </nz-input-group>
+        <button nz-button nzType="primary" (click)="addValue()">
+          <span nz-icon nzType="plus" nzTheme="outline"></span>
+        </button>
+      </div>
+      <button nz-button nzType="default" class="clipboard-btn" (click)="copyFromClipboard()">
+        <span nz-icon nzType="copy" nzTheme="outline"></span> Copy from Clipboard
+      </button>
+      <div class="value-list-container">
+        <textarea class="value-list-textarea" readonly [value]="valueList.join('\n')"
+                  placeholder="Values will appear here (one per line)"></textarea>
+      </div>
+      <div class="value-chips" *ngIf="valueList.length > 0">
+        <nz-tag *ngFor="let value of valueList; let i = index" nzMode="closeable" (nzOnClose)="removeValue(i)">
+          {{ value }}
+        </nz-tag>
+      </div>
+      <div class="value-count" *ngIf="valueList.length > 0">{{ valueList.length }} value(s) added</div>
+    </div>
+    <div class="value-panel-actions">
+      <button nz-button nzType="default" (click)="clearAllValues()">
+        <span nz-icon nzType="delete" nzTheme="outline"></span> Clear
+      </button>
+      <div style="flex:1"></div>
+      <button nz-button nzType="default" (click)="cancelValuePanel()">Cancel</button>
+      <button nz-button nzType="primary" (click)="insertValues()">
+        <span nz-icon nzType="check" nzTheme="outline"></span> Insert
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="onCancel()">Cancel</button>
+  <button nz-button nzType="primary" (click)="onAdd()" [disabled]="!filterForm.valid">
+    <span nz-icon nzType="plus" nzTheme="outline"></span> Add Filter
+  </button>
+</div>

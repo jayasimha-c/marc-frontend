@@ -1,0 +1,332 @@
+// Visual Query Builder — NG-ZORRO theme only
+
+.builder-layout {
+  position: relative;
+  display: flex;
+  height: calc(100vh - 200px);
+  min-height: 400px;
+  overflow: hidden;
+  border: 1px solid #d9d9d9;
+  background: #fafafa;
+}
+
+// Left Panel
+.table-palette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  background: #fff;
+  border-right: 1px solid #d9d9d9;
+  transition: transform 0.2s ease;
+
+  &.collapsed {
+    transform: translateX(calc(-100% + 28px));
+  }
+
+  .panel-toggle.left-toggle {
+    position: absolute;
+    top: 50%;
+    right: -14px;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    background: #fff;
+    color: rgba(0, 0, 0, 0.45);
+    border: 1px solid #d9d9d9;
+    border-radius: 50%;
+    z-index: 51;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    &:hover {
+      color: #1890ff;
+      border-color: #1890ff;
+    }
+  }
+
+  .palette-section {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .table-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  .table-item {
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    cursor: grab;
+
+    &:hover {
+      border-color: #1890ff;
+    }
+
+    &:active {
+      cursor: grabbing;
+    }
+
+    .table-name {
+      font-weight: 500;
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.85);
+    }
+  }
+}
+
+// Right Panel
+.properties-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  background: #fff;
+  border-left: 1px solid #d9d9d9;
+  transition: transform 0.2s ease;
+
+  &.collapsed {
+    transform: translateX(calc(100% - 28px));
+  }
+
+  .panel-toggle.right-toggle {
+    position: absolute;
+    top: 50%;
+    left: -14px;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    background: #fff;
+    color: rgba(0, 0, 0, 0.45);
+    border: 1px solid #d9d9d9;
+    border-radius: 50%;
+    z-index: 101;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    &:hover {
+      color: #1890ff;
+      border-color: #1890ff;
+    }
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .panel-content {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+  }
+}
+
+// Canvas Area
+.canvas-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-color: #fff;
+  background-image: radial-gradient(circle, #d9d9d9 1px, transparent 1px);
+  background-size: 20px 20px;
+  min-width: 400px;
+  min-height: 400px;
+
+  .canvas-container {
+    position: absolute;
+    inset: 0;
+    overflow: auto;
+
+    &.drag-over {
+      background-color: #e6f7ff;
+      outline: 2px dashed #1890ff;
+      outline-offset: -2px;
+    }
+  }
+}
+
+// Drop zone empty state
+.drop-zone-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+
+  * { pointer-events: none; }
+}
+
+// Canvas Table Cards
+.canvas-table {
+  position: absolute;
+  min-width: 200px;
+  max-width: 400px;
+  z-index: 1;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+
+  &:hover {
+    z-index: 10;
+  }
+
+  &.selected {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  }
+
+  .canvas-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fafafa;
+    cursor: move;
+  }
+
+  .canvas-table-body {
+    padding: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+
+  .table-filters {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+  }
+}
+
+// Field list
+.field-list {
+  &.field-list-2-columns {
+    column-count: 2;
+    column-gap: 4px;
+  }
+
+  .field-item {
+    break-inside: avoid;
+    padding: 2px 4px;
+    border-radius: 2px;
+
+    &:hover {
+      background: #f5f5f5;
+    }
+
+    &.has-filter {
+      background: #fff7e6;
+      border-left: 2px solid #faad14;
+      padding-left: 2px;
+    }
+
+    ::ng-deep label[nz-checkbox] {
+      font-size: 12px;
+    }
+  }
+}
+
+// Table count indicator
+.table-count-indicator {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+// Context Menu
+.context-menu {
+  position: fixed;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  min-width: 200px;
+  overflow: hidden;
+
+  .context-menu-header {
+    padding: 8px 12px;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+    font-weight: 500;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .context-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    font-size: 13px;
+    height: 36px;
+    padding: 0 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.85);
+    text-align: left;
+
+    &:hover {
+      background: #f5f5f5;
+    }
+
+    &:disabled {
+      color: rgba(0, 0, 0, 0.25);
+      cursor: not-allowed;
+    }
+  }
+}
+
+// jsPlumb connection styles
+::ng-deep {
+  .jtk-connector { z-index: 4; }
+  .jtk-endpoint { z-index: 5; }
+  .jtk-overlay { z-index: 6; }
+
+  .connection-label {
+    background: #fff;
+    padding: 4px 8px;
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1890ff;
+  }
+}
+
+// Responsive
+@media (max-width: 1200px) {
+  .properties-panel { width: 280px; }
+}
+
+@media (max-width: 992px) {
+  .properties-panel { width: 260px; }
+  .table-palette { width: 240px; }
+}

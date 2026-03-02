@@ -1,0 +1,58 @@
+<nz-spin [nzSpinning]="loading">
+  <div nz-row [nzGutter]="[16, 16]">
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <app-statistics-card title="Total Roles" [value]="totalRoles"
+                           icon="team" color="#1890ff" [loading]="loading"></app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <app-statistics-card title="Critical SoD Conflicts" [value]="criticalConflicts"
+                           icon="warning" color="#f5222d" [loading]="loading"></app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <app-statistics-card title="High-Risk Roles" [value]="highRiskRoles"
+                           icon="safety-certificate" color="#fa8c16" [loading]="loading"></app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <app-statistics-card title="Selected Risks" [value]="selectedRisks"
+                           icon="rise" color="#52c41a" [loading]="loading"></app-statistics-card>
+    </div>
+  </div>
+
+  <div nz-row [nzGutter]="[16, 16]" style="margin-top: 16px">
+    <div nz-col nzXs="24" nzMd="12">
+      <common-apx-chart [chartOptions]="riskTrendsChart" [loading]="loading" size="md"></common-apx-chart>
+    </div>
+    <div nz-col nzXs="24" nzMd="12">
+      <common-apx-chart [chartOptions]="conflictAnalysisChart" [loading]="loading" size="md"></common-apx-chart>
+    </div>
+  </div>
+
+  <div style="margin-top: 16px">
+    <app-advanced-table
+      title="Role Details Analysis"
+      [columns]="gridColumns"
+      [data]="gridData"
+      [loading]="gridLoading"
+      [serverSide]="true"
+      [totalRecords]="gridTotal"
+      [defaultPageSize]="20"
+      [showSearch]="false"
+      [showRefresh]="false"
+      size="small"
+      (queryParamsChange)="onGridQueryChange($event)">
+    </app-advanced-table>
+  </div>
+</nz-spin>
+
+<ng-template #detailModalTpl>
+  <app-advanced-table
+    [columns]="detailColumns"
+    [data]="detailData"
+    [loading]="detailLoading"
+    [defaultPageSize]="20"
+    [showSearch]="true"
+    [showRefresh]="false"
+    size="small"
+    scrollY="400px">
+  </app-advanced-table>
+</ng-template>

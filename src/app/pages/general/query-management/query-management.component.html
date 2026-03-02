@@ -1,0 +1,79 @@
+<div class="query-management-page">
+  <!-- Statistics Cards -->
+  <div class="stats-grid">
+    <app-statistics-card
+      title="Total Queries"
+      [value]="queryStats.totalQuery || 0"
+      [loading]="isLoading"
+      description="All queries in the system"
+      icon="database"
+      color="#1890ff">
+    </app-statistics-card>
+
+    <app-statistics-card
+      title="Active Queries"
+      [value]="queryStats.queryMappedToControl || 0"
+      [loading]="isLoading"
+      description="Queries mapped to controls"
+      icon="check-circle"
+      color="#52c41a">
+    </app-statistics-card>
+
+    <app-statistics-card
+      title="Table Mapped"
+      [value]="queryStats.tableMappedToQuery || 0"
+      [loading]="isLoading"
+      description="Tables mapped to queries"
+      icon="edit"
+      color="#faad14">
+    </app-statistics-card>
+
+    <app-statistics-card
+      title="Inactive Queries"
+      [value]="(queryStats.totalQuery || 0) - (queryStats.queryMappedToControl || 0)"
+      [loading]="isLoading"
+      description="Queries without active controls"
+      icon="minus-circle"
+      color="#ff4d4f">
+    </app-statistics-card>
+  </div>
+
+  <!-- Queries Table -->
+  <app-advanced-table
+    title="Queries"
+    [columns]="columns"
+    [data]="tableData"
+    [loading]="isLoading"
+    [actions]="actions"
+    [showSelection]="true"
+    (selectionChange)="selectedRow = $event[0] || null"
+    (rowClick)="onRowClick($event)"
+    (refresh)="loadQueries()">
+  </app-advanced-table>
+</div>
+
+<!-- Query Flow Modal -->
+<nz-modal
+  [(nzVisible)]="flowVisible"
+  [nzTitle]="flowTitleTpl"
+  [nzWidth]="'90vw'"
+  [nzFooter]="null"
+  [nzBodyStyle]="{ padding: '0' }"
+  (nzOnCancel)="flowVisible = false">
+  <ng-template #flowTitleTpl>
+    <span nz-icon nzType="branches" nzTheme="outline"></span>
+    Query Flow — {{ selectedRow?.name }}
+  </ng-template>
+  <ng-container *nzModalContent>
+    <nz-spin [nzSpinning]="flowLoading" nzTip="Loading query data...">
+      <app-query-flow-visualizer
+        *ngIf="flowQueryData"
+        [queryData]="flowQueryData">
+      </app-query-flow-visualizer>
+      <nz-empty *ngIf="!flowQueryData && !flowLoading"
+                nzNotFoundImage="simple"
+                nzNotFoundContent="No flow data available">
+      </nz-empty>
+    </nz-spin>
+  </ng-container>
+</nz-modal>

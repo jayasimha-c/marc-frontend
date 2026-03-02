@@ -70,4 +70,23 @@ export class GeneralService {
         return this._httpClient.get<ApiRespModel>(url);
     }
 
+    // BPMN Diagram endpoints
+    public getPreviewBpmnList(): Observable<ApiResponse> {
+        return this._httpClient.get<ApiResponse>(`previewbpmn/list`);
+    }
+
+    public saveBpmnDiagram(payload: any): Observable<ApiResponse> {
+        return this._httpClient.post<ApiResponse>(`editbpmn/saveEdit`, payload);
+    }
+
+    public getBpmnXml(url: string): Observable<string> {
+        return this._httpClient.get(url, { responseType: 'text' });
+    }
+
+    public getBpmnTaskRules(processId: number, identifiers: string[]): Observable<ApiResponse> {
+        return this._httpClient.get<ApiResponse>(
+            `previewbpmn/rules?processId=${processId}&identifier=${identifiers.join(',')}`
+        );
+    }
+
 }

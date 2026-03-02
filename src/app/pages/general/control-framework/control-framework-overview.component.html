@@ -1,0 +1,34 @@
+<nz-card nzTitle="Dashboard Metrics" style="margin-bottom: 24px">
+  <div nz-row [nzGutter]="[16, 16]">
+    <div nz-col nzXs="24" nzSm="12" nzLg="6">
+      <app-statistics-card title="Total Frameworks" icon="database" color="#1890ff"
+                           [value]="totalFrameworks" description="Compliance frameworks imported"
+                           [loading]="statsLoading"></app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzLg="6">
+      <app-statistics-card title="Total Controls" icon="safety-certificate" color="#52c41a"
+                           [value]="totalRequirements" description="Requirements and controls"
+                           [loading]="statsLoading"></app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzLg="6">
+      <app-statistics-card title="Average Controls" icon="bar-chart" color="#722ed1"
+                           [value]="avgRequirementsPerFramework" description="Per framework"
+                           [loading]="statsLoading"></app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzLg="6">
+      <app-statistics-card title="Active Providers" icon="shop" color="#fa8c16"
+                           [value]="activeProviders" description="Framework providers"
+                           [loading]="statsLoading"></app-statistics-card>
+    </div>
+  </div>
+</nz-card>
+
+<app-advanced-table
+  [columns]="columns"
+  [data]="data"
+  [actions]="actions"
+  [loading]="loading"
+  [showSelection]="true"
+  (selectionChange)="selectedRow = $event"
+  title="Frameworks Overview">
+</app-advanced-table>

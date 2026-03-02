@@ -1,0 +1,142 @@
+<app-page-panel header="Risk Execution Monitoring">
+  <div headerSection>
+    <div class="header-controls">
+      <nz-form-item>
+        <nz-form-control>
+          <div class="nz-float-label" [class.has-value]="selectedSapSys">
+            <nz-select [(ngModel)]="selectedSapSys" (ngModelChange)="onSystemChange()" nzPlaceHolder=" " nzShowSearch style="width: 200px">
+              <nz-option *ngFor="let sys of sapSysList" [nzValue]="sys" [nzLabel]="sys"></nz-option>
+            </nz-select>
+            <label>SAP System</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-range-picker
+        [(ngModel)]="dateRange"
+        [nzPlaceHolder]="['Start date', 'End date']"
+        (ngModelChange)="onDateRangeChange()"
+        style="width: 260px">
+      </nz-range-picker>
+
+      <nz-radio-group [(ngModel)]="selectedPreset" (ngModelChange)="onPresetChange($event)" nzButtonStyle="solid" nzSize="small">
+        <label *ngFor="let preset of datePresets" nz-radio-button [nzValue]="preset.label">{{ preset.label }}</label>
+      </nz-radio-group>
+    </div>
+  </div>
+
+  <div nz-row [nzGutter]="[16, 16]">
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <app-statistics-card
+        title="Total Executions"
+        [value]="stats.totalExecutions"
+        description="Executions"
+        [loading]="loading"
+        color="#1890ff"
+        icon="bar-chart">
+      </app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <app-statistics-card
+        title="SoD Violations"
+        [value]="stats.sodCount"
+        [description]="sodPercentage"
+        [loading]="loading"
+        color="#faad14"
+        icon="warning">
+      </app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <app-statistics-card
+        title="Unique Users"
+        [value]="stats.uniqueUsers"
+        description="Users"
+        [loading]="loading"
+        color="#722ed1"
+        icon="team">
+      </app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <app-statistics-card
+        title="Critical Risks"
+        [value]="stats.criticalCount"
+        description="Critical"
+        [loading]="loading"
+        color="#f5222d"
+        icon="exclamation-circle">
+      </app-statistics-card>
+    </div>
+  </div>
+
+  <div nz-row [nzGutter]="[16, 16]" style="margin-top: 16px">
+    <div nz-col nzXs="24" nzLg="12">
+      <common-apx-chart [loading]="loading" [chartOptions]="trendChartOptions"></common-apx-chart>
+    </div>
+    <div nz-col nzXs="24" nzLg="12">
+      <app-advanced-table
+        title="Recent Executions"
+        [columns]="gridColumns"
+        [data]="gridData"
+        [loading]="gridLoading"
+        [serverSide]="true"
+        [totalRecords]="gridTotal"
+        [defaultPageSize]="10"
+        [pageSizeOptions]="[10, 20, 50]"
+        [showSearch]="false"
+        [showRefresh]="false"
+        scrollY="280px"
+        size="small"
+        (queryParamsChange)="onGridQueryChange($event)">
+      </app-advanced-table>
+    </div>
+  </div>
+
+  <div nz-row [nzGutter]="[16, 16]" style="margin-top: 16px">
+    <div nz-col nzXs="24" nzLg="12">
+      <common-apx-chart [loading]="loading" [chartOptions]="riskTypeChartOptions"></common-apx-chart>
+    </div>
+    <div nz-col nzXs="24" nzLg="12">
+      <common-apx-chart [loading]="loading" [chartOptions]="riskLevelChartOptions"></common-apx-chart>
+    </div>
+  </div>
+
+  <div nz-row [nzGutter]="[16, 16]" style="margin-top: 16px" *ngIf="stats.topUsers?.length || stats.topRisks?.length">
+    <div nz-col nzXs="24" nzMd="12" *ngIf="stats.topUsers?.length">
+      <nz-card nzSize="small" nzTitle="Top Users" [nzExtra]="topUsersExtra">
+        <ng-template #topUsersExtra>
+          <span nz-typography nzType="secondary">By violation count</span>
+        </ng-template>
+        <nz-list nzSize="small">
+          <nz-list-item *ngFor="let user of stats.topUsers; let i = index">
+            <b>{{ i + 1 }}.</b>&nbsp; {{ user.id }}
+            <span *ngIf="user.name && user.name !== user.id" nz-typography nzType="secondary">&nbsp;({{ user.name }})</span>
+            <ul nz-list-item-actions>
+              <nz-list-item-action>
+                <nz-tag nzColor="purple">{{ user.count | number }}</nz-tag>
+              </nz-list-item-action>
+            </ul>
+          </nz-list-item>
+        </nz-list>
+      </nz-card>
+    </div>
+
+    <div nz-col nzXs="24" nzMd="12" *ngIf="stats.topRisks?.length">
+      <nz-card nzSize="small" nzTitle="Top Risks" [nzExtra]="topRisksExtra">
+        <ng-template #topRisksExtra>
+          <span nz-typography nzType="secondary">By occurrence count</span>
+        </ng-template>
+        <nz-list nzSize="small">
+          <nz-list-item *ngFor="let risk of stats.topRisks; let i = index">
+            <b>{{ i + 1 }}.</b>&nbsp; {{ risk.name }}
+            <span *ngIf="risk.description" nz-typography nzType="secondary">&nbsp;- {{ risk.description }}</span>
+            <ul nz-list-item-actions>
+              <nz-list-item-action>
+                <nz-tag nzColor="red">{{ risk.count | number }}</nz-tag>
+              </nz-list-item-action>
+            </ul>
+          </nz-list-item>
+        </nz-list>
+      </nz-card>
+    </div>
+  </div>
+</app-page-panel>

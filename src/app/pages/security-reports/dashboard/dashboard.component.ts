@@ -7,8 +7,7 @@ import { SecurityReportsService, DashboardStats, SapSystemOption } from "../secu
 @Component({
     standalone: false,
     selector: "app-security-reports-dashboard",
-    templateUrl: "./dashboard.component.html",
-    styleUrls: ["./dashboard.component.css"]
+    templateUrl: "./dashboard.component.html"
 })
 export class SecurityReportsDashboardComponent implements OnInit, OnDestroy {
 

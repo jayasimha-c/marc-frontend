@@ -508,7 +508,21 @@ export class NavigationService {
         type: 'submenu',
         children: [
           { id: 'general-issues', title: 'Issues', icon: 'exception', link: '/general/issues', type: 'item' },
-          { id: 'general-export-results', title: 'Export Results', icon: 'export', link: '/general/export-results', type: 'item' }
+          { id: 'general-export-results', title: 'Export Results', icon: 'export', link: '/general/export-results', type: 'item' },
+          { id: 'general-query-management', title: 'Query Management', icon: 'database', link: '/general/query-management', type: 'item' },
+          { id: 'general-visual-query-builder', title: 'Visual Query Builder', icon: 'table', link: '/general/visual-query-builder', type: 'item' },
+          { id: 'general-bpmn-diagram', title: 'BPMN Diagram', icon: 'branches', link: '/general/bpmn-diagram', type: 'item' },
+          {
+            id: 'general-control-framework',
+            title: 'Control Framework',
+            icon: 'audit',
+            type: 'submenu',
+            children: [
+              { id: 'cf-overview', title: 'Overview', icon: 'appstore', link: '/general/control-framework/overview', type: 'item' },
+              { id: 'cf-controls', title: 'Controls Report', icon: 'safety-certificate', link: '/general/control-framework/controls', type: 'item' },
+              { id: 'cf-dashboard', title: 'Documentation', icon: 'read', link: '/general/control-framework/dashboard', type: 'item' },
+            ],
+          },
         ],
       },
       {

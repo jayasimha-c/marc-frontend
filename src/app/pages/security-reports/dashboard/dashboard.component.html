@@ -1,172 +1,180 @@
-<app-page-panel title="Security Reports" description="Role analysis for security consultants" icon="safety">
+<app-page-panel header="Security Reports">
 
-    <div nz-row [nzGutter]="[24, 24]" class="mt-4">
+  <div nz-row [nzGutter]="[16, 16]">
 
-        <!-- System Selection Header -->
-        <div nz-col nzSpan="24" class="flex justify-end items-center mb-4">
-            <nz-select [(ngModel)]="selectedSystemId" (ngModelChange)="onSystemChange()"
-                nzPlaceHolder="Select SAP System" class="w-64 mr-2">
-                <nz-option *ngFor="let system of systems" [nzValue]="system.id"
-                    [nzLabel]="system.sid + ' - ' + system.destinationName"></nz-option>
-            </nz-select>
-
-            <button nz-button nzType="default" (click)="refreshDashboard()" [nzLoading]="loading">
-                <span nz-icon nzType="reload"></span> Refresh
-            </button>
-        </div>
-
-        <!-- Initial Load States -->
-        <div nz-col nzSpan="24" *ngIf="loadingSystems" class="flex justify-center h-64 items-center">
-            <nz-spin nzSimple></nz-spin>
-        </div>
-        <div nz-col nzSpan="24" *ngIf="!loadingSystems && systems.length === 0"
-            class="flex flex-col justify-center items-center h-64 text-gray-500">
-            <span nz-icon nzType="database" nzTheme="outline" class="text-4xl mb-2"></span>
-            <p>No SAP systems configured.</p>
-        </div>
-
-        <!-- Matrix Cards Container -->
-        <ng-container *ngIf="!loadingSystems && systems.length > 0">
-            <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="4">
-                <app-statistics-card title="Total Roles" icon="team" color="text-blue-500"
-                    [value]="stats?.totalRoles || 0"
-                    [description]="(stats?.compositeRoles || 0) + ' composite, ' + (stats?.singleRoles || 0) + ' single'"
-                    [loading]="loading">
-                </app-statistics-card>
-            </div>
-
-            <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="4">
-                <app-statistics-card title="Transaction Codes" icon="code" color="text-indigo-500"
-                    [value]="stats?.totalTcodes || 0" [description]="(stats?.uniqueTcodes || 0) + ' unique'"
-                    [loading]="loading">
-                </app-statistics-card>
-            </div>
-
-            <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="4">
-                <app-statistics-card title="Child Assignments" icon="cluster" color="text-green-500"
-                    [value]="stats?.totalChildRoleAssignments || 0"
-                    [description]="'Across ' + (stats?.compositeRoles || 0) + ' composite'" [loading]="loading">
-                </app-statistics-card>
-            </div>
-
-            <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="4" class="cursor-pointer"
-                (click)="navigateToRoleAnalysis('WITHOUT_DESCRIPTION')">
-                <app-statistics-card title="No Description" icon="warning"
-                    [color]="(stats?.rolesWithoutDescription || 0) > 0 ? 'text-amber-500' : 'text-gray-500'"
-                    [value]="stats?.rolesWithoutDescription || 0" [description]="noDescPercentage + '% of roles'"
-                    [loading]="loading">
-                </app-statistics-card>
-            </div>
-
-            <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="4" class="cursor-pointer"
-                (click)="navigateToRoleAnalysis('EXCESSIVE_TCODES')">
-                <app-statistics-card title="Excessive Tcodes" icon="exclamation-circle"
-                    [color]="(stats?.rolesWithExcessiveTcodes || 0) > 0 ? 'text-red-500' : 'text-gray-500'"
-                    [value]="stats?.rolesWithExcessiveTcodes || 0" [description]="'>' + excessiveThreshold + ' tcodes'"
-                    [loading]="loading">
-                </app-statistics-card>
-            </div>
-
-            <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="4" class="cursor-pointer"
-                (click)="navigateToRoleAnalysis('EMPTY')">
-                <app-statistics-card title="Empty Roles" icon="stop"
-                    [color]="(stats?.emptyRoles || 0) > 0 ? 'text-gray-500' : 'text-green-500'"
-                    [value]="stats?.emptyRoles || 0" [description]="emptyPercentage + '% of roles'" [loading]="loading">
-                </app-statistics-card>
-            </div>
-
-
-            <!-- Detailed Reports Sub-Grid -->
-            <div nz-col nzXs="24" nzLg="12">
-                <nz-card nzTitle="Quick Access Reports" [nzBordered]="false" class="shadow-sm">
-                    <div class="flex flex-col gap-3">
-                        <div class="flex items-center gap-4 p-3 border-l-4 border-green-500 bg-gray-50 hover:bg-gray-100 cursor-pointer rounded"
-                            (click)="navigateToRoleAnalysis('COMPOSITE')">
-                            <span nz-icon nzType="cluster" class="text-green-600 text-2xl"></span>
-                            <div class="flex-1">
-                                <span class="font-medium">Composite Roles</span>
-                                <span class="block text-xs text-gray-500">Roles containing child roles</span>
-                            </div>
-                            <span class="font-bold text-xl">{{ stats?.compositeRoles || 0 }}</span>
-                        </div>
-
-                        <div class="flex items-center gap-4 p-3 border-l-4 border-amber-500 bg-gray-50 hover:bg-gray-100 cursor-pointer rounded"
-                            (click)="navigateToRoleAnalysis('WITHOUT_DESCRIPTION')">
-                            <span nz-icon nzType="warning" class="text-amber-600 text-2xl"></span>
-                            <div class="flex-1">
-                                <span class="font-medium">Missing Descriptions</span>
-                                <span class="block text-xs text-gray-500">{{ noDescPercentage }}% missing
-                                    descriptions</span>
-                            </div>
-                            <span class="font-bold text-xl">{{ stats?.rolesWithoutDescription || 0 }}</span>
-                        </div>
-
-                        <div class="flex items-center gap-4 p-3 border-l-4 border-red-500 bg-gray-50 hover:bg-gray-100 cursor-pointer rounded"
-                            (click)="navigateToRoleAnalysis('EXCESSIVE_TCODES')">
-                            <span nz-icon nzType="exclamation-circle" class="text-red-600 text-2xl"></span>
-                            <div class="flex-1">
-                                <span class="font-medium">Excessive Transaction Codes</span>
-                                <span class="block text-xs text-gray-500">Roles with >{{ excessiveThreshold }}
-                                    tcodes</span>
-                            </div>
-                            <span class="font-bold text-xl">{{ stats?.rolesWithExcessiveTcodes || 0 }}</span>
-                        </div>
-                    </div>
-                </nz-card>
-            </div>
-
-            <div nz-col nzXs="24" nzLg="12">
-                <nz-card nzTitle="More Reports" [nzBordered]="false" class="shadow-sm h-full">
-                    <div class="flex flex-col gap-3">
-                        <div class="flex items-center gap-4 p-3 border-l-4 border-blue-500 bg-gray-50 hover:bg-gray-100 cursor-pointer rounded"
-                            (click)="navigateToRoleAnalysis('RECENTLY_MODIFIED')">
-                            <span nz-icon nzType="clock-circle" class="text-blue-600 text-2xl"></span>
-                            <div class="flex-1">
-                                <span class="font-medium">Recently Modified</span>
-                                <span class="block text-xs text-gray-500">Roles changed in last 30 days</span>
-                            </div>
-                            <span class="font-bold text-xl">{{ stats?.recentlyModifiedRoles || 0 }}</span>
-                        </div>
-
-                        <div class="flex items-center gap-4 p-3 border-l-4 border-gray-400 bg-gray-50 hover:bg-gray-100 cursor-pointer rounded"
-                            (click)="navigateToRoleAnalysis('EMPTY')">
-                            <span nz-icon nzType="stop" class="text-gray-600 text-2xl"></span>
-                            <div class="flex-1">
-                                <span class="font-medium">Empty/Unused Roles</span>
-                                <span class="block text-xs text-gray-500">No tcodes and no child roles</span>
-                            </div>
-                            <span class="font-bold text-xl">{{ stats?.emptyRoles || 0 }}</span>
-                        </div>
-
-                        <div class="mt-2 p-3 bg-gray-100 rounded text-sm grid grid-cols-2 gap-4">
-                            <div><span class="text-gray-500 mr-2">Avg Tcodes/Role:</span> <strong>{{
-                                    (stats?.avgTcodesPerRole || 0) | number:'1.1-1' }}</strong></div>
-                            <div><span class="text-gray-500 mr-2">Menu Items:</span> <strong>{{ stats?.totalMenuItems ||
-                                    0 | number }}</strong></div>
-                            <div><span class="text-gray-500 mr-2">Unique Tcodes:</span> <strong>{{ stats?.uniqueTcodes
-                                    || 0 | number }}</strong></div>
-                            <div><span class="text-gray-500 mr-2">Composite %:</span> <strong>{{ compositePercentage
-                                    }}%</strong></div>
-                        </div>
-                    </div>
-                </nz-card>
-
-                <!-- Full Unified Analysis Launcher -->
-                <div class="mt-4 p-4 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-700 flex justify-between items-center shadow-md"
-                    (click)="navigateToRoleAnalysis()">
-                    <div class="flex items-center">
-                        <span nz-icon nzType="fund-projection-screen" nzTheme="outline" class="text-3xl mr-4"></span>
-                        <div>
-                            <span class="block font-bold text-lg">Launch Unified Role Analysis</span>
-                            <span class="text-sm opacity-90">Combine multiple filters for deep security
-                                validations</span>
-                        </div>
-                    </div>
-                    <span nz-icon nzType="right" class="text-xl"></span>
-                </div>
-            </div>
-
-        </ng-container>
-
+    <!-- System Selection Header -->
+    <div nz-col nzSpan="24" style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 8px">
+      <nz-select [(ngModel)]="selectedSystemId" (ngModelChange)="onSystemChange()"
+                 nzPlaceHolder="Select SAP System" style="width: 280px">
+        <nz-option *ngFor="let system of systems" [nzValue]="system.id"
+                   [nzLabel]="system.sid + ' - ' + system.destinationName"></nz-option>
+      </nz-select>
+      <button nz-button nzType="default" (click)="refreshDashboard()" [nzLoading]="loading">
+        <span nz-icon nzType="reload"></span> Refresh
+      </button>
     </div>
+
+    <!-- Loading State -->
+    <div nz-col nzSpan="24" *ngIf="loadingSystems" style="display: flex; justify-content: center; padding: 64px 0">
+      <nz-spin nzSimple></nz-spin>
+    </div>
+
+    <!-- Empty State -->
+    <div nz-col nzSpan="24" *ngIf="!loadingSystems && systems.length === 0">
+      <nz-empty nzNotFoundContent="No SAP systems configured."></nz-empty>
+    </div>
+
+    <!-- Dashboard Content -->
+    <ng-container *ngIf="!loadingSystems && systems.length > 0">
+
+      <!-- Statistics Cards Row -->
+      <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="4">
+        <app-statistics-card title="Total Roles" icon="team" color="#1890ff"
+                             [value]="stats?.totalRoles || 0"
+                             [description]="(stats?.compositeRoles || 0) + ' composite, ' + (stats?.singleRoles || 0) + ' single'"
+                             [loading]="loading">
+        </app-statistics-card>
+      </div>
+
+      <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="4">
+        <app-statistics-card title="Transaction Codes" icon="code" color="#2f54eb"
+                             [value]="stats?.totalTcodes || 0"
+                             [description]="(stats?.uniqueTcodes || 0) + ' unique'"
+                             [loading]="loading">
+        </app-statistics-card>
+      </div>
+
+      <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="4">
+        <app-statistics-card title="Child Assignments" icon="cluster" color="#52c41a"
+                             [value]="stats?.totalChildRoleAssignments || 0"
+                             [description]="'Across ' + (stats?.compositeRoles || 0) + ' composite'"
+                             [loading]="loading">
+        </app-statistics-card>
+      </div>
+
+      <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="4" style="cursor: pointer"
+           (click)="navigateToRoleAnalysis('WITHOUT_DESCRIPTION')">
+        <app-statistics-card title="No Description" icon="warning"
+                             [color]="(stats?.rolesWithoutDescription || 0) > 0 ? '#faad14' : '#8c8c8c'"
+                             [value]="stats?.rolesWithoutDescription || 0"
+                             [description]="noDescPercentage + '% of roles'"
+                             [loading]="loading" [clickable]="true">
+        </app-statistics-card>
+      </div>
+
+      <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="4" style="cursor: pointer"
+           (click)="navigateToRoleAnalysis('EXCESSIVE_TCODES')">
+        <app-statistics-card title="Excessive Tcodes" icon="exclamation-circle"
+                             [color]="(stats?.rolesWithExcessiveTcodes || 0) > 0 ? '#f5222d' : '#8c8c8c'"
+                             [value]="stats?.rolesWithExcessiveTcodes || 0"
+                             [description]="'>' + excessiveThreshold + ' tcodes'"
+                             [loading]="loading" [clickable]="true">
+        </app-statistics-card>
+      </div>
+
+      <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="4" style="cursor: pointer"
+           (click)="navigateToRoleAnalysis('EMPTY')">
+        <app-statistics-card title="Empty Roles" icon="stop"
+                             [color]="(stats?.emptyRoles || 0) > 0 ? '#8c8c8c' : '#52c41a'"
+                             [value]="stats?.emptyRoles || 0"
+                             [description]="emptyPercentage + '% of roles'"
+                             [loading]="loading" [clickable]="true">
+        </app-statistics-card>
+      </div>
+
+      <!-- Quick Access Reports -->
+      <div nz-col nzXs="24" nzLg="12">
+        <nz-card nzTitle="Quick Access Reports">
+          <nz-list nzBordered nzSize="small">
+            <nz-list-item (click)="navigateToRoleAnalysis('COMPOSITE')" style="cursor: pointer">
+              <nz-list-item-meta
+                nzAvatar=""
+                [nzTitle]="compositeTitle"
+                nzDescription="Roles containing child roles">
+                <ng-template #compositeTitle>
+                  <span nz-icon nzType="cluster" style="color: #52c41a; margin-right: 8px"></span>
+                  Composite Roles
+                </ng-template>
+              </nz-list-item-meta>
+              <span><nz-tag nzColor="green">{{ stats?.compositeRoles || 0 }}</nz-tag></span>
+            </nz-list-item>
+
+            <nz-list-item (click)="navigateToRoleAnalysis('WITHOUT_DESCRIPTION')" style="cursor: pointer">
+              <nz-list-item-meta
+                nzAvatar=""
+                [nzTitle]="missingDescTitle"
+                [nzDescription]="noDescPercentage + '% missing descriptions'">
+                <ng-template #missingDescTitle>
+                  <span nz-icon nzType="warning" style="color: #faad14; margin-right: 8px"></span>
+                  Missing Descriptions
+                </ng-template>
+              </nz-list-item-meta>
+              <span><nz-tag nzColor="orange">{{ stats?.rolesWithoutDescription || 0 }}</nz-tag></span>
+            </nz-list-item>
+
+            <nz-list-item (click)="navigateToRoleAnalysis('EXCESSIVE_TCODES')" style="cursor: pointer">
+              <nz-list-item-meta
+                nzAvatar=""
+                [nzTitle]="excessiveTitle"
+                [nzDescription]="'Roles with >' + excessiveThreshold + ' tcodes'">
+                <ng-template #excessiveTitle>
+                  <span nz-icon nzType="exclamation-circle" style="color: #f5222d; margin-right: 8px"></span>
+                  Excessive Transaction Codes
+                </ng-template>
+              </nz-list-item-meta>
+              <span><nz-tag nzColor="red">{{ stats?.rolesWithExcessiveTcodes || 0 }}</nz-tag></span>
+            </nz-list-item>
+          </nz-list>
+        </nz-card>
+      </div>
+
+      <!-- More Reports -->
+      <div nz-col nzXs="24" nzLg="12">
+        <nz-card nzTitle="More Reports">
+          <nz-list nzBordered nzSize="small">
+            <nz-list-item (click)="navigateToRoleAnalysis('RECENTLY_MODIFIED')" style="cursor: pointer">
+              <nz-list-item-meta
+                nzAvatar=""
+                [nzTitle]="recentTitle"
+                nzDescription="Roles changed in last 30 days">
+                <ng-template #recentTitle>
+                  <span nz-icon nzType="clock-circle" style="color: #1890ff; margin-right: 8px"></span>
+                  Recently Modified
+                </ng-template>
+              </nz-list-item-meta>
+              <span><nz-tag nzColor="blue">{{ stats?.recentlyModifiedRoles || 0 }}</nz-tag></span>
+            </nz-list-item>
+
+            <nz-list-item (click)="navigateToRoleAnalysis('EMPTY')" style="cursor: pointer">
+              <nz-list-item-meta
+                nzAvatar=""
+                [nzTitle]="emptyTitle"
+                nzDescription="No tcodes and no child roles">
+                <ng-template #emptyTitle>
+                  <span nz-icon nzType="stop" style="color: #8c8c8c; margin-right: 8px"></span>
+                  Empty/Unused Roles
+                </ng-template>
+              </nz-list-item-meta>
+              <span><nz-tag>{{ stats?.emptyRoles || 0 }}</nz-tag></span>
+            </nz-list-item>
+          </nz-list>
+
+          <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" style="margin-top: 16px">
+            <nz-descriptions-item nzTitle="Avg Tcodes/Role">{{ (stats?.avgTcodesPerRole || 0) | number:'1.1-1' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Menu Items">{{ stats?.totalMenuItems || 0 | number }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Unique Tcodes">{{ stats?.uniqueTcodes || 0 | number }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Composite %">{{ compositePercentage }}%</nz-descriptions-item>
+          </nz-descriptions>
+        </nz-card>
+
+        <!-- Launch Analysis Button -->
+        <button nz-button nzType="primary" nzBlock nzSize="large" style="margin-top: 16px"
+                (click)="navigateToRoleAnalysis()">
+          <span nz-icon nzType="fund-projection-screen"></span>
+          Launch Unified Role Analysis
+        </button>
+      </div>
+
+    </ng-container>
+  </div>
 </app-page-panel>

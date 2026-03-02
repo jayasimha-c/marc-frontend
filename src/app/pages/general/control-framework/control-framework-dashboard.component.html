@@ -1,0 +1,213 @@
+<app-page-panel header="Control Framework Documentation">
+  <div headerSection>
+    <button nz-button nzType="primary" (click)="openImportDialog()">
+      <span nz-icon nzType="upload"></span> Import Framework
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <nz-spin *ngIf="frameworksLoading" nzSimple nzSize="large"
+           style="display: block; text-align: center; padding: 80px 0"></nz-spin>
+
+  <!-- Error -->
+  <nz-result *ngIf="errorState && !frameworksLoading" nzStatus="error"
+             nzTitle="Failed to load frameworks"
+             nzSubTitle="Please check your connection and try again.">
+    <div nz-result-extra>
+      <button nz-button nzType="primary" (click)="loadFrameworks()">
+        <span nz-icon nzType="reload"></span> Retry
+      </button>
+    </div>
+  </nz-result>
+
+  <!-- Empty -->
+  <nz-empty *ngIf="!frameworksLoading && !errorState && frameworks.length === 0"
+            nzNotFoundContent="No frameworks available. Import a control framework to get started."></nz-empty>
+
+  <!-- Documentation Browser -->
+  <nz-row *ngIf="!frameworksLoading && !errorState && frameworks.length > 0" [nzGutter]="16">
+
+    <!-- Left Sidebar -->
+    <nz-col [nzSpan]="7">
+      <nz-card>
+        <!-- Framework Selector -->
+        <nz-form-item>
+          <nz-form-label>Framework</nz-form-label>
+          <nz-form-control>
+            <nz-select [(ngModel)]="selectedFramework" nzPlaceHolder="Select Framework"
+                       nzShowSearch [compareWith]="compareFramework"
+                       (ngModelChange)="onFrameworkChange($event)">
+              <nz-option *ngFor="let f of frameworks" [nzValue]="f" [nzLabel]="f.name"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <!-- Search -->
+        <nz-input-group [nzSuffix]="searchIcon" style="margin-bottom: 12px">
+          <input nz-input [(ngModel)]="searchTerm" (input)="onSearchInput()" placeholder="Search controls...">
+        </nz-input-group>
+        <ng-template #searchIcon>
+          <span nz-icon nzType="search"></span>
+        </ng-template>
+
+        <!-- Controls Count & Actions -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px">
+          <span nz-typography nzType="secondary">{{ filteredRequirements.length }} control(s)</span>
+          <nz-space>
+            <button *nzSpaceItem nz-button nzType="text" nzShape="circle" nz-tooltip nzTooltipTitle="Expand All"
+                    (click)="expandAll()" nzSize="small">
+              <span nz-icon nzType="node-expand"></span>
+            </button>
+            <button *nzSpaceItem nz-button nzType="text" nzShape="circle" nz-tooltip nzTooltipTitle="Collapse All"
+                    (click)="collapseAll()" nzSize="small">
+              <span nz-icon nzType="node-collapse"></span>
+            </button>
+          </nz-space>
+        </div>
+
+        <!-- Loading Requirements -->
+        <nz-spin *ngIf="requirementsLoading" nzSimple nzSize="small"
+                 style="display: block; text-align: center; padding: 32px 0"></nz-spin>
+
+        <!-- Tree -->
+        <div *ngIf="!requirementsLoading" style="max-height: 480px; overflow-y: auto">
+          <nz-tree #nzTree [nzData]="treeNodes" [nzTreeTemplate]="treeTemplate"
+                   (nzClick)="onTreeNodeClick($event)" [nzExpandAll]="isExpandAll" nzBlockNode>
+          </nz-tree>
+
+          <ng-template #treeTemplate let-node let-origin="origin">
+            <span [style.font-weight]="selectedRequirement?.id === origin.id ? 600 : 400"
+                  [style.color]="selectedRequirement?.id === origin.id ? '#1890ff' : 'inherit'">
+              <span nz-icon [nzType]="getStatusIcon(origin.status)" [style.color]="getStatusColor(origin.status)"></span>
+              {{ node.title }}
+              <span *ngIf="!node.isLeaf" nz-typography nzType="secondary">({{ node.children?.length || 0 }})</span>
+            </span>
+          </ng-template>
+
+          <nz-empty *ngIf="filteredRequirements.length === 0 && !requirementsLoading"
+                    nzNotFoundContent="No controls found" [nzNotFoundImage]="'simple'"></nz-empty>
+        </div>
+      </nz-card>
+    </nz-col>
+
+    <!-- Right Content -->
+    <nz-col [nzSpan]="17">
+      <nz-card>
+
+        <!-- No Selection -->
+        <nz-empty *ngIf="!selectedRequirement"
+                  nzNotFoundContent="Select a control from the navigation panel to view its documentation"></nz-empty>
+
+        <!-- Control Documentation -->
+        <ng-container *ngIf="selectedRequirement">
+
+          <!-- Header -->
+          <nz-page-header nzTitle="{{ selectedRequirement.name }}" nzBackIcon="" style="padding: 0; margin-bottom: 16px">
+            <nz-page-header-tags>
+              <nz-tag>Level {{ selectedRequirement.level || 0 }}</nz-tag>
+              <nz-tag *ngIf="selectedRequirement.refId" nzColor="blue">{{ selectedRequirement.refId }}</nz-tag>
+            </nz-page-header-tags>
+            <nz-page-header-extra>
+              <button nz-button nzType="default" (click)="exportFramework()"
+                      nz-tooltip nzTooltipTitle="Export Framework">
+                <span nz-icon nzType="download"></span> Export
+              </button>
+            </nz-page-header-extra>
+          </nz-page-header>
+
+          <!-- Framework Info -->
+          <nz-descriptions *ngIf="selectedFramework" nzBordered nzSize="small" [nzColumn]="4"
+                           style="margin-bottom: 16px">
+            <nz-descriptions-item nzTitle="Framework">{{ selectedFramework.name }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Provider">{{ selectedFramework.provider }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Version">{{ selectedFramework.version }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Ref ID" *ngIf="selectedFramework.refId">{{ selectedFramework.refId }}</nz-descriptions-item>
+          </nz-descriptions>
+
+          <!-- Status Badges -->
+          <nz-space *ngIf="hasStatusData(selectedRequirement)" style="margin-bottom: 16px">
+            <ng-container *ngIf="selectedRequirement.status && selectedRequirement.status !== 'not-assessed'">
+              <span *nzSpaceItem>
+                <span nz-typography nzType="secondary">Status:</span>
+                <nz-tag [nzColor]="getStatusTag(selectedRequirement.status)">
+                  <span nz-icon [nzType]="getStatusIcon(selectedRequirement.status)"></span>
+                  {{ formatStatus(selectedRequirement.status) }}
+                </nz-tag>
+              </span>
+            </ng-container>
+            <ng-container *ngIf="selectedRequirement.priority && selectedRequirement.priority !== 'medium'">
+              <span *nzSpaceItem>
+                <span nz-typography nzType="secondary">Priority:</span>
+                <nz-tag [nzColor]="getPriorityTag(selectedRequirement.priority)">
+                  {{ formatPriority(selectedRequirement.priority) }}
+                </nz-tag>
+              </span>
+            </ng-container>
+            <ng-container *ngIf="selectedRequirement.criticality && selectedRequirement.criticality !== 'Medium'">
+              <span *nzSpaceItem>
+                <span nz-typography nzType="secondary">Criticality:</span>
+                <nz-badge *ngFor="let i of critDots" nzStandalone
+                          [nzStatus]="i <= getCriticalityLevel(selectedRequirement.criticality) ? 'error' : 'default'">
+                </nz-badge>
+                <span nz-typography nzType="secondary">{{ selectedRequirement.criticality }}</span>
+              </span>
+            </ng-container>
+          </nz-space>
+
+          <nz-divider *ngIf="hasStatusData(selectedRequirement)"></nz-divider>
+
+          <!-- Description -->
+          <nz-collapse *ngIf="selectedRequirement.description || selectedRequirement.significance || selectedRequirement.implementationGuidance || selectedRequirement.testingProcedures"
+                       nzBordered [nzExpandIconPosition]="'left'" style="margin-bottom: 16px">
+            <nz-collapse-panel *ngIf="selectedRequirement.description" nzHeader="Description" [nzActive]="true">
+              <p style="white-space: pre-wrap">{{ selectedRequirement.description }}</p>
+            </nz-collapse-panel>
+            <nz-collapse-panel *ngIf="selectedRequirement.significance" nzHeader="Significance">
+              <p style="white-space: pre-wrap">{{ selectedRequirement.significance }}</p>
+            </nz-collapse-panel>
+            <nz-collapse-panel *ngIf="selectedRequirement.implementationGuidance" nzHeader="Implementation Guidance">
+              <p style="white-space: pre-wrap">{{ selectedRequirement.implementationGuidance }}</p>
+            </nz-collapse-panel>
+            <nz-collapse-panel *ngIf="selectedRequirement.testingProcedures" nzHeader="Testing Procedures">
+              <p style="white-space: pre-wrap">{{ selectedRequirement.testingProcedures }}</p>
+            </nz-collapse-panel>
+          </nz-collapse>
+
+          <!-- Related Controls -->
+          <ng-container *ngIf="relatedControls.length > 0">
+            <h4 nz-typography>
+              <span nz-icon nzType="link"></span> Related Controls
+            </h4>
+            <nz-list nzBordered nzSize="small" style="margin-bottom: 16px">
+              <nz-list-item *ngFor="let related of relatedControls" style="cursor: pointer"
+                            (click)="selectRequirementById(related.id)">
+                <nz-list-item-meta [nzDescription]="'Level ' + (related.level || 0)">
+                  <nz-list-item-meta-title>
+                    <span nz-icon [nzType]="getStatusIcon(related.status)"
+                          [style.color]="getStatusColor(related.status)"></span>
+                    {{ related.name }}
+                  </nz-list-item-meta-title>
+                </nz-list-item-meta>
+                <span nz-icon nzType="right"></span>
+              </nz-list-item>
+            </nz-list>
+          </ng-container>
+
+          <!-- Framework Mappings -->
+          <ng-container *ngIf="selectedRequirement.mappings && selectedRequirement.mappings.length > 0">
+            <h4 nz-typography>
+              <span nz-icon nzType="branches"></span> Framework Mappings
+            </h4>
+            <nz-list nzBordered nzSize="small">
+              <nz-list-item *ngFor="let mapping of selectedRequirement.mappings">
+                <strong>{{ mapping.framework }}</strong>
+                <nz-tag>{{ mapping.reference }}</nz-tag>
+              </nz-list-item>
+            </nz-list>
+          </ng-container>
+
+        </ng-container>
+      </nz-card>
+    </nz-col>
+  </nz-row>
+</app-page-panel>

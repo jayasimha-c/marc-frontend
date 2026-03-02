@@ -164,6 +164,9 @@ import {
   PartitionOutline,
   PauseOutline,
   FileProtectOutline,
+  NodeExpandOutline,
+  NodeCollapseOutline,
+  TableOutline,
 } from '@ant-design/icons-angular/icons';
 
 registerLocaleData(en);
@@ -204,6 +207,7 @@ const icons = [
   FastForwardOutline, HolderOutline, InfoOutline, OrderedListOutline,
   PaperClipOutline, ProfileOutline,
   PartitionOutline, PauseOutline, FileProtectOutline,
+  NodeExpandOutline, NodeCollapseOutline, TableOutline,
 ];
 
 @NgModule({

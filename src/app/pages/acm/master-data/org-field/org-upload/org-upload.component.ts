@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { NzUploadFile } from 'ng-zorro-antd/upload';
 import { OrgFieldService } from '../org-field.service';
 import { NotificationService } from '../../../../../core/services/notification.service';
 
@@ -6,14 +7,47 @@ import { NotificationService } from '../../../../../core/services/notification.s
   standalone: false,
   selector: 'app-org-upload',
   templateUrl: './org-upload.component.html',
-  styleUrls: ['./org-upload.component.scss'],
 })
 export class OrgUploadComponent implements OnInit {
   sapSystemList: any[] = [];
   selectedSapSystem: string = '';
   uploadProgress = false;
   uploadSuccess = false;
-  selectedFile: File | null = null;
+
+  beforeUpload = (file: NzUploadFile): boolean => {
+    const raw = file as any;
+    if (!this.validateFile(raw)) return false;
+
+    if (!this.selectedSapSystem) {
+      this.notificationService.error('Please select a SAP System before uploading');
+      return false;
+    }
+
+    this.uploadProgress = true;
+    this.uploadSuccess = false;
+
+    const formData = new FormData();
+    formData.append('fileUpload', raw);
+    formData.append('sapSystemId', this.selectedSapSystem);
+
+    this.orgFieldService.uploadOrgFields(formData).subscribe({
+      next: (res) => {
+        this.uploadProgress = false;
+        if (res.data?.error === false) {
+          this.uploadSuccess = true;
+          this.notificationService.success('Organization fields uploaded successfully');
+          setTimeout(() => { this.uploadSuccess = false; }, 5000);
+        } else {
+          this.notificationService.error(res.data?.message || 'Upload failed');
+        }
+      },
+      error: (err) => {
+        this.uploadProgress = false;
+        this.notificationService.error(err.error?.message || 'Upload failed. Please try again.');
+      },
+    });
+    return false;
+  };
 
   constructor(
     private orgFieldService: OrgFieldService,
@@ -34,54 +68,6 @@ export class OrgUploadComponent implements OnInit {
     document.body.appendChild(link);
     link.click();
     link.remove();
-  }
-
-  onFileSelected(event: any): void {
-    const file: File = event.target.files[0];
-    if (!file) return;
-
-    this.uploadSuccess = false;
-
-    if (!this.validateFile(file)) {
-      event.target.value = '';
-      return;
-    }
-
-    if (!this.selectedSapSystem) {
-      this.notificationService.error('Please select a SAP System before uploading');
-      event.target.value = '';
-      return;
-    }
-
-    this.selectedFile = file;
-    this.uploadProgress = true;
-
-    const formData = new FormData();
-    formData.append('fileUpload', file);
-    formData.append('sapSystemId', this.selectedSapSystem);
-
-    this.orgFieldService.uploadOrgFields(formData).subscribe({
-      next: (res) => {
-        this.uploadProgress = false;
-        if (res.data?.error === false) {
-          this.uploadSuccess = true;
-          this.notificationService.success('Organization fields uploaded successfully');
-          event.target.value = '';
-          this.selectedFile = null;
-          setTimeout(() => { this.uploadSuccess = false; }, 5000);
-        } else {
-          this.notificationService.error(res.data?.message || 'Upload failed');
-          event.target.value = '';
-          this.selectedFile = null;
-        }
-      },
-      error: (err) => {
-        this.uploadProgress = false;
-        this.notificationService.error(err.error?.message || 'Upload failed. Please try again.');
-        event.target.value = '';
-        this.selectedFile = null;
-      },
-    });
   }
 
   private validateFile(file: File): boolean {

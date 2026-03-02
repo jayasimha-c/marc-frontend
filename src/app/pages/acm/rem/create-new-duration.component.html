@@ -1,0 +1,28 @@
+<form nz-form [formGroup]="form" style="display: flex; flex-direction: column; gap: 16px">
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Duration is required">
+      <div class="nz-float-label" [class.has-value]="form.get('fromDateStr')?.value">
+        <nz-date-picker formControlName="fromDateStr" nzFormat="dd/MM/yyyy"
+                        style="width: 100%" nzPlaceHolder=" "></nz-date-picker>
+        <label>Duration <span class="text-red-500">*</span></label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control nzErrorTip="SAP System is required">
+      <div class="nz-float-label" [class.has-value]="form.get('sapSystemId')?.value">
+        <nz-select formControlName="sapSystemId" nzShowSearch nzPlaceHolder=" "
+                   [nzLoading]="sapSystemList.length === 0" style="width: 100%">
+          <nz-option *ngFor="let sys of sapSystemList" [nzValue]="sys.id" [nzLabel]="sys.destinationName"></nz-option>
+        </nz-select>
+        <label>SAP System <span class="text-red-500">*</span></label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div class="modal-footer">
+    <button nz-button nzType="default" (click)="close()">Close</button>
+    <button nz-button nzType="primary" (click)="save()">Save</button>
+  </div>
+</form>

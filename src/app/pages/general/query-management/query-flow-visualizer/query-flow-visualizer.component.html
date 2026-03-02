@@ -1,0 +1,197 @@
+<div class="flow-visualizer-container">
+  <!-- Toolbar -->
+  <div class="flow-toolbar">
+    <div class="toolbar-section">
+      <button nz-button nzType="text" nzSize="small" (click)="zoomIn()" nz-tooltip nzTooltipTitle="Zoom In">
+        <span nz-icon nzType="plus-circle" nzTheme="outline"></span>
+      </button>
+      <button nz-button nzType="text" nzSize="small" (click)="zoomOut()" nz-tooltip nzTooltipTitle="Zoom Out">
+        <span nz-icon nzType="minus-circle" nzTheme="outline"></span>
+      </button>
+      <button nz-button nzType="text" nzSize="small" (click)="resetView()" nz-tooltip nzTooltipTitle="Reset View">
+        <span nz-icon nzType="reload" nzTheme="outline"></span>
+      </button>
+      <button nz-button nzType="text" nzSize="small" (click)="fitToView()" nz-tooltip nzTooltipTitle="Fit to View">
+        <span nz-icon nzType="fullscreen" nzTheme="outline"></span>
+      </button>
+      <span class="zoom-level">{{ (zoom * 100).toFixed(0) }}%</span>
+    </div>
+
+    <div class="toolbar-section">
+      <span *ngIf="editable" class="drag-hint">
+        <span nz-icon nzType="holder" nzTheme="outline"></span>
+        Drag nodes to rearrange
+      </span>
+      <button nz-button nzType="default" nzSize="small" (click)="exportAsImage()">
+        <span nz-icon nzType="download" nzTheme="outline"></span>
+        Export
+      </button>
+    </div>
+
+    <div class="toolbar-section" *ngIf="selectedNode">
+      <nz-tag nzColor="blue">
+        <span nz-icon [nzType]="nodeStyles[selectedNode.type].icon" nzTheme="outline"></span>
+        {{ selectedNode.label }}
+        <span *ngIf="selectedNode.subLabel" class="selected-sub"> - {{ selectedNode.subLabel }}</span>
+      </nz-tag>
+    </div>
+  </div>
+
+  <!-- SVG Canvas -->
+  <div class="canvas-wrapper">
+    <svg #svgContainer
+         [attr.width]="canvasWidth"
+         [attr.height]="canvasHeight"
+         [attr.viewBox]="'0 0 ' + canvasWidth + ' ' + canvasHeight"
+         class="flow-canvas">
+
+      <defs>
+        <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+          <circle cx="10" cy="10" r="1" fill="#d9d9d9" opacity="0.5"/>
+        </pattern>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="rgba(0,0,0,0.45)"/>
+        </marker>
+      </defs>
+
+      <g [attr.transform]="'scale(' + zoom + ') translate(' + panX + ',' + panY + ')'">
+        <rect width="100%" height="100%" fill="url(#dots)" opacity="0.8"/>
+
+        <!-- Edges -->
+        <g *ngFor="let edge of edges">
+          <path [attr.d]="getEdgePath(edge)"
+                fill="none"
+                [attr.stroke]="edge.type === 'join' ? '#722ed1' : edge.type === 'filter' ? '#ff4d4f' : 'rgba(0,0,0,0.25)'"
+                stroke-width="2"
+                [attr.stroke-dasharray]="edge.type === 'filter' ? '5,5' : 'none'"
+                marker-end="url(#arrowhead)"
+                opacity="0.7"/>
+          <text *ngIf="edge.label"
+                [attr.x]="getEdgeLabelX(edge)"
+                [attr.y]="getEdgeLabelY(edge)"
+                text-anchor="middle"
+                class="edge-label">
+            {{ edge.label }}
+          </text>
+        </g>
+
+        <!-- Nodes -->
+        <g *ngFor="let node of nodes"
+           class="node-group"
+           [class.dragging]="draggedNode?.id === node.id"
+           [attr.transform]="'translate(' + node.x + ',' + node.y + ')'">
+
+          <rect [attr.width]="node.width"
+                [attr.height]="node.height"
+                rx="2"
+                fill="white"
+                [attr.stroke]="getNodeStyle(node).stroke"
+                [attr.stroke-width]="getNodeStyle(node).strokeWidth"
+                class="node-rect"/>
+
+          <!-- Node Header Bar -->
+          <rect [attr.width]="node.width"
+                height="28"
+                rx="2"
+                [attr.fill]="getNodeStyle(node).fill"
+                opacity="0.1"/>
+
+          <!-- Node Icon -->
+          <foreignObject x="8" y="4" width="20" height="20">
+            <span xmlns="http://www.w3.org/1999/xhtml"
+                  nz-icon [nzType]="nodeStyles[node.type].icon" nzTheme="outline"
+                  [style.color]="getNodeStyle(node).fill"
+                  class="node-icon"></span>
+          </foreignObject>
+
+          <!-- Node Label -->
+          <text x="32" y="18" font-size="13" font-weight="500" [attr.fill]="getNodeStyle(node).fill">
+            {{ node.label }}
+          </text>
+
+          <!-- Node Sub-label -->
+          <text *ngIf="node.subLabel"
+                [attr.x]="node.width / 2"
+                [attr.y]="node.height - 12"
+                text-anchor="middle"
+                font-size="12"
+                fill="rgba(0,0,0,0.45)">
+            {{ node.subLabel }}
+          </text>
+
+          <!-- Drag Handle -->
+          <g *ngIf="editable">
+            <circle [attr.cx]="node.width - 18" cy="10" r="1" fill="rgba(0,0,0,0.25)"/>
+            <circle [attr.cx]="node.width - 14" cy="10" r="1" fill="rgba(0,0,0,0.25)"/>
+            <circle [attr.cx]="node.width - 10" cy="10" r="1" fill="rgba(0,0,0,0.25)"/>
+            <circle [attr.cx]="node.width - 18" cy="14" r="1" fill="rgba(0,0,0,0.25)"/>
+            <circle [attr.cx]="node.width - 14" cy="14" r="1" fill="rgba(0,0,0,0.25)"/>
+            <circle [attr.cx]="node.width - 10" cy="14" r="1" fill="rgba(0,0,0,0.25)"/>
+            <circle [attr.cx]="node.width - 18" cy="18" r="1" fill="rgba(0,0,0,0.25)"/>
+            <circle [attr.cx]="node.width - 14" cy="18" r="1" fill="rgba(0,0,0,0.25)"/>
+            <circle [attr.cx]="node.width - 10" cy="18" r="1" fill="rgba(0,0,0,0.25)"/>
+          </g>
+
+          <!-- Connection Ports (editable mode) -->
+          <g *ngIf="editable">
+            <circle *ngIf="node.inputs && node.inputs.length > 0"
+                    [attr.cx]="node.width / 2" cy="0" r="4"
+                    fill="#1890ff" stroke="white" stroke-width="2" class="port"/>
+            <circle *ngIf="node.outputs && node.outputs.length > 0"
+                    [attr.cx]="node.width / 2" [attr.cy]="node.height" r="4"
+                    fill="#52c41a" stroke="white" stroke-width="2" class="port"/>
+          </g>
+
+          <!-- Filter Info -->
+          <g *ngIf="node.data && (node.type === 'extraction-filter' || node.type === 'rule-filter')">
+            <foreignObject [attr.x]="8" [attr.y]="32" [attr.width]="node.width - 16" [attr.height]="node.height - 44">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="node-info">
+                <span *ngIf="node.data.condition">Condition: {{ node.data.condition }}</span>
+              </div>
+            </foreignObject>
+          </g>
+
+          <!-- Table Fields Info -->
+          <g *ngIf="node.data && node.type === 'table' && node.data.fields">
+            <foreignObject [attr.x]="8" [attr.y]="32" [attr.width]="node.width - 16" [attr.height]="node.height - 44">
+              <div xmlns="http://www.w3.org/1999/xhtml" class="node-info">
+                {{ getFieldsPreview(node.data.fields) }}
+              </div>
+            </foreignObject>
+          </g>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Legend -->
+  <div class="flow-legend">
+    <div class="legend-title">Legend</div>
+    <div class="legend-items">
+      <div class="legend-item">
+        <span class="legend-color" style="background: #1890ff;"></span>
+        <span>System</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #52c41a;"></span>
+        <span>Table</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #722ed1;"></span>
+        <span>Join</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #ff4d4f;"></span>
+        <span>Extraction Filter</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #fa8c16;"></span>
+        <span>Rule Filter</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #13c2c2;"></span>
+        <span>Result</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,105 @@
+<app-page-panel header="Risks Execution by User">
+  <form [formGroup]="form">
+    <div nz-row [nzGutter]="[16, 16]">
+      <div nz-col nzXs="24" nzSm="12" nzMd="4">
+        <nz-form-item>
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="form.get('system').value">
+              <input nz-input placeholder=" " formControlName="system" [nzAutocomplete]="autoSys" />
+              <label>System</label>
+            </div>
+            <nz-autocomplete #autoSys>
+              <nz-auto-option *ngFor="let opt of filteredSystems | async" [nzValue]="opt">{{ opt }}</nz-auto-option>
+            </nz-autocomplete>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col nzXs="24" nzSm="12" nzMd="4">
+        <nz-form-item>
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="form.get('risk').value">
+              <input nz-input placeholder=" " formControlName="risk" />
+              <label>Risk</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col nzXs="24" nzSm="12" nzMd="4">
+        <nz-form-item>
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="form.get('userId').value">
+              <input nz-input placeholder=" " formControlName="userId" />
+              <label>User Id</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col nzXs="24" nzSm="12" nzMd="4">
+        <nz-form-item>
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="form.get('userName').value">
+              <input nz-input placeholder=" " formControlName="userName" />
+              <label>User Name</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col nzXs="24" nzSm="12" nzMd="4">
+        <nz-form-item>
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="form.get('startDate').value">
+              <nz-date-picker formControlName="startDate" nzPlaceHolder=" " style="width: 100%"></nz-date-picker>
+              <label>Start Date</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+      <div nz-col nzXs="24" nzSm="12" nzMd="4">
+        <nz-form-item>
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="form.get('endDate').value">
+              <nz-date-picker formControlName="endDate" nzPlaceHolder=" " style="width: 100%"></nz-date-picker>
+              <label>End Date</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </div>
+  </form>
+
+  <div nz-row nzJustify="end" style="margin-top: 8px">
+    <nz-space>
+      <button *nzSpaceItem nz-button nzType="primary" (click)="search()">Search</button>
+      <button *nzSpaceItem nz-button nzType="primary" (click)="exportData()">Export Results</button>
+    </nz-space>
+  </div>
+</app-page-panel>
+
+<div style="margin-top: 16px">
+  <app-advanced-table
+    title="Risk Executions"
+    [columns]="gridColumns"
+    [data]="gridData"
+    [loading]="loading"
+    [serverSide]="true"
+    [totalRecords]="gridTotal"
+    [defaultPageSize]="20"
+    [showSearch]="false"
+    [showRefresh]="false"
+    size="small"
+    (queryParamsChange)="onGridQueryChange($event)">
+  </app-advanced-table>
+</div>
+
+<ng-template #detailModalTpl>
+  <app-advanced-table
+    [columns]="detailColumns"
+    [data]="detailData"
+    [loading]="detailLoading"
+    [defaultPageSize]="20"
+    [showSearch]="true"
+    [showRefresh]="false"
+    size="small"
+    scrollY="400px">
+  </app-advanced-table>
+</ng-template>

@@ -1,0 +1,43 @@
+<app-page-panel header="REM Configuration">
+  <nz-tabset>
+    <nz-tab nzTitle="Risks in Scope">
+      <app-advanced-table
+        [columns]="riskColumns"
+        [data]="riskData"
+        [loading]="riskLoading"
+        [actions]="riskActions"
+        [showSelection]="true"
+        [serverSide]="true"
+        [totalRecords]="riskTotal"
+        (queryParamsChange)="onRiskQueryChange($event)"
+        (selectionChange)="riskSelected = $event">
+      </app-advanced-table>
+    </nz-tab>
+
+    <nz-tab nzTitle="Rules in Scope">
+      <app-advanced-table
+        [columns]="ruleColumns"
+        [data]="ruleData"
+        [loading]="ruleLoading"
+        [actions]="ruleActions"
+        [showSelection]="true"
+        [serverSide]="true"
+        [totalRecords]="ruleTotal"
+        (queryParamsChange)="onRuleQueryChange($event)"
+        (selectionChange)="ruleSelected = $event">
+      </app-advanced-table>
+    </nz-tab>
+
+    <nz-tab nzTitle="Duration Configuration">
+      <app-advanced-table
+        [columns]="durationColumns"
+        [data]="durationData"
+        [loading]="durationLoading"
+        [actions]="durationActions"
+        [showSelection]="true"
+        [showPagination]="false"
+        (selectionChange)="durationSelected = $event">
+      </app-advanced-table>
+    </nz-tab>
+  </nz-tabset>
+</app-page-panel>

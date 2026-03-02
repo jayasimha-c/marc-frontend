@@ -1,0 +1,39 @@
+<div style="display: flex; flex-direction: column; gap: 16px">
+  <nz-form-item>
+    <div class="nz-float-label" [class.has-value]="sapSystem">
+      <nz-select [(ngModel)]="sapSystem" nzShowSearch nzPlaceHolder=" " style="width: 100%">
+        <nz-option *ngFor="let sys of sapSystemList" [nzValue]="sys.id" [nzLabel]="sys.destinationName"></nz-option>
+      </nz-select>
+      <label>SAP System <span class="text-red-500">*</span></label>
+    </div>
+  </nz-form-item>
+
+  <ng-container *ngIf="formType === 'addRisk'; else rulesGrid">
+    <app-advanced-table
+      [columns]="riskColumns"
+      [data]="riskData"
+      [loading]="riskLoading"
+      [showSelection]="true"
+      [showPagination]="false"
+      [showSearch]="true"
+      (selectionChange)="riskSelected = $event">
+    </app-advanced-table>
+  </ng-container>
+
+  <ng-template #rulesGrid>
+    <app-advanced-table
+      [columns]="ruleColumns"
+      [data]="ruleData"
+      [loading]="ruleLoading"
+      [showSelection]="true"
+      [showPagination]="false"
+      [showSearch]="true"
+      (selectionChange)="ruleSelected = $event">
+    </app-advanced-table>
+  </ng-template>
+
+  <div class="modal-footer">
+    <button nz-button nzType="default" (click)="close()">Close</button>
+    <button nz-button nzType="primary" (click)="save()">Save</button>
+  </div>
+</div>

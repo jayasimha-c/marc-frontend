@@ -1,0 +1,41 @@
+<nz-alert nzType="warning" nzShowIcon nzMessage="Important Notes" [nzDescription]="ruleWarning"
+         style="margin-bottom: 16px"></nz-alert>
+<ng-template #ruleWarning>
+  <ul style="margin: 0; padding-left: 16px">
+    <li>Rule Objects Overwrite will replace existing data</li>
+    <li>Rule Objects Append will add to existing data</li>
+    <li>Backup your data before overwriting</li>
+  </ul>
+</ng-template>
+
+<nz-card nzTitle="Download Templates" style="margin-bottom: 16px">
+  <nz-space>
+    <button *nzSpaceItem nz-button (click)="onClickRuleTemplate()">
+      <span nz-icon nzType="download"></span> Rules Template
+    </button>
+    <button *nzSpaceItem nz-button (click)="onClickRuleObjectTemplate()">
+      <span nz-icon nzType="download"></span> Rule Objects Template
+    </button>
+  </nz-space>
+</nz-card>
+
+<nz-card nzTitle="Upload Files">
+  <nz-row [nzGutter]="16">
+    <nz-col [nzSpan]="8" *ngFor="let ut of uploadTypes">
+      <nz-card nzSize="small" [nzTitle]="ut.name">
+        <nz-upload [nzBeforeUpload]="getBeforeUpload(ut.key)" [nzAccept]="'.xlsx,.xls'"
+                   [nzShowUploadList]="false">
+          <button nz-button nzType="primary" [nzLoading]="uploadProgress[ut.key]">
+            <span nz-icon nzType="upload"></span> Choose File
+          </button>
+        </nz-upload>
+        <nz-tag *ngIf="uploadSuccess[ut.key]" nzColor="success" style="margin-top: 8px">
+          <span nz-icon nzType="check-circle"></span> Upload successful
+        </nz-tag>
+      </nz-card>
+    </nz-col>
+  </nz-row>
+
+  <nz-alert nzType="info" nzShowIcon nzMessage="Supported formats: Excel (.xlsx, .xls). Max size: 10MB."
+            style="margin-top: 16px"></nz-alert>
+</nz-card>

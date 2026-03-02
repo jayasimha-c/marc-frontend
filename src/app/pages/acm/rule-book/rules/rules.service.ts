@@ -99,4 +99,14 @@ export class RulesService {
   saveBpmnRuleMap(payload: any): Observable<any> {
     return this.http.post('bpmn/saveRuleMap', payload);
   }
+
+  // ── Upload ─────────────────────────────────────────────────
+
+  uploadRules(formData: FormData): Observable<any> {
+    return this.http.post('rules/uploadRules', formData);
+  }
+
+  uploadRuleObjects(formData: FormData, overwrite: boolean): Observable<any> {
+    return this.http.post(`ruleObjects/uploadRuleObjects?overwrite=${overwrite}`, formData);
+  }
 }

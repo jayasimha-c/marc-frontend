@@ -1,0 +1,41 @@
+<nz-card nzTitle="Dashboard Metrics" style="margin-bottom: 24px">
+  <div nz-row [nzGutter]="[16, 16]">
+    <div nz-col nzXs="24" nzSm="12" nzLg="6">
+      <app-statistics-card title="Total Controls" icon="safety-certificate" color="#1890ff"
+                           [value]="totalControls" description="Across all frameworks"
+                           [loading]="statsLoading"></app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzLg="6">
+      <app-statistics-card title="Frameworks" icon="file-text" color="#52c41a"
+                           [value]="uniqueFrameworks" description="Unique frameworks"
+                           [loading]="statsLoading"></app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzLg="6">
+      <app-statistics-card title="Depth Levels" icon="bar-chart" color="#722ed1"
+                           [value]="depthLevels" description="Hierarchical levels"
+                           [loading]="statsLoading"></app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzLg="6">
+      <app-statistics-card title="Average" icon="fund" color="#fa8c16"
+                           [value]="avgControlsPerFramework" description="Controls per framework"
+                           [loading]="statsLoading"></app-statistics-card>
+    </div>
+  </div>
+</nz-card>
+
+<app-advanced-table
+  [columns]="columns"
+  [data]="data"
+  [loading]="loading"
+  [serverSide]="true"
+  [total]="totalRecords"
+  (queryParamsChange)="onQueryParamsChange($event)"
+  title="Controls Report">
+</app-advanced-table>
+
+<!-- Description cell template: 2-line clamp with NG-ZORRO typography expand -->
+<ng-template #descriptionTpl let-row>
+  <span nz-typography nzEllipsis [nzEllipsisRows]="2" [nzContent]="row.description"
+        [nz-tooltip]="row.description" nzTooltipPlacement="topLeft">
+  </span>
+</ng-template>

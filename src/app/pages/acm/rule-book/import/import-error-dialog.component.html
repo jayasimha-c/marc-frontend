@@ -1,0 +1,18 @@
+<nz-alert nzType="warning" nzShowIcon
+         nzMessage="The following records were not imported due to validation errors:"
+         style="margin-bottom: 16px"></nz-alert>
+
+<nz-list nzSize="small" nzBordered style="max-height: 384px; overflow-y: auto">
+  <nz-list-item *ngFor="let message of data.errorMessages">
+    <span nz-icon nzType="exclamation-circle" nzTheme="outline" style="color: #f5222d; margin-right: 8px"></span>
+    {{ message }}
+  </nz-list-item>
+</nz-list>
+
+<nz-alert nzType="info" nzShowIcon
+         nzMessage="Please correct the above issues in your file and re-upload the affected records."
+         style="margin-top: 16px"></nz-alert>
+
+<div class="modal-footer">
+  <button nz-button nzType="primary" (click)="close()">Close</button>
+</div>

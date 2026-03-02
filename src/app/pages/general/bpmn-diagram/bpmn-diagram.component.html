@@ -1,0 +1,55 @@
+<div class="bpmn-page">
+  <!-- Header -->
+  <div class="bpmn-header">
+    <span class="bpmn-header-title">BPMN Diagram</span>
+    <div class="bpmn-header-actions">
+      <button nz-button nzType="default" (click)="openSavedBpmnDialog()">
+        <span nz-icon nzType="folder" nzTheme="outline"></span>
+        Open Existing
+      </button>
+      <button nz-button nzType="primary" (click)="createNewDiagram()">
+        <span nz-icon nzType="plus" nzTheme="outline"></span>
+        Create New
+      </button>
+      <button nz-button nzType="text" nz-dropdown [nzDropdownMenu]="saveMenu">
+        <span nz-icon nzType="more" nzTheme="outline"></span>
+      </button>
+      <nz-dropdown-menu #saveMenu="nzDropdownMenu">
+        <ul nz-menu>
+          <li nz-menu-item (click)="onSaveClick('save')">
+            <span nz-icon nzType="save" nzTheme="outline"></span> Save
+          </li>
+          <li nz-menu-item *ngIf="diagramId !== -1" (click)="onSaveClick('saveAs')">
+            <span nz-icon nzType="copy" nzTheme="outline"></span> Save As
+          </li>
+          <li nz-menu-item (click)="downloadSVG()">
+            <span nz-icon nzType="download" nzTheme="outline"></span> Download SVG
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+    </div>
+  </div>
+
+  <!-- Modeler Canvas -->
+  <div #bpmnModelerRef class="bpmn-canvas"></div>
+
+  <!-- Title display -->
+  <nz-alert *ngIf="diagramTitle || diagramId === -1"
+            nzType="info" nzShowIcon [nzBanner]="true"
+            [nzMessage]="'Title: ' + (diagramTitle || 'Untitled*')">
+  </nz-alert>
+
+  <!-- Mapped Rules Table -->
+  <div class="bpmn-rules-section">
+    <app-advanced-table
+      title="Mapped Rules"
+      [columns]="columns"
+      [data]="rulesData"
+      [totalRecords]="rulesTotal"
+      [showPagination]="false"
+      [showSearch]="false"
+      [showRefresh]="false"
+      emptyText="Click a task in the diagram to see mapped rules">
+    </app-advanced-table>
+  </div>
+</div>

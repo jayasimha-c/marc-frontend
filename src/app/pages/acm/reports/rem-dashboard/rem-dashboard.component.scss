@@ -1,0 +1,25 @@
+:host {
+  display: block;
+}
+
+.header-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  nz-form-item {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-controls {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+
+    nz-range-picker {
+      width: 100% !important;
+    }
+  }
+}

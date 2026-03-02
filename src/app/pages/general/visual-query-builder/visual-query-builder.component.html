@@ -1,0 +1,378 @@
+<div class="visual-query-builder">
+  <!-- Header Card -->
+  <nz-card style="margin-bottom: 16px">
+    <div style="display:flex; align-items:center; justify-content:space-between">
+      <div style="display:flex; align-items:center; gap:12px">
+        <h3 nz-typography style="margin:0">
+          {{ isEditMode ? 'Edit Query' : 'Visual Query Builder' }}
+          <span *ngIf="isEditMode && existingRuleData" style="font-size:14px; color:rgba(0,0,0,0.45); margin-left:8px">
+            ({{ existingRuleData.name }})
+          </span>
+        </h3>
+        <span style="color:rgba(0,0,0,0.45); font-size:13px">Drag tables from palette to canvas and connect them</span>
+      </div>
+      <nz-space>
+        <button *nzSpaceItem nz-button nzType="default" nzDanger (click)="clearCanvas()">
+          <span nz-icon nzType="close" nzTheme="outline"></span> Clear Canvas
+        </button>
+        <button *nzSpaceItem nz-button nzType="primary" (click)="saveQuery()">
+          <span nz-icon nzType="save" nzTheme="outline"></span> {{ isEditMode ? 'Update Query' : 'Save Query' }}
+        </button>
+      </nz-space>
+    </div>
+  </nz-card>
+
+  <!-- Builder Layout -->
+  <div class="builder-layout">
+    <!-- Left Panel: Table Palette -->
+    <div class="table-palette" [class.collapsed]="isLeftPanelCollapsed">
+      <button class="panel-toggle left-toggle" (click)="toggleLeftPanel()"
+              nz-tooltip [nzTooltipTitle]="isLeftPanelCollapsed ? 'Expand Panel' : 'Collapse Panel'">
+        <span nz-icon [nzType]="isLeftPanelCollapsed ? 'right' : 'left'" nzTheme="outline"></span>
+      </button>
+
+      <div class="palette-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+          <span style="font-weight:500; color:rgba(0,0,0,0.85)">SAP System</span>
+          <button nz-button nzType="text" nzSize="small" (click)="toggleLeftPanel()" nz-tooltip nzTooltipTitle="Close Panel">
+            <span nz-icon nzType="close" nzTheme="outline"></span>
+          </button>
+        </div>
+        <nz-form-item>
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="selectedSapSystem">
+              <nz-select [(ngModel)]="selectedSapSystem" nzPlaceHolder=" " nzShowSearch
+                         (ngModelChange)="onSapSystemSelect($event)">
+                <nz-option *ngFor="let system of sapSystemList" [nzValue]="system" [nzLabel]="system.destinationName"></nz-option>
+              </nz-select>
+              <label>SAP System</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="palette-section">
+        <span style="font-weight:500; color:rgba(0,0,0,0.85); display:block; margin-bottom:8px">Tables</span>
+        <nz-input-group [nzSuffix]="searchSuffix" style="width:100%">
+          <input nz-input [formControl]="searchControl" placeholder="Search tables"
+                 (keydown)="onTableSearchKeydown($event)">
+        </nz-input-group>
+        <ng-template #searchSuffix>
+          <span *ngIf="!isFiltering" nz-icon nzType="search" nzTheme="outline"></span>
+          <span *ngIf="isFiltering" nz-icon nzType="loading" nzTheme="outline"></span>
+        </ng-template>
+      </div>
+
+      <!-- Table List -->
+      <div class="table-list">
+        <div *ngFor="let table of filteredTables"
+             class="table-item"
+             draggable="true"
+             (dragstart)="onDragStart($event, table)"
+             (dragend)="onDragEnd($event)"
+             [attr.data-table-id]="table.id">
+          <div style="display:flex; align-items:center; gap:8px">
+            <span nz-icon nzType="table" nzTheme="outline" style="color:#1890ff"></span>
+            <span class="table-name">{{ table.tableName }}</span>
+            <button nz-button nzType="text" nzSize="small" style="margin-left:auto"
+                    (click)="refreshTable(table); $event.stopPropagation()"
+                    [disabled]="refreshingTableId === table.id"
+                    nz-tooltip nzTooltipTitle="Refresh fields from SAP">
+              <span *ngIf="refreshingTableId !== table.id" nz-icon nzType="reload" nzTheme="outline"></span>
+              <span *ngIf="refreshingTableId === table.id" nz-icon nzType="loading" nzTheme="outline"></span>
+            </button>
+          </div>
+          <div style="font-size:12px; color:rgba(0,0,0,0.45); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ table.description }}</div>
+          <nz-tag style="margin-top:4px">{{ table.fields?.length || 0 }} fields</nz-tag>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Canvas -->
+    <div class="canvas-area">
+      <div id="canvas-container" #canvas class="canvas-container"
+           (dragover)="onCanvasDragOver($event)"
+           (dragleave)="onCanvasDragLeave($event)"
+           (drop)="onCanvasDrop($event)">
+        <!-- Dropped Tables on Canvas -->
+        <div *ngFor="let node of canvasTables"
+             [id]="node.elementId"
+             class="canvas-table"
+             [style.left.px]="node.position.x"
+             [style.top.px]="node.position.y"
+             (click)="onTableClick(node)"
+             [class.selected]="selectedTable?.id === node.id">
+
+          <div class="canvas-table-header">
+            <div style="display:flex; align-items:center; gap:6px">
+              <span nz-icon nzType="table" nzTheme="outline" style="color:#1890ff"></span>
+              <span style="font-weight:600; font-size:12px">{{ node.table.tableName || node.table.name }}</span>
+            </div>
+            <button nz-button nzType="text" nzSize="small" nzDanger (click)="removeTable(node); $event.stopPropagation()">
+              <span nz-icon nzType="close" nzTheme="outline"></span>
+            </button>
+          </div>
+
+          <div class="canvas-table-body">
+            <div *ngIf="node.table.fields?.length > 20" style="margin-bottom:8px">
+              <nz-input-group [nzPrefix]="fieldSearchPrefix" [nzSuffix]="fieldSearchSuffix" nzSize="small">
+                <input nz-input [(ngModel)]="node.fieldSearchTerm" placeholder="Filter fields..."
+                       (ngModelChange)="onFieldSearch(node)">
+              </nz-input-group>
+              <ng-template #fieldSearchPrefix>
+                <span nz-icon nzType="search" nzTheme="outline"></span>
+              </ng-template>
+              <ng-template #fieldSearchSuffix>
+                <span *ngIf="node.fieldSearchTerm" nz-icon nzType="close" nzTheme="outline"
+                      style="cursor:pointer" (click)="clearFieldSearch(node); $event.stopPropagation()"></span>
+              </ng-template>
+              <div style="text-align:center; font-size:11px; color:rgba(0,0,0,0.45); margin-top:4px">
+                {{ getFilteredFields(node).length }} / {{ node.table.fields.length }} fields
+              </div>
+            </div>
+
+            <div class="field-list" [class.field-list-2-columns]="shouldUseTwoColumns(node)">
+              <div *ngFor="let field of getFilteredFields(node)"
+                   class="field-item"
+                   (contextmenu)="onFieldRightClick($event, node, field)"
+                   [class.has-filter]="hasFilterForField(node, field.fieldName)">
+                <label nz-checkbox [nzChecked]="node.selectedFields.includes(field.fieldName)"
+                              (nzCheckedChange)="toggleFieldSelection(node, field.fieldName)"
+                              (click)="$event.stopPropagation()">
+                  <span style="font-size:11px">{{ field.formattedFieldName || field.fieldName }}</span>
+                  <span *ngIf="field.isKey" nz-icon nzType="key" nzTheme="outline" style="font-size:10px; color:#faad14; margin-left:2px; vertical-align:middle"></span>
+                  <span *ngIf="hasFilterForField(node, field.fieldName)"
+                            nz-icon nzType="filter" nzTheme="outline"
+                            style="font-size:10px; color:#1890ff; margin-left:2px; vertical-align:middle"
+                            nz-tooltip [nzTooltipTitle]="getFilterTooltip(node, field.fieldName)"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Filters for this table -->
+            <div *ngIf="(node.extractionFilters && node.extractionFilters.rules.length > 0) ||
+                        (node.ruleFilters && node.ruleFilters.rules.length > 0)"
+                 class="table-filters">
+              <div *ngIf="node.extractionFilters && node.extractionFilters.rules.length > 0">
+                <div style="font-size:11px; font-weight:500; color:#1890ff; margin-bottom:4px">
+                  <span nz-icon nzType="filter" nzTheme="outline"></span> Extraction:
+                </div>
+                <nz-tag *ngFor="let rule of node.extractionFilters.rules; let i = index"
+                        nzColor="blue" nzMode="closeable" (nzOnClose)="removeExtractionFilterFromNode(node, i); $event.stopPropagation()">
+                  {{ formatFilterDisplay(rule) }}
+                </nz-tag>
+              </div>
+              <div *ngIf="node.ruleFilters && node.ruleFilters.rules.length > 0" style="margin-top:4px">
+                <div style="font-size:11px; font-weight:500; color:#fa8c16; margin-bottom:4px">
+                  <span nz-icon nzType="audit" nzTheme="outline"></span> Rules:
+                </div>
+                <nz-tag *ngFor="let rule of node.ruleFilters.rules; let i = index"
+                        nzColor="orange" nzMode="closeable" (nzOnClose)="removeRuleFilterFromNode(node, i); $event.stopPropagation()">
+                  {{ formatFilterDisplay(rule) }}
+                </nz-tag>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="canvasTables.length === 0" class="drop-zone-indicator">
+          <nz-empty nzNotFoundImage="simple"
+                    [nzNotFoundContent]="emptyContent"
+                    [nzNotFoundFooter]="emptyFooter">
+          </nz-empty>
+          <ng-template #emptyContent>Drag tables here to start building your query</ng-template>
+          <ng-template #emptyFooter>
+            <span style="color:rgba(0,0,0,0.45); font-size:12px">Maximum 5 tables &bull; No duplicates allowed</span>
+          </ng-template>
+        </div>
+
+        <!-- Table Count Indicator -->
+        <div *ngIf="canvasTables.length > 0" class="table-count-indicator">
+          <nz-tag [nzColor]="canvasTables.length >= 5 ? 'warning' : 'processing'">
+            <span nz-icon nzType="table" nzTheme="outline"></span>
+            {{ canvasTables.length }} / 5 tables
+            <span *ngIf="canvasTables.length >= 5">
+              &mdash; <span nz-icon nzType="warning" nzTheme="outline"></span> Maximum reached
+            </span>
+          </nz-tag>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Properties/Filters -->
+    <div class="properties-panel" [class.collapsed]="isRightPanelCollapsed">
+      <button class="panel-toggle right-toggle" (click)="toggleRightPanel()"
+              nz-tooltip [nzTooltipTitle]="isRightPanelCollapsed ? 'Expand Panel' : 'Collapse Panel'">
+        <span nz-icon [nzType]="isRightPanelCollapsed ? 'left' : 'right'" nzTheme="outline"></span>
+      </button>
+
+      <div class="panel-header">
+        <span style="font-weight:500; color:rgba(0,0,0,0.85)">Properties</span>
+        <button nz-button nzType="text" nzSize="small" (click)="toggleRightPanel()" nz-tooltip nzTooltipTitle="Close Panel">
+          <span nz-icon nzType="close" nzTheme="outline"></span>
+        </button>
+      </div>
+
+      <div *ngIf="selectedTable" class="panel-content">
+        <h4 style="margin:0 0 12px 0; font-size:13px; font-weight:600">{{ selectedTable.table.tableName || selectedTable.table.name }}</h4>
+
+        <nz-alert nzType="info" nzShowIcon [nzMessage]="filterRulesMsg" style="margin-bottom:12px"></nz-alert>
+        <ng-template #filterRulesMsg>
+          <strong>Filter Rules:</strong>
+          <ul style="margin:4px 0 0 16px; list-style:disc; padding:0">
+            <li><strong>Extraction:</strong> Source table only</li>
+            <li><strong>Rule:</strong> Selected fields only</li>
+          </ul>
+        </ng-template>
+
+        <!-- Extraction Filters Panel -->
+        <nz-collapse style="margin-bottom:12px">
+          <nz-collapse-panel [nzHeader]="extractionHeader" [nzActive]="true" [nzDisabled]="!isSourceTable(selectedTable)">
+            <ng-template #extractionHeader>
+              <span nz-icon nzType="filter" nzTheme="outline" style="color:#1890ff; margin-right:8px"></span>
+              <strong>Extraction Filters</strong>
+              <span *ngIf="!isSourceTable(selectedTable)" nz-icon nzType="warning" nzTheme="outline"
+                    style="margin-left:8px; color:#faad14"
+                    nz-tooltip nzTooltipTitle="Extraction filters only allowed on source table"></span>
+            </ng-template>
+
+            <div *ngIf="isSourceTable(selectedTable)">
+              <div *ngIf="selectedTable.extractionFilters && selectedTable.extractionFilters.rules.length > 0" style="display:flex; flex-wrap:wrap; gap:4px">
+                <nz-tag *ngFor="let rule of selectedTable.extractionFilters.rules; let i = index"
+                        nzColor="blue" nzMode="closeable" (nzOnClose)="removeExtractionFilter(i)">
+                  {{ formatFilterDisplay(rule) }}
+                </nz-tag>
+              </div>
+              <span *ngIf="!selectedTable.extractionFilters || selectedTable.extractionFilters.rules.length === 0"
+                    style="color:rgba(0,0,0,0.45); font-size:13px">No extraction filters defined</span>
+            </div>
+            <div *ngIf="!isSourceTable(selectedTable)">
+              <nz-alert nzType="warning" nzShowIcon
+                        nzMessage="Extraction filters can only be applied to the source table. Use Rule Filters instead."></nz-alert>
+            </div>
+          </nz-collapse-panel>
+        </nz-collapse>
+
+        <!-- Rule Filters Panel -->
+        <nz-collapse>
+          <nz-collapse-panel [nzHeader]="ruleHeader" [nzActive]="true">
+            <ng-template #ruleHeader>
+              <span nz-icon nzType="audit" nzTheme="outline" style="color:#fa8c16; margin-right:8px"></span>
+              <strong>Business Rule Filters</strong>
+            </ng-template>
+
+            <div *ngIf="selectedTable.ruleFilters && selectedTable.ruleFilters.rules.length > 0" style="display:flex; flex-wrap:wrap; gap:4px">
+              <nz-tag *ngFor="let rule of selectedTable.ruleFilters.rules; let i = index"
+                      nzColor="orange" nzMode="closeable" (nzOnClose)="removeRuleFilter(i)">
+                {{ formatFilterDisplay(rule) }}
+              </nz-tag>
+            </div>
+            <span *ngIf="!selectedTable.ruleFilters || selectedTable.ruleFilters.rules.length === 0"
+                  style="color:rgba(0,0,0,0.45); font-size:13px">No rule filters defined</span>
+          </nz-collapse-panel>
+        </nz-collapse>
+      </div>
+
+      <!-- Join Configuration -->
+      <div *ngIf="selectedConnection" class="panel-content">
+        <h4 style="margin:0 0 12px 0; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px">
+          <span nz-icon nzType="link" nzTheme="outline" style="color:#1890ff"></span> Join Configuration
+        </h4>
+
+        <nz-descriptions nzBordered nzSize="small" [nzColumn]="1" style="margin-bottom:12px">
+          <nz-descriptions-item nzTitle="Source Table">{{ selectedConnection.sourceTable }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Target Table">{{ selectedConnection.targetTable }}</nz-descriptions-item>
+        </nz-descriptions>
+
+        <nz-form-item style="width:100%; margin-bottom:12px">
+          <nz-form-control>
+            <div class="nz-float-label has-value">
+              <nz-select [(ngModel)]="selectedConnection.joinType"
+                        (ngModelChange)="updateJoinType(selectedConnection, $event)">
+                <nz-option nzValue="INNER" nzLabel="INNER JOIN"></nz-option>
+                <nz-option nzValue="LEFT" nzLabel="LEFT JOIN"></nz-option>
+                <nz-option nzValue="RIGHT" nzLabel="RIGHT JOIN"></nz-option>
+                <nz-option nzValue="FULL" nzLabel="FULL OUTER JOIN"></nz-option>
+              </nz-select>
+              <label>Join Type</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="width:100%; margin-bottom:12px">
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="selectedConnection.sourceField">
+              <nz-select [(ngModel)]="selectedConnection.sourceField" nzPlaceHolder=" " nzShowSearch
+                        (ngModelChange)="updateJoinFields(selectedConnection, $event, selectedConnection.targetField)">
+                <nz-option *ngFor="let field of getSourceTableNode(selectedConnection)?.table.fields"
+                          [nzValue]="field.fieldName"
+                          [nzLabel]="field.formattedFieldName || field.fieldName"></nz-option>
+              </nz-select>
+              <label>Source Field ({{ selectedConnection.sourceTable }})</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="width:100%; margin-bottom:12px">
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="selectedConnection.targetField">
+              <nz-select [(ngModel)]="selectedConnection.targetField" nzPlaceHolder=" " nzShowSearch
+                        (ngModelChange)="updateJoinFields(selectedConnection, selectedConnection.sourceField, $event)">
+                <nz-option *ngFor="let field of getTargetTableNode(selectedConnection)?.table.fields"
+                          [nzValue]="field.fieldName"
+                          [nzLabel]="field.formattedFieldName || field.fieldName"></nz-option>
+              </nz-select>
+              <label>Target Field ({{ selectedConnection.targetTable }})</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <div style="margin-top:12px">
+          <div style="font-size:12px; color:rgba(0,0,0,0.45); margin-bottom:4px">Join Condition:</div>
+          <code style="display:block; padding:8px 12px; background:#fafafa; border:1px solid #d9d9d9; border-radius:2px; font-size:12px; color:#1890ff">
+            {{ selectedConnection.sourceTable }}.{{ selectedConnection.sourceField || '?' }}
+            = {{ selectedConnection.targetTable }}.{{ selectedConnection.targetField || '?' }}
+          </code>
+        </div>
+
+        <nz-alert *ngIf="!selectedConnection.sourceField || !selectedConnection.targetField"
+                  nzType="warning" nzShowIcon style="margin-top:12px"
+                  nzMessage="Please select both source and target fields to complete the join."></nz-alert>
+      </div>
+
+      <div *ngIf="!selectedTable && !selectedConnection" style="padding:40px 16px; text-align:center">
+        <nz-empty nzNotFoundImage="simple" nzNotFoundContent="Select a table or connection to configure properties"></nz-empty>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Context Menu for Fields -->
+<div class="context-menu" *ngIf="contextMenuVisible"
+     [style.left.px]="contextMenuPosition.x" [style.top.px]="contextMenuPosition.y">
+  <div class="context-menu-header">
+    <span nz-icon nzType="unordered-list" nzTheme="outline"></span>
+    {{ contextMenuField?.formattedFieldName || contextMenuField?.fieldName }}
+  </div>
+  <nz-divider style="margin:0"></nz-divider>
+  <button class="context-menu-item" (click)="addExtractionFilterFromContext()"
+          *ngIf="isSourceTable(contextMenuNode)" [disabled]="!isSourceTable(contextMenuNode)">
+    <span nz-icon nzType="filter" nzTheme="outline" style="color:#1890ff"></span> Add Extraction Filter
+  </button>
+  <div *ngIf="!isSourceTable(contextMenuNode)" style="font-size:12px; padding:8px 16px; color:rgba(0,0,0,0.45); font-style:italic">
+    <span nz-icon nzType="info-circle" nzTheme="outline" style="vertical-align:middle"></span>
+    Extraction filter only available for source table
+  </div>
+  <button class="context-menu-item" (click)="addRuleFilterFromContext()">
+    <span nz-icon nzType="audit" nzTheme="outline" style="color:#fa8c16"></span> Add Business Rule Filter
+  </button>
+  <nz-divider style="margin:0"></nz-divider>
+  <button class="context-menu-item" (click)="viewFieldDetails()">
+    <span nz-icon nzType="info-circle" nzTheme="outline"></span> Field Details
+  </button>
+  <button class="context-menu-item" (click)="clearFieldFilters()"
+          *ngIf="hasFilterForField(contextMenuNode, contextMenuField?.fieldName)">
+    <span nz-icon nzType="close" nzTheme="outline" style="color:#ff4d4f"></span> Clear All Filters
+  </button>
+</div>
