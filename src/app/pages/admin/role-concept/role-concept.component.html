@@ -1,0 +1,305 @@
+<div class="role-concept__container">
+    <!-- Header -->
+    <div class="role-concept__header">
+        <div>
+            <h2>Role Concepts</h2>
+            <p>Define role naming conventions for {{ sapSystemName || 'this system' }}</p>
+        </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="role-concept__content">
+        <app-advanced-table
+            #agTable
+            [columns]="columns"
+            [actions]="tableActions"
+            [total]="totalRecords"
+            [loading]="loading"
+            [data]="concepts"
+            [serverSide]="true"
+            (queryParamsChange)="loadConcepts($event)"
+            (rowClick)="onRowClick($event)">
+        </app-advanced-table>
+    </div>
+</div>
+
+<!-- Edit Dialog -->
+<nz-modal
+    [(nzVisible)]="showDialog"
+    [nzTitle]="dialogMode === 'FromTemplate' ? 'Create from Template' : dialogMode + ' Concept'"
+    (nzOnCancel)="closeDialog()"
+    [nzFooter]="modalFooter"
+    [nzWidth]="'900px'"
+    [nzBodyStyle]="{ 'max-height': 'calc(90vh - 140px)', 'overflow-y': 'auto' }">
+    <ng-container *nzModalContent>
+        <form [formGroup]="conceptForm">
+            <ng-container *ngIf="dialogMode === 'FromTemplate'">
+                <!-- Template Selection Mode -->
+                <div nz-row [nzGutter]="16" class="mb-4">
+                    <div nz-col nzSpan="12">
+                        <nz-form-item>
+                            <nz-form-control>
+                                <div class="nz-float-label" [class.has-value]="conceptForm.get('templateId').value">
+                                    <nz-select formControlName="templateId" nzPlaceHolder=" " nzShowSearch>
+                                        <nz-option *ngFor="let template of templates" [nzValue]="template.id" [nzLabel]="template.name"></nz-option>
+                                    </nz-select>
+                                    <label>Select Template</label>
+                                </div>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
+
+                    <div nz-col nzSpan="12">
+                        <nz-form-item>
+                            <nz-form-control>
+                                <div class="nz-float-label" [class.has-value]="conceptForm.get('name').value">
+                                    <input nz-input placeholder=" " formControlName="name">
+                                    <label>Concept Name</label>
+                                </div>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
+                </div>
+            </ng-container>
+
+            <ng-container *ngIf="dialogMode !== 'FromTemplate'">
+                <!-- Custom Concept Mode -->
+                <div nz-row [nzGutter]="16" class="mb-4">
+                    <div nz-col nzSpan="12">
+                        <nz-form-item>
+                            <nz-form-control>
+                                <div class="nz-float-label" [class.has-value]="conceptForm.get('name').value">
+                                    <input nz-input placeholder=" " formControlName="name">
+                                    <label>Concept Name</label>
+                                </div>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
+
+                    <div nz-col nzSpan="12">
+                        <nz-form-item>
+                            <nz-form-control>
+                                <div class="nz-float-label" [class.has-value]="conceptForm.get('formatType').value">
+                                    <nz-select formControlName="formatType" nzPlaceHolder=" " nzShowSearch>
+                                        <nz-option *ngFor="let type of formatTypes" [nzValue]="type.value" [nzLabel]="type.label"></nz-option>
+                                    </nz-select>
+                                    <label>Format Type</label>
+                                </div>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
+
+                    <div nz-col nzSpan="12">
+                        <nz-form-item>
+                            <nz-form-control>
+                                <div class="nz-float-label" [class.has-value]="conceptForm.get('description').value">
+                                    <input nz-input placeholder=" " formControlName="description">
+                                    <label>Description</label>
+                                </div>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
+
+                    <div nz-col nzSpan="12">
+                        <ng-container *ngIf="conceptForm.get('formatType').value === 'DELIMITER_BASED'; else totalLengthTpl">
+                            <nz-form-item>
+                                <nz-form-control>
+                                    <div class="nz-float-label" [class.has-value]="conceptForm.get('delimiter').value">
+                                        <input nz-input placeholder=" " formControlName="delimiter">
+                                        <label>Delimiter</label>
+                                    </div>
+                                </nz-form-control>
+                            </nz-form-item>
+                        </ng-container>
+                        <ng-template #totalLengthTpl>
+                            <nz-form-item>
+                                <nz-form-control>
+                                    <div class="nz-float-label" [class.has-value]="conceptForm.get('totalLength').value">
+                                        <input nz-input type="number" placeholder=" " formControlName="totalLength">
+                                        <label>Total Length</label>
+                                    </div>
+                                </nz-form-control>
+                            </nz-form-item>
+                        </ng-template>
+                    </div>
+                </div>
+
+                <label nz-checkbox formControlName="isActive" class="mb-4 block">Active</label>
+
+                <!-- Segments Section -->
+                <div class="segments__container">
+                    <div class="segments__header">
+                        <h4>Segments</h4>
+                        <button nz-button nzType="default" (click)="addSegment()">
+                            <span nz-icon nzType="plus" nzTheme="outline"></span>
+                            Add Segment
+                        </button>
+                    </div>
+
+                    <ng-container *ngIf="segmentsArray.length === 0">
+                        <p class="segments__empty">No segments defined. Click "Add Segment" to start.</p>
+                    </ng-container>
+
+                    <ng-container *ngFor="let segment of segmentsArray.controls; let i = index">
+                        <div class="segment__item" [formGroup]="$any(segment)">
+                            <div class="segment__item-header">
+                                <span class="font-medium">Segment {{ i + 1 }}</span>
+                                <div class="segment__actions">
+                                    <button nz-button nzType="text" nzShape="circle" (click)="moveSegmentUp(i)" [disabled]="i === 0" nz-tooltip nzTooltipTitle="Move Up">
+                                        <span nz-icon nzType="arrow-up" nzTheme="outline"></span>
+                                    </button>
+                                    <button nz-button nzType="text" nzShape="circle" (click)="moveSegmentDown(i)" [disabled]="i === segmentsArray.length - 1" nz-tooltip nzTooltipTitle="Move Down">
+                                        <span nz-icon nzType="arrow-down" nzTheme="outline"></span>
+                                    </button>
+                                    <button nz-button nzType="text" nzShape="circle" nzDanger (click)="removeSegment(i)" nz-tooltip nzTooltipTitle="Remove">
+                                        <span nz-icon nzType="delete" nzTheme="outline"></span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div nz-row [nzGutter]="12">
+                                <div nz-col nzSpan="8">
+                                    <nz-form-item>
+                                        <nz-form-control>
+                                            <div class="nz-float-label" [class.has-value]="segment.get('segmentName').value">
+                                                <input nz-input placeholder=" " formControlName="segmentName">
+                                                <label>Segment Name</label>
+                                            </div>
+                                        </nz-form-control>
+                                    </nz-form-item>
+                                </div>
+
+                                <div nz-col nzSpan="8">
+                                    <nz-form-item>
+                                        <nz-form-control>
+                                            <div class="nz-float-label" [class.has-value]="segment.get('segmentType').value">
+                                                <nz-select formControlName="segmentType" nzPlaceHolder=" " nzShowSearch>
+                                                    <nz-option *ngFor="let type of segmentTypes" [nzValue]="type.value" [nzLabel]="type.label"></nz-option>
+                                                </nz-select>
+                                                <label>Type</label>
+                                            </div>
+                                        </nz-form-control>
+                                    </nz-form-item>
+                                </div>
+
+                                <ng-container *ngIf="conceptForm.get('formatType').value === 'POSITION_BASED'">
+                                    <div nz-col nzSpan="4">
+                                        <nz-form-item>
+                                            <nz-form-control>
+                                                <div class="nz-float-label" [class.has-value]="segment.get('startPosition').value">
+                                                    <input nz-input type="number" placeholder=" " formControlName="startPosition" min="1">
+                                                    <label>Start Pos</label>
+                                                </div>
+                                            </nz-form-control>
+                                        </nz-form-item>
+                                    </div>
+                                    <div nz-col nzSpan="4">
+                                        <nz-form-item>
+                                            <nz-form-control>
+                                                <div class="nz-float-label" [class.has-value]="segment.get('length').value">
+                                                    <input nz-input type="number" placeholder=" " formControlName="length" min="1">
+                                                    <label>Length</label>
+                                                </div>
+                                            </nz-form-control>
+                                        </nz-form-item>
+                                    </div>
+                                </ng-container>
+                            </div>
+
+                            <!-- Type-specific fields -->
+                            <ng-container [ngSwitch]="segment.get('segmentType').value">
+                                <ng-container *ngSwitchCase="'ENUM'">
+                                    <div nz-row [nzGutter]="12" class="mt-2">
+                                        <div nz-col nzSpan="12">
+                                            <nz-form-item>
+                                                <nz-form-control>
+                                                    <div class="nz-float-label" [class.has-value]="segment.get('enumSetId').value">
+                                                        <nz-select formControlName="enumSetId" nzPlaceHolder=" " nzShowSearch>
+                                                            <nz-option [nzValue]="null" nzLabel="-- Custom Values --"></nz-option>
+                                                            <nz-option *ngFor="let es of enumSets" [nzValue]="es.id" [nzLabel]="es.name"></nz-option>
+                                                        </nz-select>
+                                                        <label>Enum Set</label>
+                                                    </div>
+                                                </nz-form-control>
+                                            </nz-form-item>
+                                        </div>
+                                        <div nz-col nzSpan="12">
+                                            <nz-form-item>
+                                                <nz-form-control>
+                                                    <div class="nz-float-label" [class.has-value]="segment.get('allowedValues').value">
+                                                        <input nz-input placeholder=" " formControlName="allowedValues">
+                                                        <label>Allowed Values</label>
+                                                    </div>
+                                                </nz-form-control>
+                                            </nz-form-item>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                                <ng-container *ngSwitchCase="'FREE_TEXT'">
+                                    <div nz-row [nzGutter]="12" class="mt-2">
+                                        <div nz-col nzSpan="12">
+                                            <nz-form-item>
+                                                <nz-form-control>
+                                                    <div class="nz-float-label" [class.has-value]="segment.get('minLength').value">
+                                                        <input nz-input type="number" placeholder=" " formControlName="minLength" min="0">
+                                                        <label>Min Length</label>
+                                                    </div>
+                                                </nz-form-control>
+                                            </nz-form-item>
+                                        </div>
+                                        <div nz-col nzSpan="12">
+                                            <nz-form-item>
+                                                <nz-form-control>
+                                                    <div class="nz-float-label" [class.has-value]="segment.get('maxLength').value">
+                                                        <input nz-input type="number" placeholder=" " formControlName="maxLength" min="1">
+                                                        <label>Max Length</label>
+                                                    </div>
+                                                </nz-form-control>
+                                            </nz-form-item>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                                <ng-container *ngSwitchCase="'PATTERN'">
+                                    <div nz-row class="mt-2">
+                                        <div nz-col nzSpan="24">
+                                            <nz-form-item>
+                                                <nz-form-control>
+                                                    <div class="nz-float-label" [class.has-value]="segment.get('regexPattern').value">
+                                                        <input nz-input placeholder=" " formControlName="regexPattern">
+                                                        <label>Regex Pattern</label>
+                                                    </div>
+                                                </nz-form-control>
+                                            </nz-form-item>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                            </ng-container>
+
+                            <div nz-row [nzGutter]="12" class="mt-2" style="align-items: center">
+                                <div nz-col nzSpan="12">
+                                    <label nz-checkbox formControlName="isRequired">Required</label>
+                                </div>
+                                <div nz-col nzSpan="12">
+                                    <nz-form-item style="margin-bottom:0">
+                                        <nz-form-control>
+                                            <div class="nz-float-label" [class.has-value]="segment.get('errorMessage').value">
+                                                <input nz-input placeholder=" " formControlName="errorMessage">
+                                                <label>Error Message</label>
+                                            </div>
+                                        </nz-form-control>
+                                    </nz-form-item>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </ng-container>
+        </form>
+    </ng-container>
+    <ng-template #modalFooter>
+        <button nz-button nzType="default" (click)="closeDialog()">Cancel</button>
+        <button nz-button nzType="primary" (click)="saveConcept()">
+            {{ dialogMode === 'FromTemplate' ? 'Create' : 'Save' }}
+        </button>
+    </ng-template>
+</nz-modal>

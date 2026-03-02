@@ -1,0 +1,55 @@
+<app-page-panel header="License Management Rules">
+    <div nz-row nzJustify="end" style="margin-bottom: 12px;">
+        <nz-space>
+            <button *nzSpaceItem nz-button nzType="primary" (click)="save()" [disabled]="!editMode">
+                <span nz-icon nzType="save"></span> Save
+            </button>
+            <button *nzSpaceItem nz-button (click)="toggleEdit()">
+                <span nz-icon nzType="edit"></span> Edit
+            </button>
+            <button *nzSpaceItem nz-button (click)="cancel()">
+                <span nz-icon nzType="close-circle"></span> Cancel
+            </button>
+            <button *nzSpaceItem nz-button (click)="addRow()">
+                <span nz-icon nzType="plus-circle"></span> Add Row
+            </button>
+        </nz-space>
+    </div>
+
+    <nz-table #rulesTable [nzData]="data" nzSize="small" [nzFrontPagination]="false"
+        [nzShowPagination]="false" [nzLoading]="loading" nzBordered>
+        <thead>
+            <tr>
+                <th nzWidth="40%">Select Rule</th>
+                <th nzWidth="60%">Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of rulesTable.data">
+                <td>
+                    <ng-container *ngIf="editMode; else descView">
+                        <nz-select [(ngModel)]="row.description" style="width: 100%;" nzShowSearch
+                            nzAllowClear nzPlaceHolder="Select Rule..."
+                            (ngModelChange)="onDescriptionChange(row)">
+                            <nz-option *ngFor="let opt of ruleDescriptions" [nzValue]="opt" [nzLabel]="opt"></nz-option>
+                        </nz-select>
+                    </ng-container>
+                    <ng-template #descView>{{ row.description }}</ng-template>
+                </td>
+                <td>
+                    <ng-container *ngIf="editMode; else valView">
+                        <ng-container *ngIf="getValueOptions(row.description) as options; else textInput">
+                            <nz-select [(ngModel)]="row.value" style="width: 100%;" nzShowSearch nzAllowClear>
+                                <nz-option *ngFor="let opt of options" [nzValue]="opt" [nzLabel]="opt"></nz-option>
+                            </nz-select>
+                        </ng-container>
+                        <ng-template #textInput>
+                            <input nz-input [(ngModel)]="row.value" />
+                        </ng-template>
+                    </ng-container>
+                    <ng-template #valView>{{ row.value }}</ng-template>
+                </td>
+            </tr>
+        </tbody>
+    </nz-table>
+</app-page-panel>

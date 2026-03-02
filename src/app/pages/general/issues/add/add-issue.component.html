@@ -1,0 +1,67 @@
+<form nz-form [formGroup]="form" nzLayout="vertical">
+    <nz-form-item>
+        <nz-form-label nzRequired>Issue Type</nz-form-label>
+        <nz-form-control [nzErrorTip]="issueTypeError">
+            <nz-select formControlName="issueTypeId" nzPlaceHolder="Select an Issue Type" nzShowSearch>
+                <nz-option *ngIf="isLoadingIssueTypes" nzDisabled nzCustomContent nzValue="loading"
+                    nzLabel="Loading...">
+                    <div class="flex items-center gap-2">
+                        <span nz-icon nzType="loading" nzTheme="outline"></span>
+                        <span>Loading issue types...</span>
+                    </div>
+                </nz-option>
+                <nz-option *ngFor="let type of issueTypes" [nzValue]="type.id" [nzLabel]="type.name" nzCustomContent>
+                    <div class="flex items-center gap-2">
+                        <span nz-icon [nzType]="getIssueTypeIcon(type.name)" nzTheme="outline" class="text-base"></span>
+                        <span>{{ type.name }}</span>
+                    </div>
+                </nz-option>
+            </nz-select>
+        </nz-form-control>
+    </nz-form-item>
+    <ng-template #issueTypeError let-control>
+        <ng-container *ngIf="control.hasError('required')">Please select an issue type.</ng-container>
+    </ng-template>
+
+    <nz-form-item>
+        <nz-form-label nzRequired>Title</nz-form-label>
+        <nz-form-control [nzErrorTip]="titleError">
+            <input nz-input placeholder="Title" formControlName="title" />
+        </nz-form-control>
+    </nz-form-item>
+    <ng-template #titleError let-control>
+        <ng-container *ngIf="control.hasError('required')">Please enter a title.</ng-container>
+    </ng-template>
+
+    <nz-form-item>
+        <nz-form-label>Description</nz-form-label>
+        <nz-form-control>
+            <textarea nz-input placeholder="Description" formControlName="description"
+                [nzAutosize]="{ minRows: 5, maxRows: 10 }"></textarea>
+        </nz-form-control>
+    </nz-form-item>
+
+    <!-- AI Enhancement Component is missing in target shared library -->
+    <!--
+    <div *appAiFeature="'featureIssueDescription'" class="mb-3">
+        <div class="flex items-center gap-2 mb-2">
+            <app-ai-action-button feature="featureIssueDescription" label="AI Enhance" icon="bulb"
+                [prompt]="buildAiPrompt()" [systemPrompt]="aiSystemPrompt" (aiResponse)="onAiResponse($event)">
+            </app-ai-action-button>
+            <button *ngIf="aiEnhancedDescription" nz-button nzType="default" (click)="applyAiDescription()">
+                <span nz-icon nzType="check" nzTheme="outline"></span>
+                Apply to Description
+            </button>
+        </div>
+        <app-ai-response-panel *ngIf="aiEnhancedDescription" [response]="aiEnhancedDescription"
+            title="AI Enhanced Description" [showCopy]="true" [showTimestamp]="true" [responseTimeMs]="aiResponseTime">
+        </app-ai-response-panel>
+    </div>
+    -->
+</form>
+
+<!-- Footer -->
+<div class="flex justify-end gap-3 mt-4 pt-4 border-t">
+    <button nz-button nzType="default" (click)="modal.close()">Close</button>
+    <button nz-button nzType="primary" (click)="save()">Save</button>
+</div>

@@ -1,0 +1,130 @@
+<nz-card [nzBordered]="false">
+  <!-- Header -->
+  <div class="explorer__header">
+    <div class="explorer__title">
+      <span nz-icon nzType="cloud" nzTheme="outline" class="explorer__title-icon"></span>
+      <div>
+        <h4 nz-typography style="margin: 0;">ServiceNow Data Explorer</h4>
+        <span class="explorer__subtitle">Select a ServiceNow system to explore data</span>
+      </div>
+    </div>
+    <nz-select
+      style="width: 280px;"
+      nzPlaceHolder="Select a System"
+      nzShowSearch
+      [(ngModel)]="selectedSystemId"
+      (ngModelChange)="onSystemChange()">
+      <nz-option *ngFor="let system of systems" [nzValue]="system.id" [nzLabel]="system.destinationName"></nz-option>
+    </nz-select>
+  </div>
+
+  <!-- Loading -->
+  <nz-spin *ngIf="loading && !selectedSystemId" [nzSpinning]="true" style="min-height: 300px;"></nz-spin>
+
+  <!-- No Systems -->
+  <nz-empty *ngIf="!loading && systems.length === 0"
+    nzNotFoundContent="No ServiceNow Systems Found"
+    [nzNotFoundFooter]="noSystemFooter">
+  </nz-empty>
+  <ng-template #noSystemFooter>
+    <span>Add a ServiceNow system in Administration &gt; Systems first.</span>
+  </ng-template>
+
+  <!-- Data Content -->
+  <div *ngIf="selectedSystemId">
+    <nz-tabset [(nzSelectedIndex)]="activeTab" (nzSelectedIndexChange)="onTabChange($event)" [nzAnimated]="false">
+
+      <!-- Users Tab -->
+      <nz-tab nzTitle="Users">
+        <app-advanced-table
+          title="Users"
+          [data]="usersData"
+          [columns]="usersColumns"
+          [loading]="usersLoading"
+          [total]="usersTotal"
+          [serverSide]="true"
+          [showSearch]="true"
+          size="small"
+          (queryParamsChange)="onUsersQueryChange($event)"
+          (rowClick)="onUserRowClick($event)">
+        </app-advanced-table>
+      </nz-tab>
+
+      <!-- Roles Tab -->
+      <nz-tab nzTitle="Roles">
+        <app-advanced-table
+          title="Roles"
+          [data]="rolesData"
+          [columns]="rolesColumns"
+          [loading]="rolesLoading"
+          [total]="rolesTotal"
+          [serverSide]="true"
+          [showSearch]="true"
+          size="small"
+          (queryParamsChange)="onRolesQueryChange($event)">
+        </app-advanced-table>
+      </nz-tab>
+
+      <!-- Groups Tab -->
+      <nz-tab nzTitle="Groups">
+        <app-advanced-table
+          title="Groups"
+          [data]="groupsData"
+          [columns]="groupsColumns"
+          [loading]="groupsLoading"
+          [total]="groupsTotal"
+          [serverSide]="true"
+          [showSearch]="true"
+          size="small"
+          (queryParamsChange)="onGroupsQueryChange($event)">
+        </app-advanced-table>
+      </nz-tab>
+
+    </nz-tabset>
+  </div>
+</nz-card>
+
+<!-- User Detail Side Panel -->
+<app-side-panel #userPanel title="User Details" width="480px" (closed)="selectedUser = null">
+  <ng-container *ngIf="selectedUser">
+    <nz-descriptions [nzColumn]="1" nzSize="small" nzBordered>
+      <nz-descriptions-item nzTitle="Username">{{ selectedUser.userName }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Full Name">{{ selectedUser.fullName }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Email">{{ selectedUser.email || '—' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Department">{{ selectedUser.department || '—' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Title">{{ selectedUser.title || '—' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Status">
+        <nz-tag [nzColor]="selectedUser.active ? 'success' : 'error'">{{ selectedUser.statusDisplay }}</nz-tag>
+      </nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Manager">{{ selectedUser.manager || '—' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Location">{{ selectedUser.location || '—' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Company">{{ selectedUser.company || '—' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Employee #">{{ selectedUser.employeeNumber || '—' }}</nz-descriptions-item>
+    </nz-descriptions>
+
+    <nz-divider [nzText]="rolesDivider"></nz-divider>
+    <ng-template #rolesDivider>
+      <span nz-icon nzType="key" nzTheme="outline"></span> Assigned Roles ({{ userRoles.length }})
+    </ng-template>
+
+    <nz-spin [nzSpinning]="userRolesLoading">
+      <nz-table #rolesTable [nzData]="userRoles" [nzShowPagination]="false" nzSize="small" [nzFrontPagination]="false">
+        <thead>
+          <tr>
+            <th>Role Name</th>
+            <th nzWidth="80px">Inherited</th>
+            <th nzWidth="80px">State</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let role of rolesTable.data">
+            <td>{{ role.roleName }}</td>
+            <td>{{ role.inheritedDisplay }}</td>
+            <td>{{ role.state || '—' }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+      <nz-empty *ngIf="!userRolesLoading && userRoles.length === 0" nzNotFoundContent="No roles assigned"></nz-empty>
+    </nz-spin>
+  </ng-container>
+</app-side-panel>

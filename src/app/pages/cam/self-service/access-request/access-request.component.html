@@ -1,0 +1,128 @@
+<app-page-panel header="Request SAP Access">
+
+    <!-- Search Bar -->
+    <nz-card class="mb-4" nzSize="small">
+        <div nz-row [nzGutter]="16" nzAlign="middle">
+            <div nz-col nzFlex="auto">
+                <nz-input-group [nzPrefix]="searchIcon">
+                    <input nz-input [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange($event)"
+                        placeholder="Search roles..." />
+                </nz-input-group>
+                <ng-template #searchIcon><span nz-icon nzType="search"></span></ng-template>
+            </div>
+            <div nz-col nzFlex="220px">
+                <nz-select [(ngModel)]="selectedSystem" (ngModelChange)="filterBySystem($event)"
+                    nzPlaceHolder="Select SAP System" nzAllowClear style="width:100%">
+                    <nz-option *ngFor="let sys of availableSystems" [nzValue]="sys.id"
+                        [nzLabel]="sys.destinationName || sys.name || sys.sapSystem"></nz-option>
+                </nz-select>
+            </div>
+        </div>
+    </nz-card>
+
+    <div nz-row [nzGutter]="16">
+
+        <!-- Left: Available Roles -->
+        <div nz-col [nzXs]="24" [nzLg]="16">
+            <nz-card [nzTitle]="rolesHeader" [nzBodyStyle]="{'padding': '0'}">
+                <ng-template #rolesHeader>
+                    Available Roles
+                    <nz-tag style="margin-left:8px">{{ filteredRoles.length }} found</nz-tag>
+                </ng-template>
+
+                <nz-empty *ngIf="!isLoading && filteredRoles.length === 0"
+                    style="padding:40px 0"
+                    [nzNotFoundContent]="!selectedSystem ? 'Select a SAP system to browse available roles' : 'No roles found'">
+                </nz-empty>
+
+                <nz-spin [nzSpinning]="isLoading">
+                    <nz-table *ngIf="filteredRoles.length > 0"
+                        #roleTable [nzData]="filteredRoles" [nzShowPagination]="true"
+                        [nzPageSize]="15" [nzScroll]="{ y: '460px' }" nzSize="small">
+                        <thead>
+                            <tr>
+                                <th nzWidth="36px"></th>
+                                <th>Role Name</th>
+                                <th nzWidth="140px">System</th>
+                                <th nzWidth="130px">Module</th>
+                                <th nzWidth="70px" nzAlign="center">Roles</th>
+                                <th nzWidth="90px" nzAlign="center">Risk</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let role of roleTable.data" style="cursor:pointer"
+                                (click)="toggleRole(role)">
+                                <td nzAlign="center" (click)="$event.stopPropagation()">
+                                    <label nz-checkbox [ngModel]="role.selected"
+                                        (ngModelChange)="toggleRole(role)"></label>
+                                </td>
+                                <td>
+                                    <strong>{{ role.name }}</strong>
+                                    <br><small>{{ role.description }}</small>
+                                </td>
+                                <td>{{ role.system }}</td>
+                                <td>{{ role.module }}</td>
+                                <td nzAlign="center">{{ role.userCount }}</td>
+                                <td nzAlign="center">
+                                    <nz-tag [nzColor]="getRiskColor(role.riskLevel)">{{ role.riskLevel }}</nz-tag>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </nz-table>
+                </nz-spin>
+            </nz-card>
+        </div>
+
+        <!-- Right: Request Summary -->
+        <div nz-col [nzXs]="24" [nzLg]="8">
+            <nz-card nzTitle="Your Access Request">
+
+                <div style="margin-bottom:8px">
+                    <strong>Selected Roles</strong>
+                    <nz-tag style="float:right">{{ selectedRoles.length }} / {{ maxRolesPerRequest }}</nz-tag>
+                </div>
+
+                <nz-empty *ngIf="selectedRoles.length === 0" nzNotFoundImage="simple"
+                    nzNotFoundContent="Select roles from the left panel">
+                </nz-empty>
+
+                <nz-list *ngIf="selectedRoles.length > 0" nzSize="small" nzBordered
+                    style="max-height:280px;overflow-y:auto;margin-bottom:8px">
+                    <nz-list-item *ngFor="let role of selectedRoles">
+                        <nz-list-item-meta [nzTitle]="role.name"
+                            [nzDescription]="role.system + (role.catalogueName ? ' | ' + role.catalogueName : '')">
+                        </nz-list-item-meta>
+                        <ul nz-list-item-actions>
+                            <nz-list-item-action>
+                                <button nz-button nzType="text" nzSize="small" nzDanger
+                                    (click)="removeSelectedRole(role)">
+                                    <span nz-icon nzType="close"></span>
+                                </button>
+                            </nz-list-item-action>
+                        </ul>
+                    </nz-list-item>
+                </nz-list>
+
+                <button *ngIf="selectedRoles.length > 0" nz-button nzType="text" nzDanger nzBlock
+                    (click)="clearSelection()">
+                    <span nz-icon nzType="close-circle"></span> Clear All
+                </button>
+
+                <nz-divider></nz-divider>
+
+                <nz-descriptions nzSize="small" [nzColumn]="1" nzBordered>
+                    <nz-descriptions-item nzTitle="Total Roles">{{ selectedRoles.length }}</nz-descriptions-item>
+                    <nz-descriptions-item nzTitle="Systems">{{ selectedSystemCount }}</nz-descriptions-item>
+                </nz-descriptions>
+
+                <button nz-button nzType="primary" nzBlock style="margin-top:16px"
+                    [disabled]="selectedRoles.length === 0 || submitting" [nzLoading]="submitting"
+                    (click)="submitRequest()">
+                    <span nz-icon nzType="send"></span> Submit Request
+                </button>
+
+            </nz-card>
+        </div>
+    </div>
+
+</app-page-panel>

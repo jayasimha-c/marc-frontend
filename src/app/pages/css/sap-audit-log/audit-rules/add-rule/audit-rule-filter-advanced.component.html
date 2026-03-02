@@ -1,0 +1,100 @@
+<nz-collapse>
+  <nz-collapse-panel [nzHeader]="panelHeaderTpl" [nzActive]="false">
+    <ng-template #panelHeaderTpl>
+      @if (matchMode === MatchMode.WHITELIST) {
+        <span><strong>Whitelist</strong> - Audit logs that will be ignored</span>
+      } @else if (matchMode === MatchMode.BLACKLIST) {
+        <span><strong>Blacklist</strong> - Audit logs that immediately cause a violation</span>
+      } @else if (matchMode === MatchMode.RESET) {
+        <span><strong>Reset Condition</strong> - Audit logs that reset the condition counter</span>
+      } @else {
+        <span><strong>Advanced Filters</strong> - Custom filters for the audit log</span>
+      }
+    </ng-template>
+
+    <form [formGroup]="form" class="flex flex-col gap-2 mt-2">
+      <section class="flex gap-5">
+        <nz-form-item class="self-start" style="min-width: 20em;">
+          <nz-form-control [nzErrorTip]="'Field is required'">
+            <div class="nz-float-label" [class.has-value]="form.get('field')?.value">
+              <nz-select formControlName="field" nzPlaceHolder=" " nzShowSearch>
+                <nz-option *ngFor="let entry of fieldNames" [nzValue]="entry[0]"
+                  [nzLabel]="entry[1]"></nz-option>
+              </nz-select>
+              <label>Log field</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item class="self-start" style="min-width: 20em;">
+          <nz-form-control [nzErrorTip]="'Condition Type is required'">
+            <div class="nz-float-label" [class.has-value]="form.get('conditionType')?.value">
+              <nz-select formControlName="conditionType" nzPlaceHolder=" " nzShowSearch>
+                <nz-option *ngFor="let entry of conditionTypeOptions" [nzValue]="entry[0]"
+                  [nzLabel]="entry[1]"></nz-option>
+              </nz-select>
+              <label>Condition Type</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <div class="flex gap-2">
+          <nz-form-item class="w-80">
+            <nz-form-control [nzErrorTip]="'Value is required'">
+              <div class="nz-float-label" [class.has-value]="form.get('commaSeparatedValues')?.value">
+                <input nz-input placeholder=" " formControlName="commaSeparatedValues"
+                  [nzAutocomplete]="auto" />
+                <label>Value(s)</label>
+              </div>
+              <small *ngIf="canAddValues" class="text-gray-400 text-xs">Use comma to separate multiple
+                values.</small>
+              <nz-autocomplete #auto (selectionChange)="onOptionSelected($event.nzValue)">
+                <nz-auto-optgroup *ngIf="preSavedValues.length > 0" nzLabel="Pre-saved Values">
+                  <nz-auto-option *ngFor="let entry of preSavedValues | slice:0:5" [nzValue]="entry"
+                    [nzLabel]="entry.name">{{ entry.name }}</nz-auto-option>
+                </nz-auto-optgroup>
+                <nz-auto-optgroup *ngIf="(filteredOptions | async)?.length" nzLabel="Suggestions">
+                  <nz-auto-option *ngFor="let option of filteredOptions | async" [nzValue]="option"
+                    [nzLabel]="option">{{ option }}</nz-auto-option>
+                </nz-auto-optgroup>
+              </nz-autocomplete>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <button nz-button nzType="primary" class="self-end mb-7" (click)="onAddCondition()">Add
+          Condition</button>
+      </section>
+
+      <div class="table-scrollable">
+        <nz-table #advFilterTable [nzData]="displayFilters" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th>Value</th>
+              <th>Audit Log Field</th>
+              <th>Type</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let condition of advFilterTable.data">
+              <td>
+                <span *ngIf="!condition.isWhiteList">{{ condition.value }}</span>
+                <span *ngIf="condition.isWhiteList" class="text-blue-600 cursor-pointer hover:underline"
+                  (click)="showWhiteListModal(condition)">{{ condition.value }}</span>
+              </td>
+              <td>{{ condition.field }}</td>
+              <td>{{ sapRuleConditionTypeNames[condition.conditionType] }}</td>
+              <td class="shrink">
+                <button nz-button nzType="default" nzSize="small" (click)="onDelete(condition)">Delete</button>
+              </td>
+            </tr>
+            <tr *ngIf="advFilterTable.data.length === 0">
+              <td colspan="4">No conditions created yet.</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </form>
+  </nz-collapse-panel>
+</nz-collapse>

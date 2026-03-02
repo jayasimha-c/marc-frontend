@@ -1,0 +1,108 @@
+<div style="padding: 16px;">
+  <!-- Header -->
+  <nz-card style="margin-bottom: 16px;">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button nz-button nzType="text" nzSize="small" (click)="goBack()">
+          <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+        </button>
+        <div>
+          <h3 style="margin: 0 0 4px; font-size: 18px; font-weight: 600;">Security Event Logs</h3>
+          <p style="margin: 0; color: rgba(0,0,0,0.45); font-size: 13px;">Detailed log of all security events across systems</p>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <nz-select [(ngModel)]="selectedSystemId" nzSize="small" style="min-width: 160px;"
+                   nzPlaceHolder="All Systems" (ngModelChange)="onSystemChange()">
+          <nz-option nzValue="-1" nzLabel="All Systems"></nz-option>
+          <nz-option *ngFor="let s of sapSystems" [nzValue]="s.id + ''" [nzLabel]="s.destinationName"></nz-option>
+        </nz-select>
+        <nz-range-picker nzSize="small" [(ngModel)]="dateRange" (ngModelChange)="onDateRangeChange()"></nz-range-picker>
+        <nz-button-group>
+          <button *ngFor="let p of datePresets" nz-button nzSize="small"
+                  [nzType]="activePreset === p.days ? 'primary' : 'default'"
+                  (click)="setPreset(p.days)">{{ p.label }}</button>
+        </nz-button-group>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Event Logs Table -->
+  <nz-card nzSize="small">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+      <span style="font-weight: 600; font-size: 14px;">Security Event Logs</span>
+      <nz-input-group [nzPrefix]="searchIconTpl" style="width: 280px;">
+        <input nz-input nzSize="small"
+               placeholder="Search events, users, IDs..."
+               [ngModel]="searchQuery"
+               (ngModelChange)="onSearchChange($event)" />
+      </nz-input-group>
+      <ng-template #searchIconTpl>
+        <span nz-icon nzType="search" nzTheme="outline"></span>
+      </ng-template>
+    </div>
+
+    <nz-spin [nzSpinning]="loading">
+      <nz-table #eventsTable [nzData]="eventData" nzSize="small"
+                [nzFrontPagination]="false"
+                [nzTotal]="totalRecords"
+                [nzPageIndex]="currentPage"
+                [nzPageSize]="pageSize"
+                (nzPageIndexChange)="onPageChange($event)"
+                nzTableLayout="fixed"
+                [nzScroll]="{ x: '900px' }">
+        <thead>
+          <tr>
+            <th nzWidth="80px">ID</th>
+            <th nzWidth="140px">Time</th>
+            <th nzWidth="120px">System</th>
+            <th nzWidth="120px">Category</th>
+            <th>Event</th>
+            <th nzWidth="90px">Severity</th>
+            <th nzWidth="100px">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of eventsTable.data" style="cursor: pointer;" (click)="onRowClick(row)">
+            <td style="font-family: monospace; font-size: 12px;">{{ row.code }}</td>
+            <td style="font-size: 12px;">{{ row.createdDate }}</td>
+            <td style="font-size: 12px;">{{ row.sapSystemName }}</td>
+            <td style="font-size: 12px;">{{ row.category }}</td>
+            <td style="font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ row.event }}</td>
+            <td><nz-tag [nzColor]="getSeverityColor(row.severity)">{{ row.severity }}</nz-tag></td>
+            <td><nz-tag [nzColor]="getStatusColor(row.status)">{{ row.status }}</nz-tag></td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </nz-spin>
+  </nz-card>
+</div>
+
+<!-- Event Detail Side Panel -->
+<app-side-panel #eventDetailPanel
+                [title]="selectedEvent?.event || 'Event Details'"
+                [subtitle]="selectedEvent?.sapSystemName || ''"
+                icon="safety-certificate"
+                width="520px"
+                [showFooter]="false"
+                (closed)="onSidePanelClosed()">
+  <div panel-content *ngIf="selectedEvent">
+    <nz-descriptions nzBordered nzSize="small" [nzColumn]="1" style="margin-bottom: 16px;">
+      <nz-descriptions-item nzTitle="ID">
+        <span style="font-family: monospace;">{{ selectedEvent?.code }}</span>
+      </nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Time">{{ selectedEvent?.createdDate }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="System">{{ selectedEvent?.sapSystemName }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Category">{{ selectedEvent?.category }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Event">{{ selectedEvent?.event }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="User">{{ selectedEvent?.user }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Severity">
+        <nz-tag [nzColor]="getSeverityColor(selectedEvent?.severity)">{{ selectedEvent?.severity }}</nz-tag>
+      </nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Status">
+        <nz-tag [nzColor]="getStatusColor(selectedEvent?.status)">{{ selectedEvent?.status }}</nz-tag>
+      </nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Tag" *ngIf="selectedEvent?.tag">{{ selectedEvent?.tag }}</nz-descriptions-item>
+    </nz-descriptions>
+  </div>
+</app-side-panel>

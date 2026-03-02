@@ -1,0 +1,14 @@
+<div style="padding: 16px;">
+  <app-advanced-table
+    title="Mail Logs"
+    [columns]="columns"
+    [data]="data"
+    [loading]="loading"
+    [total]="total"
+    [serverSide]="true"
+    [showSearch]="false"
+    [showRefresh]="true"
+    (queryParamsChange)="onQueryParamsChange($event)"
+    (refresh)="loadData({ pageIndex: 1, pageSize: 20, filters: {}, globalSearch: '' })">
+  </app-advanced-table>
+</div>

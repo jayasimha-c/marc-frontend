@@ -1,0 +1,218 @@
+.rsc {
+    &__loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        color: #8c8c8c;
+
+        p {
+            margin-top: 8px;
+            font-size: 13px;
+        }
+    }
+
+    &__tab {
+        padding-top: 8px;
+    }
+
+    // ─── Sync Panel ─────────────────────────
+    &__sync-panel {
+        margin-bottom: 16px;
+    }
+
+    &__sync-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    &__concept-select {
+        width: 320px;
+    }
+
+    &__concept-info {
+        background: #f8fafc;
+        border: 1px solid #f0f0f0;
+        border-radius: 6px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+    }
+
+    &__concept-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+
+    &__concept-icon {
+        color: #1890ff;
+    }
+
+    &__concept-name {
+        font-weight: 500;
+    }
+
+    &__concept-desc {
+        font-size: 13px;
+        color: #8c8c8c;
+        margin: 0 0 8px;
+    }
+
+    &__linked-systems {
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    &__system-chips {
+        display: inline-flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    &__no-concepts {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px;
+        background: #fff7e6;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #d48806;
+
+        a {
+            color: #1890ff;
+        }
+    }
+
+    // ─── Section ────────────────────────────
+    &__section {
+        margin-top: 16px;
+    }
+
+    &__section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+
+        h4 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+    }
+
+    // ─── Toolbar ────────────────────────────
+    &__toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    &__toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    &__test-system-select {
+        width: 200px;
+    }
+
+    &__category-select {
+        width: 200px;
+    }
+
+    &__version {
+        font-size: 12px;
+        color: #8c8c8c;
+    }
+
+    // ─── Assign Dialog ──────────────────────
+    &__assign-search {
+        margin-bottom: 12px;
+    }
+
+    &__select-all {
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 4px;
+    }
+
+    &__systems-list {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    &__system-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 4px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background 0.2s;
+
+        &:hover {
+            background: #f5f5f5;
+        }
+    }
+
+    &__system-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__system-name {
+        font-weight: 500;
+        font-size: 13px;
+    }
+
+    &__system-desc {
+        font-size: 12px;
+        color: #8c8c8c;
+    }
+
+    &__no-systems {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 24px;
+        color: #bfbfbf;
+    }
+
+    &__selected-count {
+        padding: 8px 0;
+        font-size: 12px;
+        color: #8c8c8c;
+        text-align: right;
+        border-top: 1px solid #f0f0f0;
+        margin-top: 4px;
+    }
+}
+
+// Table cell inputs should fill width
+::ng-deep {
+    .rsc__tab {
+        .ant-table-cell {
+            nz-select {
+                width: 100% !important;
+            }
+
+            textarea.ant-input {
+                font-size: 12px;
+            }
+        }
+    }
+}

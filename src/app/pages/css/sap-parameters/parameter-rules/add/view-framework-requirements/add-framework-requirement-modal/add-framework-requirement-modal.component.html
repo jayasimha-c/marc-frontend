@@ -1,0 +1,15 @@
+<app-advanced-table
+  title="Select Framework Requirements"
+  [columns]="columns"
+  [data]="data"
+  [totalRecords]="totalRecords"
+  [serverSide]="true"
+  [showSelection]="true"
+  (queryParamsChange)="loadRequirements($event)"
+  (selectionChange)="onSelectionChanged($event)">
+</app-advanced-table>
+
+<div class="flex justify-end gap-3 mt-4 pt-4 border-t">
+  <button nz-button nzType="default" (click)="onClose()">Close</button>
+  <button nz-button nzType="primary" [disabled]="selection.length === 0" (click)="onConnect()">Add Selected</button>
+</div>

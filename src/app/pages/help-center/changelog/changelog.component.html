@@ -1,0 +1,58 @@
+<app-page-panel [title]="'Changelog'">
+    <ng-container headerSection>
+        <button nz-button nzType="default" [routerLink]="['../']">
+            <span nz-icon nzType="arrow-left" nzTheme="outline" class="mr-2"></span>
+            Back to Help Center
+        </button>
+    </ng-container>
+
+    <div panel-content>
+        <!-- Changelog Timeline -->
+        <div class="space-y-6">
+            <ng-container *ngFor="let item of changelog; let first = first">
+                <nz-card [nzBordered]="true" class="rounded shadow-sm" [nzTitle]="titleTemplate">
+                    <ng-template #titleTemplate>
+                        <div class="flex items-center gap-3">
+                            <span class="font-semibold text-lg">{{item.version}}</span>
+                            <span *ngIf="first"
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400">
+                                Latest
+                            </span>
+                        </div>
+                    </ng-template>
+
+                    <ng-container *ngFor="let change of item.changes">
+                        <div class="mb-4" *ngIf="change.list && change.list.length > 0">
+                            <!-- Change Type Badge -->
+                            <div class="flex items-center gap-2 mb-3">
+                                <span *ngIf="change.type === 'Features'"
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400">
+                                    <span nz-icon nzType="plus-circle" nzTheme="outline"
+                                        class="!w-4 !h-4 !text-sm mr-1"></span>
+                                    Features
+                                </span>
+                                <span *ngIf="change.type === 'Bugs'"
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-400">
+                                    <span nz-icon nzType="bug" nzTheme="outline" class="!w-4 !h-4 !text-sm mr-1"></span>
+                                    Bug Fixes
+                                </span>
+                                <span *ngIf="change.type !== 'Features' && change.type !== 'Bugs'"
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                    {{change.type}}
+                                </span>
+                            </div>
+                            <!-- Change Items -->
+                            <ul class="space-y-2 ml-4">
+                                <li *ngFor="let listItem of change.list" class="flex items-start gap-2 text-sm">
+                                    <span nz-icon nzType="right" nzTheme="outline"
+                                        class="!w-4 !h-4 !text-sm text-gray-400 mt-0.5 flex-shrink-0"></span>
+                                    <span class="text-secondary">{{listItem}}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </ng-container>
+                </nz-card>
+            </ng-container>
+        </div>
+    </div>
+</app-page-panel>

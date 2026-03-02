@@ -1,0 +1,74 @@
+<div class="text-xl font-semibold mb-4">Filters:</div>
+
+<form [formGroup]="form" class="flex flex-col gap-2">
+  <section class="flex gap-5">
+    <nz-form-item class="self-start" style="min-width: 20em;">
+      <nz-form-control [nzErrorTip]="'Field is required'">
+        <div class="nz-float-label" [class.has-value]="form.get('field').value">
+          <nz-select formControlName="field" nzPlaceHolder=" " nzShowSearch>
+            <nz-option *ngFor="let entry of fieldNames" [nzValue]="entry[0]" [nzLabel]="entry[1]"></nz-option>
+          </nz-select>
+          <label>Field</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item class="self-start" style="min-width: 20em;">
+      <nz-form-control [nzErrorTip]="'Condition Type is required'">
+        <div class="nz-float-label" [class.has-value]="form.get('conditionType').value">
+          <nz-select formControlName="conditionType" nzPlaceHolder=" " nzShowSearch>
+            <nz-option *ngFor="let entry of conditionTypeOptions" [nzValue]="entry[0]" [nzLabel]="entry[1]"></nz-option>
+          </nz-select>
+          <label>Condition Type</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <div formArrayName="values" class="flex gap-2 flex-wrap">
+      <div *ngFor="let input of values.controls; let i = index" [formGroupName]="i" class="flex gap-2">
+        <nz-form-item class="w-80">
+          <nz-form-control>
+            <nz-input-group [nzSuffix]="removeBtnTpl">
+              <div class="nz-float-label" [class.has-value]="input.get('value').value">
+                <input nz-input placeholder=" " formControlName="value" />
+                <label>Value-{{ i + 1 }}</label>
+              </div>
+            </nz-input-group>
+            <ng-template #removeBtnTpl>
+              <span *ngIf="canAddValues" nz-icon nzType="close" nzTheme="outline" class="cursor-pointer" (click)="removeInputField(i)"></span>
+            </ng-template>
+          </nz-form-control>
+        </nz-form-item>
+        <div *ngIf="i !== values.length - 1" class="self-center">&nbsp;or</div>
+      </div>
+
+      <button *ngIf="canAddValues" nz-button nzType="primary" nzShape="circle" (click)="addInputField()" class="self-center ml-2">
+        <span nz-icon nzType="plus" nzTheme="outline"></span>
+      </button>
+    </div>
+
+    <button nz-button nzType="primary" class="self-end mb-7" (click)="onAddCondition()">Add Condition</button>
+  </section>
+
+  <nz-table #filterTable [nzData]="displayFilters" [nzShowPagination]="false" nzSize="small">
+    <thead>
+      <tr>
+        <th>Value</th>
+        <th>Field</th>
+        <th>Type</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let condition of filterTable.data">
+        <td>{{ condition.value }}</td>
+        <td>{{ condition.field }}</td>
+        <td>{{ sapRuleConditionTypeNames[condition.conditionType] }}</td>
+        <td><button nz-button nzType="default" nzSize="small" (click)="onDelete(condition)">Delete</button></td>
+      </tr>
+      <tr *ngIf="filterTable.data.length === 0">
+        <td colspan="4">No conditions created yet.</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</form>

@@ -1,0 +1,84 @@
+<div class="conditions-section">
+  <div class="conditions-header">
+    <span class="conditions-title">Conditions</span>
+    <span class="conditions-hint">A violation occurs if any single condition is matched</span>
+  </div>
+
+  <div *ngIf="valueType == null" class="empty-hint">
+    A value type must be selected first.
+  </div>
+
+  <div *ngIf="valueType != null" class="conditions-body">
+    <div *ngIf="conditions.length === 0" class="empty-state">
+      No conditions yet. Click "Add Condition" below.
+    </div>
+
+    <div *ngFor="let cond of conditions; let i = index; trackBy: trackByCond" class="condition-row">
+      <div *ngIf="i > 0" class="connector-line">
+        <span class="connector-text">OR</span>
+      </div>
+
+      <div class="row-content">
+        <nz-form-item class="cond-type-field compact-field">
+          <nz-form-control>
+            <nz-select [ngModel]="cond.conditionType" [compareWith]="compareValues"
+              (ngModelChange)="onConditionTypeChange(i, $event)" [ngModelOptions]="{standalone: true}">
+              <nz-option *ngFor="let entry of conditionTypeOptions" [nzValue]="entry[0]" [nzLabel]="entry[1]"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <!-- TEXT / NUMBER -->
+        <div class="value-input-wrapper" *ngIf="getInputType(cond.conditionType) === 'text'">
+          <div class="tag-input-container" (click)="focusInput(i)">
+            <span *ngFor="let val of cond.values; let vi = index" class="value-tag">
+              {{ formatDisplayValue(val) }}
+              <span nz-icon nzType="close" nzTheme="outline" class="tag-remove" (click)="removeValue(i, vi, $event)"></span>
+            </span>
+            <input #valueInput type="text" class="inline-input"
+              [placeholder]="cond.values.length === 0 ? getPlaceholder(cond.conditionType) : ''"
+              (keydown)="onValueKeydown($event, i)" (blur)="onValueBlur($event, i)" />
+          </div>
+        </div>
+
+        <!-- BOOLEAN -->
+        <div class="value-input-wrapper" *ngIf="getInputType(cond.conditionType) === 'boolean'">
+          <nz-form-item class="bool-field compact-field">
+            <nz-form-control>
+              <nz-select [ngModel]="cond.values[0]" (ngModelChange)="onBooleanChange(i, $event)" [ngModelOptions]="{standalone: true}">
+                <nz-option nzValue="true" nzLabel="True"></nz-option>
+                <nz-option nzValue="false" nzLabel="False"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <!-- DATE -->
+        <div class="value-input-wrapper date-inputs" *ngIf="getInputType(cond.conditionType) === 'date'">
+          <nz-form-item class="date-field compact-field">
+            <nz-form-control>
+              <nz-date-picker [ngModel]="cond.values[0]" (ngModelChange)="onDateChange(i, 0, $event)"
+                [ngModelOptions]="{standalone: true}" nzPlaceHolder="Select date"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+          <span *ngIf="isBetween(cond.conditionType)" class="date-separator">&#8212;</span>
+          <nz-form-item *ngIf="isBetween(cond.conditionType)" class="date-field compact-field">
+            <nz-form-control>
+              <nz-date-picker [ngModel]="cond.values[1]" (ngModelChange)="onDateChange(i, 1, $event)"
+                [ngModelOptions]="{standalone: true}" nzPlaceHolder="End date"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <button nz-button nzType="text" nzShape="circle" class="delete-btn" (click)="onDelete(i)">
+          <span nz-icon nzType="delete" nzTheme="outline"></span>
+        </button>
+      </div>
+    </div>
+
+    <button class="add-btn" (click)="onAddCondition()">
+      <span nz-icon nzType="plus" nzTheme="outline"></span>
+      Add Condition
+    </button>
+  </div>
+</div>

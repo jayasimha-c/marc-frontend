@@ -1,0 +1,116 @@
+<nz-layout class="app-layout">
+  <!-- Sidebar -->
+  <nz-sider class="sidebar" nzCollapsible [(nzCollapsed)]="isCollapsed" [nzWidth]="256" [nzCollapsedWidth]="64"
+    nzBreakpoint="lg" nzTheme="dark">
+    <div class="logo">
+      <h2 *ngIf="!isCollapsed">MARC</h2>
+      <span *ngIf="isCollapsed" class="logo-collapsed">M</span>
+    </div>
+    <ul nz-menu nzMode="inline" nzTheme="dark">
+      <ng-container *ngFor="let item of navigation">
+        <!-- Simple item -->
+        <li nz-menu-item *ngIf="item.type === 'item'" [nzSelected]="false" [routerLink]="item.link"
+          routerLinkActive="ant-menu-item-selected">
+          <span nz-icon [nzType]="item.icon || 'appstore'" nzTheme="outline"></span>
+          <span>{{ item.title }}</span>
+        </li>
+
+        <!-- Submenu -->
+        <li nz-submenu *ngIf="item.type === 'submenu'" [nzTitle]="item.title" [nzIcon]="item.icon || 'appstore'">
+          <ul>
+            <ng-container *ngFor="let child of item.children">
+              <!-- Child item -->
+              <li nz-menu-item *ngIf="child.type === 'item'" [routerLink]="child.link"
+                routerLinkActive="ant-menu-item-selected">
+                <span nz-icon [nzType]="child.icon || 'file'" nzTheme="outline"></span>
+                <span>{{ child.title }}</span>
+              </li>
+
+              <!-- Nested submenu -->
+              <li nz-submenu *ngIf="child.type === 'submenu'" [nzTitle]="child.title" [nzIcon]="child.icon || 'folder'">
+                <ul>
+                  <ng-container *ngFor="let subChild of child.children">
+                    <li nz-menu-item *ngIf="subChild.type === 'item'" [routerLink]="subChild.link"
+                      routerLinkActive="ant-menu-item-selected">
+                      <span nz-icon [nzType]="subChild.icon || 'file'" nzTheme="outline"></span>
+                      <span>{{ subChild.title }}</span>
+                    </li>
+                    <li nz-submenu *ngIf="subChild.type === 'submenu'" [nzTitle]="subChild.title"
+                      [nzIcon]="subChild.icon || 'folder'">
+                      <ul>
+                        <li nz-menu-item *ngFor="let leaf of subChild.children" [routerLink]="leaf.link"
+                          routerLinkActive="ant-menu-item-selected">
+                          <span nz-icon [nzType]="leaf.icon || 'file'" nzTheme="outline"></span>
+                          <span>{{ leaf.title }}</span>
+                        </li>
+                      </ul>
+                    </li>
+                  </ng-container>
+                </ul>
+              </li>
+            </ng-container>
+          </ul>
+        </li>
+      </ng-container>
+    </ul>
+  </nz-sider>
+
+  <!-- Main layout -->
+  <nz-layout class="inner-layout" [style.margin-left]="isCollapsed ? '64px' : '256px'">
+    <!-- Header -->
+    <nz-header class="app-header">
+      <div class="header-left">
+        <span class="header-trigger" (click)="isCollapsed = !isCollapsed">
+          <span nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"></span>
+        </span>
+        <nz-breadcrumb>
+          <nz-breadcrumb-item>
+            <span nz-icon nzType="home"></span>
+          </nz-breadcrumb-item>
+          <nz-breadcrumb-item>MARC</nz-breadcrumb-item>
+        </nz-breadcrumb>
+      </div>
+
+      <div class="header-right">
+        <nz-badge [nzCount]="0" [nzShowZero]="false">
+          <span nz-icon nzType="bell" nzTheme="outline" style="font-size: 18px; cursor: pointer;"></span>
+        </nz-badge>
+
+        <nz-avatar [nzText]="user?.username?.charAt(0)?.toUpperCase() || 'U'" nzSize="small"
+          style="background-color: #1890ff;"></nz-avatar>
+
+        <a nz-dropdown [nzDropdownMenu]="userMenu" nzTrigger="click">
+          <span>{{ user?.username || 'User' }}</span>
+          <span nz-icon nzType="down"></span>
+        </a>
+        <nz-dropdown-menu #userMenu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item>
+              <span nz-icon nzType="user"></span>
+              Profile
+            </li>
+            <li nz-menu-item>
+              <span nz-icon nzType="setting"></span>
+              Settings
+            </li>
+            <li nz-menu-divider></li>
+            <li nz-menu-item (click)="signOut()">
+              <span nz-icon nzType="logout"></span>
+              Sign Out
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </div>
+    </nz-header>
+
+    <!-- Content -->
+    <nz-content class="inner-content">
+      <router-outlet></router-outlet>
+    </nz-content>
+
+    <!-- Footer -->
+    <nz-footer class="app-footer">
+      MARC - Manage Access Risks and Controls &copy; {{ currentYear }}
+    </nz-footer>
+  </nz-layout>
+</nz-layout>

@@ -1,0 +1,5 @@
+.rd__row {
+  cursor: pointer;
+  &:hover { background: #e6f7ff; }
+  &--selected { background: #e6f7ff; }
+}

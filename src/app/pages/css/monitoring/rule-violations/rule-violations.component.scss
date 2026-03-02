@@ -1,0 +1,61 @@
+:host {
+  display: block;
+}
+
+.vn-type-tab {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  color: rgba(0, 0, 0, 0.45);
+
+  &:hover {
+    color: rgba(0, 0, 0, 0.85);
+  }
+
+  &.active {
+    color: #1890ff;
+    border-bottom-color: #1890ff;
+  }
+}
+
+.vn-rule-groups {
+  max-height: calc(100vh - 400px);
+  overflow-y: auto;
+}
+
+.vn-rule-group-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  gap: 10px;
+  border-bottom: 1px solid #fafafa;
+  transition: background 0.1s;
+
+  &:hover {
+    background: #fafafa;
+  }
+
+  &.selected {
+    background: #e6f7ff;
+    border-left: 3px solid #1890ff;
+    padding-left: 13px;
+  }
+}
+
+.vn-rule-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.85);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,52 @@
+<!-- Master: SAP User Field Catalogue -->
+<nz-card nzSize="small" style="margin-bottom: 16px;">
+  <app-advanced-table
+    title="SAP User Field Catalogue"
+    [data]="fieldsData"
+    [columns]="fieldsColumns"
+    [actions]="fieldsActions"
+    [loading]="fieldsLoading"
+    [showSearch]="true"
+    [showPagination]="false"
+    size="middle"
+    (rowClick)="onFieldRowClick($event)"
+  ></app-advanced-table>
+</nz-card>
+
+<!-- Detail: Field Values (inline-editable) -->
+<nz-card nzSize="small">
+  <app-inline-table
+    #valuesTable
+    title="Field Values"
+    [subtitle]="selectedField ? '— ' + selectedField.fieldName : 'Select a field above to view values'"
+    [data]="valuesData"
+    [columns]="valuesColumns"
+    [actions]="valuesActions"
+    [loading]="valuesLoading"
+    [editMode]="'always'"
+    [showPagination]="false"
+    [showSearch]="true"
+    [showRowActions]="true"
+    scrollY="50vh"
+    size="middle"
+    [emptyText]="selectedField ? 'No values — click Add Row' : 'Select a field above to view its values'"
+    [newRowDefaults]="{ sapSystem: '', fieldValue: '' }"
+    (dataChange)="valuesData = $event"
+  ></app-inline-table>
+</nz-card>
+
+<!-- Dynamic fieldValue column template -->
+<ng-template #fieldValueTpl let-row let-value="value">
+  <ng-container *ngIf="hasDropdownValues(); else freeText">
+    <nz-select nzSize="small" style="width: 100%" nzShowSearch
+      [(ngModel)]="row.fieldValue"
+      (ngModelChange)="onValueChange(row)">
+      <nz-option *ngFor="let opt of getFieldValueOptions()" [nzValue]="opt" [nzLabel]="opt"></nz-option>
+    </nz-select>
+  </ng-container>
+  <ng-template #freeText>
+    <input nz-input nzSize="small"
+      [(ngModel)]="row.fieldValue"
+      (ngModelChange)="onValueChange(row)" />
+  </ng-template>
+</ng-template>

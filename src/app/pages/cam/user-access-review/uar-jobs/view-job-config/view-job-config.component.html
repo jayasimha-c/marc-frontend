@@ -1,0 +1,65 @@
+<form [formGroup]="form" style="margin-top: 8px;">
+  <nz-form-item>
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="form.get('includeExpiredAccounts')!.value !== null && form.get('includeExpiredAccounts')!.value !== ''">
+        <nz-select formControlName="includeExpiredAccounts" nzPlaceHolder=" ">
+          <nz-option [nzValue]="true" nzLabel="Yes"></nz-option>
+          <nz-option [nzValue]="false" nzLabel="No"></nz-option>
+        </nz-select>
+        <label>Include Expired Accounts</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="form.get('lockedAccounts')!.value !== null && form.get('lockedAccounts')!.value !== ''">
+        <nz-select formControlName="lockedAccounts" nzPlaceHolder=" ">
+          <nz-option [nzValue]="true" nzLabel="Yes"></nz-option>
+          <nz-option [nzValue]="false" nzLabel="No"></nz-option>
+        </nz-select>
+        <label>Locked Accounts</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="form.get('ignoreUsersWithoutRoles')!.value !== null && form.get('ignoreUsersWithoutRoles')!.value !== ''">
+        <nz-select formControlName="ignoreUsersWithoutRoles" nzPlaceHolder=" ">
+          <nz-option [nzValue]="true" nzLabel="Yes"></nz-option>
+          <nz-option [nzValue]="false" nzLabel="No"></nz-option>
+        </nz-select>
+        <label>Ignore Users without Roles</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="form.get('userType')!.value?.length">
+        <nz-select formControlName="userType" nzMode="multiple" nzPlaceHolder=" ">
+          <nz-option nzValue="A" nzLabel="Dialog"></nz-option>
+          <nz-option nzValue="B" nzLabel="System"></nz-option>
+          <nz-option nzValue="C" nzLabel="Communication"></nz-option>
+          <nz-option nzValue="L" nzLabel="Reference"></nz-option>
+          <nz-option nzValue="S" nzLabel="Service"></nz-option>
+        </nz-select>
+        <label>User Type</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="form.get('transactionHistory')!.value">
+        <input nz-input placeholder=" " type="text" formControlName="transactionHistory" />
+        <label>Transaction History (Days)</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+</form>
+
+<div class="flex justify-end gap-3 mt-4 pt-4 border-t">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+</div>

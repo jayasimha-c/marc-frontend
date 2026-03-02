@@ -1,0 +1,93 @@
+.parameter-rules-container {
+  padding: 16px;
+}
+
+// 4-column metrics grid
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Chart projected inside statistics-card
+.chart-section {
+  margin-top: 8px;
+}
+
+.chart-bar {
+  display: flex;
+  height: 6px;
+  background-color: #f5f5f5;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+
+  &__segment {
+    transition: all 0.3s ease;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.8;
+    }
+
+    &:not(:last-child) {
+      border-right: 1px solid rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-size: 11px;
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: rgba(0, 0, 0, 0.65);
+    white-space: nowrap;
+  }
+
+  &__dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+}
+
+// Object filter bar
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filter-active-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 12px;
+  height: 32px;
+  background: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #1890ff;
+}
+
+// Side panel content uses nz-descriptions, nz-table, nz-divider, nz-empty
+// No custom styles needed — NG-ZORRO handles it all

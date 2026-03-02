@@ -1,0 +1,151 @@
+<nz-card [nzBordered]="false">
+  <!-- Toolbar -->
+  <div class="settings__toolbar">
+    <h4 nz-typography>Application Settings</h4>
+    <nz-space>
+      <nz-input-group *nzSpaceItem [nzPrefix]="searchIcon" style="width: 240px;">
+        <input nz-input [(ngModel)]="searchTerm" placeholder="Search settings..." />
+      </nz-input-group>
+      <ng-template #searchIcon><span nz-icon nzType="search" nzTheme="outline"></span></ng-template>
+      <button *nzSpaceItem nz-button nzType="default" (click)="selectedTab === 0 ? loadGlobalSettings() : loadReportingUnitSettings()">
+        <span nz-icon nzType="reload" nzTheme="outline"></span>
+      </button>
+    </nz-space>
+  </div>
+
+  <nz-spin [nzSpinning]="loading">
+    <nz-tabset [(nzSelectedIndex)]="selectedTab" [nzAnimated]="false">
+
+      <!-- Global Settings Tab -->
+      <nz-tab nzTitle="Global Settings">
+        <nz-collapse [nzBordered]="false">
+          <nz-collapse-panel
+            *ngFor="let category of getFilteredCategories(globalCategories)"
+            [nzHeader]="globalHeader"
+            [nzExtra]="globalExtra"
+            [nzActive]="category.expanded"
+            (nzActiveChange)="category.expanded = $event">
+
+            <ng-template #globalHeader>
+              <span nz-icon [nzType]="category.icon" nzTheme="outline" class="settings__cat-icon"></span>
+              <strong>{{ category.name }}</strong>
+              <span class="settings__cat-desc">{{ category.description }}</span>
+            </ng-template>
+            <ng-template #globalExtra>
+              <nz-tag nzColor="blue">{{ category.settings.length }}</nz-tag>
+            </ng-template>
+
+            <div *ngFor="let setting of category.settings" class="settings__row">
+              <div class="settings__label">
+                <span class="settings__name">{{ setting.name }}</span>
+                <span class="settings__desc">{{ setting.description }}</span>
+              </div>
+              <div class="settings__input">
+                <!-- Boolean -->
+                <nz-switch *ngIf="getSettingType(setting) === 'boolean'"
+                  [ngModel]="getBooleanValue(setting)"
+                  (ngModelChange)="toggleBoolean(setting)"
+                  nzCheckedChildren="True" nzUnCheckedChildren="False">
+                </nz-switch>
+                <!-- Number -->
+                <input *ngIf="getSettingType(setting) === 'number'"
+                  nz-input type="number" [(ngModel)]="setting.value"
+                  (ngModelChange)="markAsModified(setting)"
+                  [class.settings__modified]="setting.modified" />
+                <!-- Password -->
+                <nz-input-group *ngIf="getSettingType(setting) === 'password'" [nzSuffix]="pwdToggle">
+                  <input nz-input [type]="setting.showPassword ? 'text' : 'password'"
+                    [(ngModel)]="setting.value" (ngModelChange)="markAsModified(setting)"
+                    [class.settings__modified]="setting.modified" />
+                </nz-input-group>
+                <ng-template #pwdToggle>
+                  <span nz-icon [nzType]="setting.showPassword ? 'eye-invisible' : 'eye'" nzTheme="outline"
+                    style="cursor: pointer;" (click)="setting.showPassword = !setting.showPassword"></span>
+                </ng-template>
+                <!-- Text -->
+                <input *ngIf="getSettingType(setting) === 'text'"
+                  nz-input [(ngModel)]="setting.value"
+                  (ngModelChange)="markAsModified(setting)"
+                  [class.settings__modified]="setting.modified" />
+              </div>
+              <div class="settings__meta">
+                <span *ngIf="setting.setDate" class="settings__date">{{ setting.setDate | date:'short' }}</span>
+                <button *ngIf="setting.modified" nz-button nzType="primary" nzSize="small" (click)="saveSetting(setting)">
+                  <span nz-icon nzType="save" nzTheme="outline"></span> Save
+                </button>
+              </div>
+            </div>
+          </nz-collapse-panel>
+        </nz-collapse>
+
+        <nz-empty *ngIf="getFilteredCategories(globalCategories).length === 0 && !loading"
+          nzNotFoundContent="No settings found"></nz-empty>
+      </nz-tab>
+
+      <!-- Reporting Unit Settings Tab -->
+      <nz-tab nzTitle="Reporting Unit Settings">
+        <nz-collapse [nzBordered]="false">
+          <nz-collapse-panel
+            *ngFor="let category of getFilteredCategories(reportingUnitCategories)"
+            [nzHeader]="ruHeader"
+            [nzExtra]="ruExtra"
+            [nzActive]="category.expanded"
+            (nzActiveChange)="category.expanded = $event">
+
+            <ng-template #ruHeader>
+              <span nz-icon [nzType]="category.icon" nzTheme="outline" class="settings__cat-icon"></span>
+              <strong>{{ category.name }}</strong>
+              <span class="settings__cat-desc">{{ category.description }}</span>
+            </ng-template>
+            <ng-template #ruExtra>
+              <nz-tag nzColor="blue">{{ category.settings.length }}</nz-tag>
+            </ng-template>
+
+            <div *ngFor="let setting of category.settings" class="settings__row settings__row--4col">
+              <div class="settings__label">
+                <span class="settings__name">{{ setting.name }}</span>
+                <span class="settings__desc">{{ setting.description }}</span>
+              </div>
+              <div class="settings__input">
+                <nz-switch *ngIf="getSettingType(setting) === 'boolean'"
+                  [ngModel]="getBooleanValue(setting)"
+                  (ngModelChange)="toggleBoolean(setting)"
+                  nzCheckedChildren="True" nzUnCheckedChildren="False">
+                </nz-switch>
+                <input *ngIf="getSettingType(setting) === 'number'"
+                  nz-input type="number" [(ngModel)]="setting.value"
+                  (ngModelChange)="markAsModified(setting)"
+                  [class.settings__modified]="setting.modified" />
+                <nz-input-group *ngIf="getSettingType(setting) === 'password'" [nzSuffix]="ruPwdToggle">
+                  <input nz-input [type]="setting.showPassword ? 'text' : 'password'"
+                    [(ngModel)]="setting.value" (ngModelChange)="markAsModified(setting)"
+                    [class.settings__modified]="setting.modified" />
+                </nz-input-group>
+                <ng-template #ruPwdToggle>
+                  <span nz-icon [nzType]="setting.showPassword ? 'eye-invisible' : 'eye'" nzTheme="outline"
+                    style="cursor: pointer;" (click)="setting.showPassword = !setting.showPassword"></span>
+                </ng-template>
+                <input *ngIf="getSettingType(setting) === 'text'"
+                  nz-input [(ngModel)]="setting.value"
+                  (ngModelChange)="markAsModified(setting)"
+                  [class.settings__modified]="setting.modified" />
+              </div>
+              <div class="settings__module">
+                <nz-tag [nzColor]="getModuleTagColor(setting.moduleName)">{{ setting.moduleName || 'General' }}</nz-tag>
+              </div>
+              <div class="settings__meta">
+                <span *ngIf="setting.setDate" class="settings__date">{{ setting.setDate | date:'short' }}</span>
+                <button *ngIf="setting.modified" nz-button nzType="primary" nzSize="small" (click)="saveSetting(setting)">
+                  <span nz-icon nzType="save" nzTheme="outline"></span> Save
+                </button>
+              </div>
+            </div>
+          </nz-collapse-panel>
+        </nz-collapse>
+
+        <nz-empty *ngIf="getFilteredCategories(reportingUnitCategories).length === 0 && !loading"
+          nzNotFoundContent="No settings found"></nz-empty>
+      </nz-tab>
+    </nz-tabset>
+  </nz-spin>
+</nz-card>

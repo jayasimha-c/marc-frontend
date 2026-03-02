@@ -1,0 +1,146 @@
+<app-page-panel header="FUE Simulator">
+    <div style="margin-bottom: 12px;">
+        <button nz-button nzType="text" nzShape="circle" (click)="goBack()"
+            nz-tooltip nzTooltipTitle="Back to FUE Types">
+            <span nz-icon nzType="arrow-left"></span>
+        </button>
+    </div>
+
+    <nz-tabset>
+        <!-- Tab 1: FUE Types -->
+        <nz-tab nzTitle="FUE Types">
+            <div nz-row nzJustify="end" style="margin-bottom: 12px;">
+                <nz-space>
+                    <button *nzSpaceItem nz-button (click)="addTypeRow()">
+                        <span nz-icon nzType="plus-circle"></span> Add Row
+                    </button>
+                    <button *nzSpaceItem nz-button nzDanger (click)="deleteTypeRow()">
+                        <span nz-icon nzType="delete"></span> Delete Row
+                    </button>
+                </nz-space>
+            </div>
+
+            <nz-table #typesTable [nzData]="typesData" nzSize="small"
+                [nzFrontPagination]="false" [nzShowPagination]="false" nzBordered>
+                <thead>
+                    <tr>
+                        <th nzWidth="100px">Code</th>
+                        <th nzWidth="200px">Name</th>
+                        <th nzWidth="120px">FUE Weight</th>
+                        <th nzWidth="120px">Users / FUE</th>
+                        <th nzWidth="120px">Tier Priority</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of typesTable.data" (click)="selectedTypeRow = row"
+                        [style.background]="selectedTypeRow === row ? '#e6f7ff' : ''"
+                        style="cursor: pointer;">
+                        <td><input nz-input [(ngModel)]="row.code" /></td>
+                        <td><input nz-input [(ngModel)]="row.name" /></td>
+                        <td>
+                            <nz-input-number [(ngModel)]="row.fueWeight" [nzStep]="0.001" [nzMin]="0"
+                                style="width: 100%;"></nz-input-number>
+                        </td>
+                        <td>
+                            <nz-input-number [(ngModel)]="row.usersPerFue" [nzStep]="0.1" [nzMin]="0"
+                                style="width: 100%;"></nz-input-number>
+                        </td>
+                        <td>
+                            <nz-input-number [(ngModel)]="row.tierPriority" [nzStep]="1" [nzMin]="0"
+                                style="width: 100%;"></nz-input-number>
+                        </td>
+                    </tr>
+                </tbody>
+            </nz-table>
+        </nz-tab>
+
+        <!-- Tab 2: User Simulation -->
+        <nz-tab nzTitle="User Simulation">
+            <div nz-row nzJustify="end" style="margin-bottom: 12px;">
+                <nz-space>
+                    <button *nzSpaceItem nz-button nzType="primary" (click)="calculate()">
+                        <span nz-icon nzType="play-circle"></span> Calculate
+                    </button>
+                    <button *nzSpaceItem nz-button (click)="addUserRow()">
+                        <span nz-icon nzType="plus-circle"></span> Add Row
+                    </button>
+                    <button *nzSpaceItem nz-button (click)="addTestData()">
+                        <span nz-icon nzType="plus"></span> Add Test Data
+                    </button>
+                    <button *nzSpaceItem nz-button (click)="clearUsers()">
+                        <span nz-icon nzType="close-circle"></span> Clear
+                    </button>
+                    <button *nzSpaceItem nz-button (click)="exportResults()">
+                        <span nz-icon nzType="download"></span> Export
+                    </button>
+                </nz-space>
+            </div>
+
+            <nz-table #usersTable [nzData]="usersData" nzSize="small"
+                [nzFrontPagination]="false" [nzShowPagination]="false"
+                nzBordered [nzScroll]="{ x: '1800px', y: '400px' }">
+                <thead>
+                    <tr>
+                        <th nzWidth="100px">User</th>
+                        <th nzWidth="100px">System</th>
+                        <th nzWidth="120px">SAP Rule</th>
+                        <th nzWidth="120px">MARC Rule</th>
+                        <th nzWidth="90px">T-codes</th>
+                        <th nzWidth="80px">Expired</th>
+                        <th nzWidth="80px">Inactive</th>
+                        <th nzWidth="110px">License</th>
+                        <th nzWidth="140px">SAP Tier</th>
+                        <th nzWidth="140px">MARC Tier</th>
+                        <th nzWidth="90px">Wt SAP</th>
+                        <th nzWidth="90px">Wt MARC</th>
+                        <th nzWidth="90px">Savings</th>
+                        <th nzWidth="90px">Optimizable</th>
+                        <th nzWidth="250px">Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of usersTable.data" (click)="selectedUserRow = row"
+                        [style.background]="selectedUserRow === row ? '#e6f7ff' : ''"
+                        style="cursor: pointer;">
+                        <td><input nz-input [(ngModel)]="row.userId" /></td>
+                        <td><input nz-input [(ngModel)]="row.system" /></td>
+                        <td>
+                            <nz-select [(ngModel)]="row.ruleType" style="width: 100%;" nzAllowClear>
+                                <nz-option *ngFor="let o of ruleOptions" [nzValue]="o"
+                                    [nzLabel]="o || '(none)'"></nz-option>
+                            </nz-select>
+                        </td>
+                        <td>
+                            <nz-select [(ngModel)]="row.marcRuleType" style="width: 100%;" nzAllowClear>
+                                <nz-option *ngFor="let o of ruleOptions" [nzValue]="o"
+                                    [nzLabel]="o || '(none)'"></nz-option>
+                            </nz-select>
+                        </td>
+                        <td><input nz-input [(ngModel)]="row.tcodeCount" /></td>
+                        <td>
+                            <nz-select [(ngModel)]="row.expired" style="width: 100%;">
+                                <nz-option *ngFor="let o of yesNoOptions" [nzValue]="o" [nzLabel]="o"></nz-option>
+                            </nz-select>
+                        </td>
+                        <td>
+                            <nz-select [(ngModel)]="row.inactive" style="width: 100%;">
+                                <nz-option *ngFor="let o of yesNoOptions" [nzValue]="o" [nzLabel]="o"></nz-option>
+                            </nz-select>
+                        </td>
+                        <td><input nz-input [(ngModel)]="row.currentLicense" /></td>
+                        <td>{{ row.sapTier }}</td>
+                        <td>{{ row.marcTier }}</td>
+                        <td>{{ row.fueWeightSap }}</td>
+                        <td>{{ row.fueWeightMarc }}</td>
+                        <td>{{ row.fueSavings }}</td>
+                        <td>
+                            <nz-tag *ngIf="row.optimizable === 'Yes'" nzColor="green">Yes</nz-tag>
+                            <nz-tag *ngIf="row.optimizable === 'No'" nzColor="default">No</nz-tag>
+                        </td>
+                        <td>{{ row.reason }}</td>
+                    </tr>
+                </tbody>
+            </nz-table>
+        </nz-tab>
+    </nz-tabset>
+</app-page-panel>

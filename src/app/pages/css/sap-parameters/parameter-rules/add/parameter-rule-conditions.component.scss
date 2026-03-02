@@ -1,0 +1,202 @@
+.conditions-section {
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.conditions-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.conditions-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.conditions-hint {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.conditions-body {
+  padding: 8px;
+}
+
+.empty-hint,
+.empty-state {
+  text-align: center;
+  padding: 16px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.connector-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 8px;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    border-top: 1px dashed #f0f0f0;
+  }
+}
+
+.connector-text {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.25);
+  user-select: none;
+}
+
+.row-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: #fafafa;
+  }
+
+  &:hover .delete-btn {
+    opacity: 1;
+  }
+}
+
+.compact-field {
+  margin: 0;
+}
+
+.cond-type-field {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.bool-field {
+  width: 120px;
+}
+
+.date-field {
+  width: 160px;
+}
+
+.value-input-wrapper {
+  flex: 1;
+  min-width: 0;
+
+  &.date-inputs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.date-separator {
+  color: rgba(0, 0, 0, 0.25);
+  font-size: 11px;
+}
+
+.tag-input-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 2px 8px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  background: #fff;
+  cursor: text;
+
+  &:focus-within {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 1px rgba(24, 144, 255, 0.15);
+  }
+}
+
+.value-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.85);
+  white-space: nowrap;
+
+  .tag-remove {
+    font-size: 12px;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.25);
+
+    &:hover {
+      color: #dc2626;
+    }
+  }
+}
+
+.inline-input {
+  flex: 1;
+  min-width: 80px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: monospace;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.85);
+  padding: 4px 0;
+
+  &::placeholder {
+    color: rgba(0, 0, 0, 0.25);
+  }
+}
+
+.delete-btn {
+  opacity: 0;
+  color: rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+
+  &:hover {
+    color: #dc2626;
+  }
+}
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  border: 1px dashed #f0f0f0;
+  border-radius: 4px;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    background: #fafafa;
+    color: rgba(0, 0, 0, 0.85);
+  }
+}

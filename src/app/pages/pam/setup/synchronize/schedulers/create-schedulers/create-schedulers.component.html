@@ -1,0 +1,65 @@
+<form nz-form [formGroup]="form" [nzLayout]="'vertical'">
+    <nz-form-item>
+        <nz-form-label nzRequired>SAP System</nz-form-label>
+        <nz-form-control nzErrorTip="Please select SAP System(s)">
+            <nz-select formControlName="sapSystems" nzMode="multiple" nzPlaceHolder="Select SAP System" nzShowSearch>
+                <nz-option *ngFor="let type of sapSysList" [nzValue]="type?.id"
+                    [nzLabel]="type?.description"></nz-option>
+            </nz-select>
+        </nz-form-control>
+    </nz-form-item>
+
+    <div class="grid grid-cols-2 gap-4">
+        <nz-form-item>
+            <nz-form-label nzRequired>Start Date and Time</nz-form-label>
+            <nz-form-control nzErrorTip="Start Date and Time is required">
+                <nz-date-picker class="w-full" formControlName="startDateTime" [nzShowTime]="{ nzFormat: 'HH:mm:ss' }"
+                    nzFormat="yyyy-MM-dd HH:mm:ss" nzPlaceHolder="Select start time">
+                </nz-date-picker>
+            </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+            <nz-form-label nzRequired>End Date and Time</nz-form-label>
+            <nz-form-control nzErrorTip="End Date and Time is required">
+                <nz-date-picker class="w-full" formControlName="endDateTime" [nzShowTime]="{ nzFormat: 'HH:mm:ss' }"
+                    nzFormat="yyyy-MM-dd HH:mm:ss" nzPlaceHolder="Select end time">
+                </nz-date-picker>
+            </nz-form-control>
+        </nz-form-item>
+    </div>
+
+    <div class="grid grid-cols-3 gap-4">
+        <nz-form-item>
+            <nz-form-label nzRequired>Repeat After (Days)</nz-form-label>
+            <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="repeatAfterDays" nzPlaceHolder="Days" nzShowSearch>
+                    <nz-option *ngFor="let i of daysList" [nzValue]="i" [nzLabel]="i.toString()"></nz-option>
+                </nz-select>
+            </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+            <nz-form-label nzRequired>Hours</nz-form-label>
+            <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="repeatAfterHours" nzPlaceHolder="Hours" nzShowSearch>
+                    <nz-option *ngFor="let i of hoursList" [nzValue]="i" [nzLabel]="i.toString()"></nz-option>
+                </nz-select>
+            </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+            <nz-form-label nzRequired>Minutes</nz-form-label>
+            <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="repeatAfterMins" nzPlaceHolder="Minutes" nzShowSearch>
+                    <nz-option *ngFor="let i of minsList" [nzValue]="i" [nzLabel]="i.toString()"></nz-option>
+                </nz-select>
+            </nz-form-control>
+        </nz-form-item>
+    </div>
+</form>
+
+<div class="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-200">
+    <button nz-button nzType="default" (click)="modal.close()">Cancel</button>
+    <button nz-button nzType="primary" [nzLoading]="loading" (click)="save()">Save</button>
+</div>

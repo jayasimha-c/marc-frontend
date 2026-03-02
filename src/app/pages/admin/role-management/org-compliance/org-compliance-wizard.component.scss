@@ -1,0 +1,222 @@
+.ocw {
+  &__empty {
+    padding: 40px 0;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 16px;
+    min-height: 400px;
+  }
+
+  &__selection {
+    border-right: 1px solid #f0f0f0;
+    padding-right: 16px;
+  }
+
+  &__section {
+    margin-bottom: 16px;
+  }
+
+  &__section-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 8px;
+    color: #262626;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__template-actions {
+    margin-bottom: 6px;
+    font-size: 12px;
+
+    a {
+      color: #1890ff;
+      cursor: pointer;
+    }
+  }
+
+  &__template-list {
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__template-name {
+    font-size: 13px;
+  }
+
+  &__template-code {
+    font-size: 11px;
+    color: #8c8c8c;
+    margin-left: 4px;
+  }
+
+  &__roles {
+    min-width: 0;
+  }
+
+  &__role-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  &__role-list {
+    max-height: 350px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+  }
+
+  // Stats
+  &__stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  &__stat {
+    text-align: center;
+    padding: 8px 16px;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    min-width: 80px;
+
+    &--success {
+      border-color: #b7eb8f;
+      background: #f6ffed;
+    }
+
+    &--error {
+      border-color: #ffa39e;
+      background: #fff1f0;
+    }
+
+    &--warning {
+      border-color: #ffe58f;
+      background: #fffbe6;
+    }
+  }
+
+  &__stat-value {
+    display: block;
+    font-size: 20px;
+    font-weight: 600;
+    color: #262626;
+  }
+
+  &__stat-label {
+    font-size: 11px;
+    color: #8c8c8c;
+  }
+
+  // Loading & Job
+  &__loading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  &__job-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__empty-roles {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    color: #bfbfbf;
+
+    p {
+      margin-top: 8px;
+      font-size: 13px;
+    }
+  }
+
+  // Detail drawer
+  &__detail {
+    padding: 0;
+  }
+
+  &__detail-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+  }
+
+  &__field-name {
+    font-family: monospace;
+    font-size: 12px;
+  }
+
+  &__field-value {
+    font-family: monospace;
+    font-size: 12px;
+  }
+
+  &__value-status {
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+
+    &.status-match {
+      color: #389e0d;
+      background: #f6ffed;
+    }
+
+    &.status-missing {
+      color: #cf1322;
+      background: #fff1f0;
+    }
+
+    &.status-additional {
+      color: #d48806;
+      background: #fffbe6;
+    }
+  }
+}
+
+// Row highlighting for field value table
+.row-match td {
+  background: #f6ffed !important;
+}
+
+.row-missing td {
+  background: #fff1f0 !important;
+}
+
+.row-additional td {
+  background: #fffbe6 !important;
+}
+
+@media (max-width: 768px) {
+  .ocw__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ocw__selection {
+    border-right: none;
+    border-bottom: 1px solid #f0f0f0;
+    padding-right: 0;
+    padding-bottom: 16px;
+  }
+}

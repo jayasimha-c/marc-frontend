@@ -1,0 +1,189 @@
+<div class="idc">
+    <div class="idc__header">
+        <h2>IAM Data Cleanup</h2>
+        <p>Reset and clean up IAM data tables for fresh synchronization</p>
+    </div>
+
+    <nz-alert nzType="warning" nzShowIcon nzBanner
+        nzMessage="Caution: This operation will permanently delete data. Configuration tables are preserved. Always run a dry run first.">
+    </nz-alert>
+
+    <nz-card nzSize="small" class="idc__section">
+        <div class="idc__options-row">
+            <div class="idc__options-left">
+                <div class="idc__option-group">
+                    <label class="idc__label">Scope:</label>
+                    <nz-select [(ngModel)]="selectedScope" (ngModelChange)="onScopeChange()" style="min-width: 180px;">
+                        <nz-option *ngFor="let scope of scopeOptions" [nzValue]="scope.value"
+                            [nzLabel]="scope.label"></nz-option>
+                    </nz-select>
+                </div>
+                <label nz-checkbox [(ngModel)]="includeJobHistory" (ngModelChange)="onJobHistoryChange()">
+                    Include Job History
+                </label>
+                <label nz-checkbox [(ngModel)]="resetAutoIncrement">
+                    Reset Auto-Increment
+                </label>
+            </div>
+
+            <div class="idc__options-right">
+                <button nz-button nzType="default" (click)="loadPreview()" [disabled]="loading">
+                    <span nz-icon nzType="reload" nzTheme="outline"></span>
+                    Refresh
+                </button>
+                <button nz-button nzType="default" (click)="executeDryRun()" [disabled]="isExecuteDisabled()">
+                    <span nz-icon nzType="caret-right" nzTheme="outline"></span>
+                    Dry Run
+                </button>
+                <button nz-button nzType="primary" nzDanger (click)="executeCleanupWithConfirmation()"
+                    [disabled]="isExecuteDisabled()">
+                    <span nz-icon nzType="delete" nzTheme="outline"></span>
+                    Execute
+                </button>
+            </div>
+        </div>
+
+        <div class="idc__scope-desc">
+            <strong>Description:</strong> {{ getScopeDescription() }}
+        </div>
+
+        <div *ngIf="selectedScope === 'SPECIFIC_SOURCES'" class="idc__source-section">
+            <div class="idc__source-header">
+                <span class="idc__label">Select Sources:</span>
+                <div class="idc__source-actions">
+                    <button nz-button nzType="link" nzSize="small" (click)="selectAllSources()"
+                        [disabled]="allSourcesSelected()">Select All</button>
+                    <button nz-button nzType="text" nzSize="small" (click)="clearAllSources()"
+                        [disabled]="!anySourceSelected()">Clear</button>
+                </div>
+            </div>
+
+            <div class="idc__source-checks">
+                <label nz-checkbox *ngFor="let source of sourceOptions" [(ngModel)]="source.selected"
+                    (ngModelChange)="toggleSource()">
+                    {{ source.displayName }}
+                </label>
+            </div>
+
+            <div class="idc__orphan-option">
+                <label nz-checkbox [(ngModel)]="cleanOrphanedIdentities" (ngModelChange)="loadPreview()">
+                    Clean Orphaned Identities
+                </label>
+                <span nz-icon nzType="question-circle" nzTheme="outline" class="idc__help-icon" nz-tooltip
+                    nzTooltipTitle="Delete identities that have no remaining linked accounts after source deletion">
+                </span>
+            </div>
+
+            <div class="idc__source-info">
+                <span nz-icon nzType="info-circle" nzTheme="outline" style="color: #1890ff;"></span>
+                <span>When deleting specific sources, related identity links are automatically deleted to maintain data
+                    consistency.</span>
+            </div>
+        </div>
+    </nz-card>
+
+    <nz-card *ngIf="showResult && lastResult" nzSize="small" class="idc__section"
+        [class.idc__result--success]="lastResult.success" [class.idc__result--error]="!lastResult.success">
+        <div class="idc__result-header">
+            <div class="idc__result-title">
+                <span nz-icon
+                    [nzType]="lastResult.success ? 'check-circle' : 'exclamation-circle'" nzTheme="outline"
+                    [style.color]="lastResult.success ? '#52c41a' : '#ff4d4f'"></span>
+                <strong>Results</strong>
+            </div>
+            <nz-tag [nzColor]="lastResult.options?.dryRun ? 'blue' : 'green'">
+                {{ lastResult.options?.dryRun ? 'DRY RUN' : 'EXECUTED' }}
+            </nz-tag>
+        </div>
+
+        <div class="idc__result-stats">
+            <span><strong>Status:</strong>
+                <span [style.color]="lastResult.success ? '#52c41a' : '#ff4d4f'">
+                    {{ lastResult.success ? 'Success' : 'Failed' }}
+                </span>
+            </span>
+            <nz-divider nzType="vertical"></nz-divider>
+            <span><strong>Records:</strong> <span class="idc__mono">{{ lastResult.totalDeleted | number }}</span></span>
+            <nz-divider nzType="vertical"></nz-divider>
+            <span><strong>Time:</strong> <span class="idc__mono">{{ formatExecutionTime(lastResult.executionTimeMs) }}</span></span>
+            <nz-divider nzType="vertical"></nz-divider>
+            <span><strong>By:</strong> {{ lastResult.cleanedBy }}</span>
+            <nz-divider nzType="vertical"></nz-divider>
+            <span><strong>At:</strong> {{ formatTimestamp(lastResult.cleanedAt) }}</span>
+        </div>
+
+        <div class="idc__result-message" [style.color]="lastResult.success ? '#389e0d' : '#cf1322'">
+            {{ lastResult.message }}
+        </div>
+    </nz-card>
+
+    <nz-card nzSize="small" class="idc__section">
+        <div class="idc__preview-header">
+            <div class="idc__preview-title">
+                <span nz-icon nzType="eye" nzTheme="outline" style="color: #1890ff;"></span>
+                <strong>Data Preview</strong>
+            </div>
+            <nz-tag *ngIf="previewLoaded && !loading" nzColor="blue">
+                Total: {{ totalRecords | number }}
+            </nz-tag>
+        </div>
+
+        <div *ngIf="warnings.length > 0" class="idc__warnings">
+            <div *ngFor="let warning of warnings" class="idc__warning-item">
+                <span nz-icon nzType="warning" nzTheme="outline" style="color: #faad14;"></span>
+                <span>{{ warning }}</span>
+            </div>
+        </div>
+
+        <div *ngIf="loading" class="idc__state">
+            <nz-spin nzSimple></nz-spin>
+            <span>Loading preview...</span>
+        </div>
+
+        <div *ngIf="!loading && previewLoaded && totalRecords === 0" class="idc__state idc__state--success">
+            <span nz-icon nzType="check-circle" nzTheme="outline" style="color: #52c41a;"></span>
+            <span>No records found. Tables are already empty.</span>
+        </div>
+
+        <div *ngIf="!loading && previewLoaded && selectedScope === 'SPECIFIC_SOURCES' && getSelectedSources().length === 0"
+            class="idc__state">
+            <span nz-icon nzType="info-circle" nzTheme="outline" style="color: #8c8c8c;"></span>
+            <span>Select at least one source to see preview.</span>
+        </div>
+
+        <div *ngIf="!loading && previewLoaded && totalRecords > 0" nz-row [nzGutter]="16">
+            <div *ngFor="let category of getCategories()" nz-col [nzXs]="24" [nzMd]="12"
+                style="margin-bottom: 16px;">
+                <div class="idc__category">
+                    <div class="idc__category-header" (click)="toggleCategory(category)">
+                        <div class="idc__category-left">
+                            <span nz-icon [nzType]="getCategoryIcon(category)" nzTheme="outline"></span>
+                            <span class="idc__category-label">{{ getCategoryLabel(category) }}</span>
+                        </div>
+                        <div class="idc__category-right">
+                            <span class="idc__mono" style="font-size: 12px;">{{ getCategoryTotal(category) | number }}</span>
+                            <span nz-icon [nzType]="isCategoryExpanded(category) ? 'up' : 'down'"
+                                nzTheme="outline" style="color: #8c8c8c;"></span>
+                        </div>
+                    </div>
+                    <div *ngIf="isCategoryExpanded(category)">
+                        <div *ngFor="let table of getRecordsByCategory(category)" class="idc__category-item">
+                            <span class="idc__category-item-name">{{ table.displayName }}</span>
+                            <span class="idc__mono" [style.color]="table.count === 0 ? '#d9d9d9' : 'rgba(0,0,0,0.65)'"
+                                style="font-size: 12px;">
+                                {{ table.count | number }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nz-card>
+</div>
+
+<div *ngIf="executing" class="idc__overlay">
+    <div class="idc__overlay-content">
+        <nz-spin nzSimple></nz-spin>
+        <span>Executing cleanup...</span>
+    </div>
+</div>

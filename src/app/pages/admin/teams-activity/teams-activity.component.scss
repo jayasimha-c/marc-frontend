@@ -1,0 +1,27 @@
+:host { display: block; width: 100%; }
+
+.ta-response-data {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  overflow: auto;
+  max-height: 200px;
+  background: rgba(0, 0, 0, 0.04);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ta-copy-bar {
+  margin-top: 16px;
+  text-align: right;
+}
+
+code {
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 2px 6px;
+  border-radius: 3px;
+}

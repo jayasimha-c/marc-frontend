@@ -1,0 +1,482 @@
+<!-- Toolbar -->
+<div class="adv-table__toolbar" *ngIf="title || actions.length || showSearch || showRefresh || showExport || showColumnSettings || extraToolbarRef">
+  <!-- Left: Title block -->
+  <div class="adv-table__toolbar-left">
+    <div class="adv-table__title-block" *ngIf="title">
+      <h4 class="adv-table__title">{{ title }}</h4>
+      <span class="adv-table__subtitle" *ngIf="subtitle">{{ subtitle }}</span>
+    </div>
+  </div>
+
+  <!-- Right: Search + Actions + Buttons -->
+  <div class="adv-table__toolbar-right">
+    <!-- Global search -->
+    <nz-input-group [nzPrefix]="searchIcon" *ngIf="showSearch" class="adv-table__search">
+      <input
+        nz-input
+        placeholder="Search..."
+        [(ngModel)]="globalSearch"
+        (ngModelChange)="onGlobalSearch()"
+        [nzSize]="'small'"
+      />
+    </nz-input-group>
+    <ng-template #searchIcon>
+      <span nz-icon nzType="search"></span>
+    </ng-template>
+
+    <!-- Extra toolbar content projection -->
+    <ng-container *ngIf="extraToolbarRef">
+      <ng-container *ngTemplateOutlet="extraToolbarRef"></ng-container>
+    </ng-container>
+
+    <!-- Action buttons -->
+    <nz-space *ngIf="actions.length" [nzSize]="'small'">
+      <ng-container *ngFor="let action of visibleActions">
+        <button
+          *nzSpaceItem
+          nz-button
+          [nzType]="action.type || 'default'"
+          [nzDanger]="action.danger || false"
+          [disabled]="action.disabled || false"
+          [nz-tooltip]="action.tooltip"
+          (click)="action.command()"
+          nzSize="small"
+        >
+          <span nz-icon *ngIf="action.icon" [nzType]="action.icon" nzTheme="outline"></span>
+          {{ action.label }}
+        </button>
+      </ng-container>
+      <!-- Overflow "More" dropdown -->
+      <ng-container *ngIf="overflowActions.length">
+        <button *nzSpaceItem nz-button nzSize="small" nz-dropdown [nzDropdownMenu]="moreMenu" nzTrigger="click">
+          <span nz-icon nzType="more" nzTheme="outline"></span> More
+        </button>
+        <nz-dropdown-menu #moreMenu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item *ngFor="let action of overflowActions"
+              [nzDanger]="action.danger || false"
+              [nzDisabled]="action.disabled || false"
+              (click)="action.command()">
+              <span nz-icon *ngIf="action.icon" [nzType]="action.icon" nzTheme="outline"></span>
+              <span>{{ action.label }}</span>
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </ng-container>
+    </nz-space>
+
+    <!-- Column settings -->
+    <button
+      *ngIf="showColumnSettings"
+      nz-button
+      nzType="text"
+      nzSize="small"
+      nz-tooltip="Column Settings"
+      (click)="openColumnSettings()"
+    >
+      <span nz-icon nzType="setting"></span>
+    </button>
+
+    <!-- Refresh -->
+    <button
+      *ngIf="showRefresh"
+      nz-button
+      nzType="text"
+      nzSize="small"
+      nz-tooltip="Refresh"
+      (click)="onRefresh()"
+    >
+      <span nz-icon nzType="reload"></span>
+    </button>
+
+    <!-- Export -->
+    <button
+      *ngIf="showExport"
+      nz-button
+      nzType="text"
+      nzSize="small"
+      nz-tooltip="Export CSV"
+      (click)="exportCsv()"
+    >
+      <span nz-icon nzType="download"></span>
+    </button>
+  </div>
+</div>
+
+<!-- Table -->
+<nz-table
+  #advTable
+  [nzData]="displayData"
+  [nzLoading]="loading"
+  [nzSize]="size"
+  [nzBordered]="bordered"
+  [nzTableLayout]="tableLayout"
+  [nzShowPagination]="showPagination"
+  [nzPageSize]="pageSize"
+  [nzPageIndex]="pageIndex"
+  [nzPageSizeOptions]="pageSizeOptions"
+  nzShowSizeChanger
+  [nzSimple]="simplePagination"
+  [nzPaginationType]="paginationType"
+  [nzPaginationPosition]="paginationPosition"
+  [nzFrontPagination]="!serverSide"
+  [nzTotal]="serverSide ? (totalRecords || total || 0) : (totalRecords || displayData.length)"
+  [nzScroll]="{ x: scrollX || null, y: scrollY || null }"
+  [nzTitle]="tableTitle || null"
+  [nzFooter]="tableFooter || null"
+  [nzNoResult]="emptyTpl"
+  [nzShowTotal]="totalTpl"
+  (nzPageIndexChange)="onPageIndexChange($event)"
+  (nzPageSizeChange)="onPageSizeChange($event)"
+  (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+>
+  <thead>
+    <!-- Header row -->
+    <tr *ngIf="showHeader">
+      <!-- Expand placeholder -->
+      <th *ngIf="expandable" nzWidth="40px" [nzLeft]="!!scrollX"></th>
+
+      <!-- Select all checkbox -->
+      <th
+        *ngIf="showSelection"
+        nzWidth="50px"
+        [nzLeft]="!!scrollX"
+        [nzChecked]="checked"
+        [nzIndeterminate]="indeterminate"
+        (nzCheckedChange)="onAllChecked($event)"
+      ></th>
+
+      <!-- Column headers -->
+      <th
+        *ngFor="let col of visibleColumns"
+        [nzWidth]="col.width || null"
+        [nzAlign]="col.align || 'left'"
+        [nzLeft]="col.fixed === 'left'"
+        [nzRight]="col.fixed === 'right'"
+      >
+        <div class="adv-table__header-cell">
+          <!-- Header text + sort (clickable area for sort) -->
+          <span
+            class="adv-table__header-text"
+            [class.adv-table__sortable]="col.sortable !== false && col.type !== 'actions'"
+            (click)="col.sortable !== false && col.type !== 'actions' ? onSort(col) : null"
+          >
+            <span [nz-tooltip]="col.headerTooltip">{{ col.header }}</span>
+            <span class="adv-table__sort-icons" *ngIf="col.sortable !== false && col.type !== 'actions'">
+              <span
+                nz-icon
+                nzType="caret-up"
+                nzTheme="fill"
+                [class.active]="sortField === col.field && sortDirection === 'ascend'"
+              ></span>
+              <span
+                nz-icon
+                nzType="caret-down"
+                nzTheme="fill"
+                [class.active]="sortField === col.field && sortDirection === 'descend'"
+              ></span>
+            </span>
+          </span>
+
+          <!-- Column filter dropdown (dropdown mode) -->
+          <ng-container *ngIf="filterMode === 'dropdown' && col.filterable">
+            <span
+              class="adv-table__filter-trigger"
+              nz-dropdown
+              [nzDropdownMenu]="colFilterMenu"
+              nzTrigger="click"
+              [nzClickHide]="false"
+              [class.active]="!!columnFilters[col.field]"
+              (click)="$event.stopPropagation()"
+            >
+              <span nz-icon nzType="search"></span>
+            </span>
+            <nz-dropdown-menu #colFilterMenu="nzDropdownMenu">
+              <div class="ant-table-filter-dropdown">
+                <div class="adv-table__filter-panel">
+                  <!-- Select filter -->
+                  <ng-container *ngIf="col.filterType === 'select'; else textFilterPanel">
+                    <nz-select
+                      nzPlaceHolder="Select..."
+                      nzAllowClear
+                      nzSize="small"
+                      style="width: 100%"
+                      [ngModel]="filterSearchValues[col.field] || null"
+                      (ngModelChange)="filterSearchValues[col.field] = $event || ''"
+                    >
+                      <nz-option
+                        *ngFor="let opt of col.filterOptions"
+                        [nzLabel]="opt.label"
+                        [nzValue]="opt.value"
+                      ></nz-option>
+                    </nz-select>
+                  </ng-container>
+                  <!-- Text filter -->
+                  <ng-template #textFilterPanel>
+                    <input
+                      nz-input
+                      nzSize="small"
+                      [placeholder]="'Search ' + col.header + '...'"
+                      [ngModel]="filterSearchValues[col.field] || ''"
+                      (ngModelChange)="filterSearchValues[col.field] = $event"
+                      (keyup.enter)="applyColumnFilter(col.field)"
+                    />
+                  </ng-template>
+                  <div class="adv-table__filter-panel-btns">
+                    <button nz-button nzSize="small" nzType="primary" (click)="applyColumnFilter(col.field)">
+                      Search
+                    </button>
+                    <button nz-button nzSize="small" (click)="resetColumnFilter(col.field)">
+                      Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </nz-dropdown-menu>
+          </ng-container>
+        </div>
+      </th>
+    </tr>
+
+    <!-- Filter row (row mode) -->
+    <tr *ngIf="showFilterRow && filterMode === 'row'" class="adv-table__filter-row">
+      <th *ngIf="expandable"></th>
+      <th *ngIf="showSelection"></th>
+      <th *ngFor="let col of visibleColumns">
+        <ng-container *ngIf="col.filterable">
+          <nz-select
+            *ngIf="col.filterType === 'select'; else rowTextFilter"
+            nzPlaceHolder="Filter..."
+            nzAllowClear
+            nzSize="small"
+            [ngModel]="columnFilters[col.field] || null"
+            (ngModelChange)="onColumnFilter(col.field, $event || '')"
+            style="width: 100%"
+          >
+            <nz-option
+              *ngFor="let opt of col.filterOptions"
+              [nzLabel]="opt.label"
+              [nzValue]="opt.value"
+            ></nz-option>
+          </nz-select>
+          <ng-template #rowTextFilter>
+            <input
+              nz-input
+              nzSize="small"
+              placeholder="Filter..."
+              [ngModel]="columnFilters[col.field] || ''"
+              (ngModelChange)="onColumnFilter(col.field, $event)"
+            />
+          </ng-template>
+        </ng-container>
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <ng-container *ngFor="let row of advTable.data">
+      <tr
+        (click)="onRowClick(row)"
+        [class.adv-table__row-clickable]="rowClick.observers.length > 0"
+      >
+        <!-- Expand toggle -->
+        <td
+          *ngIf="expandable"
+          [nzLeft]="!!scrollX"
+          [nzExpand]="isExpanded(row)"
+          (nzExpandChange)="toggleExpand(row)"
+        ></td>
+
+        <!-- Row checkbox -->
+        <td
+          *ngIf="showSelection"
+          [nzLeft]="!!scrollX"
+          [nzChecked]="setOfCheckedId.has(getFieldValue(row, rowKey))"
+          (nzCheckedChange)="onItemChecked(getFieldValue(row, rowKey), $event)"
+          (click)="$event.stopPropagation()"
+        ></td>
+
+        <!-- Cell rendering -->
+        <td
+          *ngFor="let col of visibleColumns"
+          [nzAlign]="col.align || 'left'"
+          [nzLeft]="col.fixed === 'left'"
+          [nzRight]="col.fixed === 'right'"
+          [nzEllipsis]="col.ellipsis || ellipsis"
+          [ngClass]="getCellClass(row, col)"
+        >
+          <ng-container [ngSwitch]="col.type">
+            <!-- Date -->
+            <ng-container *ngSwitchCase="'date'">
+              {{ getFieldValue(row, col.field) | date:(col.dateFormat || 'mediumDate') }}
+            </ng-container>
+
+            <!-- Number -->
+            <ng-container *ngSwitchCase="'number'">
+              {{ getFieldValue(row, col.field) | number:(col.numberFormat || '') }}
+            </ng-container>
+
+            <!-- Boolean -->
+            <ng-container *ngSwitchCase="'boolean'">
+              <span nz-icon
+                [nzType]="getFieldValue(row, col.field) ? 'check-circle' : 'close-circle'"
+                [class.adv-table__bool-true]="getFieldValue(row, col.field)"
+                [class.adv-table__bool-false]="!getFieldValue(row, col.field)"
+              ></span>
+            </ng-container>
+
+            <!-- Tag / Status -->
+            <ng-container *ngSwitchCase="'tag'">
+              <nz-tag [nzColor]="getTagColor(getFieldValue(row, col.field), col)">
+                {{ getFieldValue(row, col.field) }}
+              </nz-tag>
+            </ng-container>
+            <ng-container *ngSwitchCase="'status'">
+              <nz-tag [nzColor]="getTagColor(getFieldValue(row, col.field), col)">
+                {{ getFieldValue(row, col.field) }}
+              </nz-tag>
+            </ng-container>
+
+            <!-- Link -->
+            <ng-container *ngSwitchCase="'link'">
+              <a class="adv-table__link" (click)="col.onClick && col.onClick(row); $event.stopPropagation()">
+                {{ getFieldValue(row, col.field) }}
+              </a>
+            </ng-container>
+
+            <!-- Actions -->
+            <ng-container *ngSwitchCase="'actions'">
+              <!-- Custom operations template -->
+              <ng-container *ngIf="customOperationsTemplate" [ngTemplateOutlet]="customOperationsTemplate" [ngTemplateOutletContext]="{ $implicit: row }"></ng-container>
+              
+              <!-- Default actions -->
+              <nz-space *ngIf="!customOperationsTemplate" [nzSize]="4">
+                <ng-container *ngFor="let action of col.actions">
+                  <button
+                    *nzSpaceItem
+                    nz-button
+                    nzType="link"
+                    nzSize="small"
+                    [nz-tooltip]="action.tooltip"
+                    [nzDanger]="action.danger || false"
+                    [disabled]="action.disabled ? action.disabled(row) : false"
+                    [class.adv-table__action-hidden]="action.hidden && action.hidden(row)"
+                    (click)="action.command(row); $event.stopPropagation()"
+                  >
+                    <span nz-icon [nzType]="action.icon" nzTheme="outline"></span>
+                  </button>
+                </ng-container>
+              </nz-space>
+            </ng-container>
+
+            <!-- Template -->
+            <ng-container *ngSwitchCase="'template'">
+              <ng-container
+                *ngTemplateOutlet="col.templateRef; context: { $implicit: row, row: row, value: getFieldValue(row, col.field) }"
+              ></ng-container>
+            </ng-container>
+
+            <!-- Default: text -->
+            <ng-container *ngSwitchDefault>
+              <!-- Custom status template -->
+              <ng-container *ngIf="customStatusTemplate && col.field === 'status'" [ngTemplateOutlet]="customStatusTemplate" [ngTemplateOutletContext]="{ $implicit: row }"></ng-container>
+              
+              <!-- Regular text -->
+              <ng-container *ngIf="!customStatusTemplate || col.field !== 'status'">
+                {{ getFieldValue(row, col.field) }}
+              </ng-container>
+            </ng-container>
+          </ng-container>
+        </td>
+      </tr>
+
+      <!-- Expandable row content -->
+      <tr *ngIf="expandable" [nzExpand]="isExpanded(row)">
+        <ng-container *ngIf="expandRowRef">
+          <ng-container *ngTemplateOutlet="expandRowRef; context: { $implicit: row }"></ng-container>
+        </ng-container>
+      </tr>
+    </ng-container>
+  </tbody>
+</nz-table>
+
+<!-- Total template -->
+<ng-template #totalTpl let-range="range" let-total>
+  {{ range[0] }}-{{ range[1] }} of {{ total }} items
+</ng-template>
+
+<!-- Empty template -->
+<ng-template #emptyTpl>
+  <nz-empty [nzNotFoundContent]="emptyText"></nz-empty>
+</ng-template>
+
+<!-- Column Settings Modal -->
+<nz-modal
+  [(nzVisible)]="columnSettingsVisible"
+  nzTitle="Column Settings"
+  (nzOnCancel)="handleColumnSettingsCancel()"
+  (nzOnOk)="handleColumnSettingsOk()"
+>
+  <ng-container *nzModalContent>
+    <div nz-row [nzGutter]="24">
+      <!-- Displayed columns -->
+      <div nz-col [nzSpan]="12">
+        <div class="adv-table__col-settings">
+          <p class="adv-table__col-settings-title">Displayed (drag to sort)</p>
+          <div
+            cdkDropList
+            #displayedList="cdkDropList"
+            [cdkDropListData]="settingsDisplayed"
+            [cdkDropListConnectedTo]="[hiddenList]"
+            class="adv-table__col-settings-list"
+            (cdkDropListDropped)="onColumnDrop($event)"
+          >
+            <div
+              class="adv-table__col-settings-item"
+              *ngFor="let col of settingsDisplayed; let i = index"
+              cdkDrag
+            >
+              {{ col.header }}
+              <span
+                nz-icon
+                nzType="minus-circle"
+                nzTheme="outline"
+                class="adv-table__col-settings-action"
+                (click)="removeFromDisplayed(col, i)"
+              ></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Hidden columns -->
+      <div nz-col [nzSpan]="12">
+        <div class="adv-table__col-settings">
+          <p class="adv-table__col-settings-title">Not Shown</p>
+          <div
+            cdkDropList
+            #hiddenList="cdkDropList"
+            [cdkDropListData]="settingsHidden"
+            [cdkDropListConnectedTo]="[displayedList]"
+            class="adv-table__col-settings-list"
+            (cdkDropListDropped)="onColumnDrop($event)"
+          >
+            <div
+              class="adv-table__col-settings-item"
+              *ngFor="let col of settingsHidden; let i = index"
+              cdkDrag
+            >
+              {{ col.header }}
+              <span
+                nz-icon
+                nzType="plus-circle"
+                nzTheme="outline"
+                class="adv-table__col-settings-action"
+                (click)="addToDisplayed(col, i)"
+              ></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,27 @@
+:host { display: block; height: 100%; }
+
+.id-hub {
+  height: calc(100vh - 64px);
+
+  &__sidebar-header {
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  &__content {
+    padding: 16px;
+    overflow: auto;
+  }
+
+  &__nav-count { margin-left: auto; }
+
+  &__icon-green { color: #52c41a; }
+  &__icon-orange { color: #faad14; }
+  &__icon-red { color: #ff4d4f; }
+  &__icon-purple { color: #722ed1; }
+}
+
+::host ::ng-deep .id-hub__menu .ant-menu-item {
+  display: flex;
+  align-items: center;
+}

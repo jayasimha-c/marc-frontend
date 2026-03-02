@@ -1,0 +1,64 @@
+<div class="readiness">
+  <div class="readiness__layout">
+    <!-- Left Panel: Module List -->
+    <nz-card class="readiness__modules" [nzBordered]="true" nzTitle="Modules">
+      <div *ngIf="loadingModules" style="text-align: center; padding: 32px 0;">
+        <nz-spin nzSimple nzSize="small"></nz-spin>
+      </div>
+
+      <div *ngIf="!loadingModules" class="module-list">
+        <div *ngFor="let module of modules"
+             class="module-list__item"
+             [class.module-list__item--selected]="selectedModule?.code === module.code"
+             (click)="onModuleSelect(module)">
+          <span nz-icon [nzType]="getModuleIcon(module.code)" nzTheme="outline" class="module-list__icon"></span>
+          <div class="module-list__info">
+            <div class="module-list__code">{{ module.code }}</div>
+            <div class="module-list__name">{{ module.name }}</div>
+          </div>
+          <span *ngIf="selectedModule?.code === module.code"
+                nz-icon nzType="right" nzTheme="outline"
+                class="module-list__arrow"></span>
+        </div>
+      </div>
+    </nz-card>
+
+    <!-- Right Panel: Results -->
+    <div class="readiness__content">
+      <!-- Summary Bar -->
+      <nz-card *ngIf="moduleReadiness" class="readiness__summary" [nzBordered]="true">
+        <div class="summary">
+          <div class="summary__title">
+            <span nz-icon [nzType]="getModuleIcon(moduleReadiness.moduleType)" nzTheme="outline"></span>
+            {{ moduleReadiness.moduleName }}
+          </div>
+          <div class="summary__stats">
+            <nz-tag [nzColor]="getStatusColor()">{{ moduleReadiness.overallStatus }}</nz-tag>
+            <nz-tag nzColor="blue">{{ moduleReadiness.readinessPercentage }}%</nz-tag>
+            <span class="summary__count summary__count--pass">
+              <span nz-icon nzType="check-circle" nzTheme="outline"></span> {{ moduleReadiness.passedChecks }}
+            </span>
+            <span class="summary__count summary__count--fail">
+              <span nz-icon nzType="close-circle" nzTheme="outline"></span> {{ moduleReadiness.failedChecks }}
+            </span>
+            <span class="summary__count summary__count--warn">
+              <span nz-icon nzType="warning" nzTheme="outline"></span> {{ moduleReadiness.warningChecks }}
+            </span>
+          </div>
+        </div>
+      </nz-card>
+
+      <!-- Results Table -->
+      <app-advanced-table
+        [title]="selectedModule ? 'Readiness Checks - ' + selectedModule.name : 'Readiness Checks'"
+        [data]="tableData"
+        [columns]="columns"
+        [actions]="tableActions"
+        [loading]="loading"
+        [showSearch]="true"
+        [showPagination]="false"
+        size="middle">
+      </app-advanced-table>
+    </div>
+  </div>
+</div>

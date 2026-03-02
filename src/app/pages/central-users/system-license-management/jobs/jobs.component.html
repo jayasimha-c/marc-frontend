@@ -1,0 +1,12 @@
+<app-page-panel header="License Jobs">
+    <app-advanced-table
+        [columns]="columns"
+        [data]="data"
+        [loading]="loading"
+        [total]="total"
+        [actions]="actions"
+        [showSearch]="true"
+        (rowClick)="onRowClick($event)"
+        (refresh)="loadData()">
+    </app-advanced-table>
+</app-page-panel>

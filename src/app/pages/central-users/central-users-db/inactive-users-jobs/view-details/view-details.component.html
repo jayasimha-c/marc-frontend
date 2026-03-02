@@ -1,0 +1,32 @@
+<nz-table #detailTable [nzData]="data" nzSize="small" [nzFrontPagination]="false"
+    [nzTotal]="totalRecords" [nzPageIndex]="pageIndex" [nzPageSize]="pageSize"
+    [nzLoading]="loading" (nzQueryParams)="onQueryParamsChange($event)" nzShowSizeChanger>
+    <thead>
+        <tr>
+            <th>System</th>
+            <th>User ID</th>
+            <th>Locked</th>
+            <th>Changed Valid To</th>
+            <th>Obsolete Group</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let row of detailTable.data">
+            <td>{{ row.sapSystem }}</td>
+            <td>{{ row.bname }}</td>
+            <td>
+                <nz-tag [nzColor]="row.locked ? 'green' : 'red'">{{ row.locked ? 'Y' : 'N' }}</nz-tag>
+            </td>
+            <td>
+                <nz-tag [nzColor]="row.changeValidTo ? 'green' : 'red'">{{ row.changeValidTo ? 'Y' : 'N' }}</nz-tag>
+            </td>
+            <td>
+                <nz-tag [nzColor]="row.obsolete ? 'green' : 'red'">{{ row.obsolete ? 'Y' : 'N' }}</nz-tag>
+            </td>
+        </tr>
+    </tbody>
+</nz-table>
+
+<div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+    <button nz-button nzType="default" (click)="modal.close()">Close</button>
+</div>

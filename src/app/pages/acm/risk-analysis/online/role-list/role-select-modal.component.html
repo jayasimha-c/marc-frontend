@@ -1,0 +1,50 @@
+<div style="padding: 0 16px;">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+    <span style="font-weight: 600;">Available Roles</span>
+    <nz-button-group>
+      <button nz-button nzSize="small" nzType="primary" [disabled]="selectedItems.length === 0" (click)="saveSelected()">
+        <span nz-icon nzType="check" nzTheme="outline"></span> Add Selected
+      </button>
+      <button nz-button nzSize="small" (click)="saveAll()">
+        <span nz-icon nzType="double-right" nzTheme="outline"></span> Add All
+      </button>
+      <button nz-button nzSize="small" (click)="loadData()">
+        <span nz-icon nzType="reload" nzTheme="outline"></span>
+      </button>
+    </nz-button-group>
+  </div>
+
+  <nz-input-group nzSize="small" [nzSuffix]="roleModalSearchIcon" style="margin-bottom: 8px; max-width: 280px;">
+    <input nz-input placeholder="Search roles..." [(ngModel)]="searchText" (keyup.enter)="onSearch()" />
+  </nz-input-group>
+  <ng-template #roleModalSearchIcon>
+    <span nz-icon nzType="search" style="cursor: pointer;" (click)="onSearch()"></span>
+  </ng-template>
+
+  <nz-table #selectRoleTable [nzData]="items" nzSize="small"
+            [nzFrontPagination]="false"
+            [nzTotal]="totalRecords"
+            [nzPageIndex]="currentPage"
+            [nzPageSize]="pageSize"
+            (nzPageIndexChange)="onPageChange($event)"
+            nzTableLayout="fixed"
+            [nzScroll]="{ y: '50vh' }">
+    <thead>
+      <tr>
+        <th nzWidth="40px" [nzChecked]="allChecked" (nzCheckedChange)="onAllChecked($event)"></th>
+        <th>Role Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of selectRoleTable.data">
+        <td [nzChecked]="isChecked(row)" (nzCheckedChange)="onItemChecked(row, $event)"></td>
+        <td style="color: #1890ff;">{{ row.name }}</td>
+        <td>{{ row.description }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</div>
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+</div>

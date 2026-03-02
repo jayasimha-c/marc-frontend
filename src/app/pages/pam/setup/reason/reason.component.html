@@ -1,0 +1,13 @@
+<app-advanced-table title="PAM Reason" [columns]="columns" [data]="data" [actions]="tableActions" [loading]="loading"
+    [showSearch]="false" [showPagination]="false" [showSelection]="true" rowKey="id"
+    (selectionChange)="onSelectionChange($event)"></app-advanced-table>
+
+<ng-template #userCodeTpl let-row="row">
+    <input type="text" nz-input nzSize="small" [(ngModel)]="row.userCode" (ngModelChange)="markModified(row)"
+        (paste)="onPaste($event)" />
+</ng-template>
+
+<ng-template #descriptionTpl let-row="row">
+    <input type="text" nz-input nzSize="small" [(ngModel)]="row.description" (ngModelChange)="markModified(row)"
+        (paste)="onPaste($event)" />
+</ng-template>

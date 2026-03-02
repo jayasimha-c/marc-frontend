@@ -1,0 +1,163 @@
+<app-page-panel header="User Actions">
+
+    <form [formGroup]="actionForm" nz-form nzLayout="vertical">
+
+        <!-- Step 1: SAP System & User Search -->
+        <nz-card nzSize="small" style="margin-bottom: 16px;">
+            <div style="margin-bottom: 12px;">
+                <strong>Step 1: Select SAP System &amp; Search User</strong>
+            </div>
+
+            <div nz-row [nzGutter]="16" nzAlign="bottom">
+                <div nz-col [nzXs]="24" [nzSm]="10">
+                    <nz-form-item>
+                        <nz-form-label nzRequired>SAP System</nz-form-label>
+                        <nz-form-control nzErrorTip="SAP System is required">
+                            <nz-select formControlName="sapSystem" nzPlaceHolder="Select SAP System"
+                                nzShowSearch style="width: 100%;">
+                                <nz-option *ngFor="let sys of sapSysList" [nzValue]="sys.id"
+                                    [nzLabel]="sys.destinationName"></nz-option>
+                            </nz-select>
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div nz-col [nzXs]="24" [nzSm]="10">
+                    <nz-form-item>
+                        <nz-form-label nzRequired>User ID</nz-form-label>
+                        <nz-form-control nzErrorTip="User ID is required">
+                            <input nz-input formControlName="userSearch" placeholder="Enter User ID" />
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div nz-col [nzXs]="24" [nzSm]="4">
+                    <nz-form-item>
+                        <nz-form-label>&nbsp;</nz-form-label>
+                        <nz-form-control>
+                            <button nz-button nzType="primary" nzBlock [nzLoading]="isSearching"
+                                [disabled]="!actionForm.get('sapSystem')?.value || !actionForm.get('userSearch')?.value"
+                                (click)="searchUsers()">
+                                <span nz-icon nzType="search"></span> Search
+                            </button>
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+            </div>
+        </nz-card>
+
+        <!-- Step 2: Business Process Selection (if available) -->
+        <nz-card *ngIf="dropDownList.length > 0" nzSize="small" style="margin-bottom: 16px;">
+            <div style="margin-bottom: 12px;">
+                <strong>Step 2: Select Business Process</strong>
+            </div>
+
+            <div nz-row [nzGutter]="16">
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6" *ngFor="let item of dropDownList">
+                    <nz-form-item>
+                        <nz-form-label>{{ item.name }}</nz-form-label>
+                        <nz-form-control>
+                            <nz-select [(ngModel)]="item.selected" [ngModelOptions]="{standalone: true}"
+                                nzPlaceHolder="Select {{ item.name }}" style="width: 100%;">
+                                <nz-option *ngFor="let opt of item.value" [nzValue]="opt.id"
+                                    [nzLabel]="opt.name"></nz-option>
+                            </nz-select>
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+            </div>
+        </nz-card>
+
+        <!-- Results: User List & Actions -->
+        <nz-card *ngIf="userList.length > 0" nzSize="small" style="margin-bottom: 16px;">
+            <div style="margin-bottom: 12px;">
+                <strong>{{ dropDownList.length > 0 ? 'Step 3' : 'Step 2' }}: Select Users &amp; Perform Action</strong>
+                <nz-tag style="margin-left: 8px;">{{ userList.length }} user(s) found</nz-tag>
+            </div>
+
+            <nz-table #userTable [nzData]="userList" [nzShowPagination]="userList.length > 10"
+                [nzPageSize]="10" nzSize="small" [nzScroll]="{ y: '300px' }">
+                <thead>
+                    <tr>
+                        <th nzWidth="40px" [nzChecked]="allChecked" [nzIndeterminate]="indeterminate"
+                            (nzCheckedChange)="onAllChecked($event)"></th>
+                        <th>System</th>
+                        <th>User ID</th>
+                        <th nzWidth="100px" nzAlign="center">Existing</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of userTable.data">
+                        <td [nzChecked]="setOfCheckedId.has(row.sapId + '_' + row.userId)"
+                            (nzCheckedChange)="onItemChecked(row.sapId + '_' + row.userId, $event)"></td>
+                        <td><strong>{{ row.sapName }}</strong></td>
+                        <td><code>{{ row.userId }}</code></td>
+                        <td nzAlign="center">
+                            <nz-tag [nzColor]="row.exist ? 'green' : 'red'">
+                                {{ row.exist ? 'Yes' : 'No' }}
+                            </nz-tag>
+                        </td>
+                    </tr>
+                </tbody>
+            </nz-table>
+
+            <nz-divider></nz-divider>
+
+            <!-- Footer: selection info + all action buttons -->
+            <div nz-row nzJustify="space-between" nzAlign="middle">
+                <div nz-col>
+                    <span *ngIf="getSelectedCount() > 0" nz-typography>
+                        {{ getSelectedCount() }} user(s) selected
+                    </span>
+                    <span *ngIf="getSelectedCount() === 0" nz-typography nzType="secondary">
+                        No users selected
+                    </span>
+                </div>
+                <div nz-col>
+                    <nz-button-group>
+                        <button nz-button nzType="default" nzDanger
+                            [disabled]="getSelectedCount() === 0 || isPerformingAction"
+                            [nzLoading]="isPerformingAction"
+                            (click)="performAction('lock')">
+                            <span nz-icon nzType="lock"></span> Lock
+                        </button>
+                        <button nz-button nzType="default"
+                            [disabled]="getSelectedCount() === 0 || isPerformingAction"
+                            [nzLoading]="isPerformingAction"
+                            (click)="performAction('unlock')">
+                            <span nz-icon nzType="unlock"></span> Unlock
+                        </button>
+                        <button nz-button nzType="default"
+                            [disabled]="getSelectedCount() === 0 || isPerformingAction"
+                            [nzLoading]="isPerformingAction"
+                            (click)="performAction('reset-password')">
+                            <span nz-icon nzType="key"></span> Reset Password
+                        </button>
+                        <button nz-button nzType="default" nzDanger
+                            [disabled]="getSelectedCount() === 0 || isPerformingAction"
+                            [nzLoading]="isPerformingAction"
+                            (click)="performAction('delete')">
+                            <span nz-icon nzType="delete"></span> Delete
+                        </button>
+                    </nz-button-group>
+                    <button nz-button nzType="default" (click)="resetForm()" style="margin-left: 8px;">
+                        <span nz-icon nzType="reload"></span> Reset
+                    </button>
+                </div>
+            </div>
+        </nz-card>
+
+        <!-- No Results -->
+        <nz-card *ngIf="hasSearched && userList.length === 0" nzSize="small">
+            <nz-empty nzNotFoundImage="simple"
+                [nzNotFoundContent]="noResultsTpl">
+                <ng-template #noResultsTpl>
+                    <div>No users found matching your search criteria.</div>
+                    <div style="font-size: 12px; color: rgba(0,0,0,0.45);">
+                        Try adjusting your search terms or selecting a different SAP system.
+                    </div>
+                </ng-template>
+            </nz-empty>
+        </nz-card>
+
+    </form>
+
+</app-page-panel>

@@ -1,0 +1,17 @@
+<app-page-panel header="Self-Service Requests">
+
+    <app-advanced-table
+        title=""
+        [data]="data"
+        [columns]="columns"
+        [actions]="actions"
+        [totalRecords]="totalRecords"
+        [loading]="loading"
+        [serverSide]="true"
+        [showPagination]="true"
+        size="middle"
+        scrollY="60vh"
+        (queryParamsChange)="loadData($event)">
+    </app-advanced-table>
+
+</app-page-panel>

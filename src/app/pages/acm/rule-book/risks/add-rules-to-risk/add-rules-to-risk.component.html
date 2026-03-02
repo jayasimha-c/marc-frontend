@@ -1,0 +1,129 @@
+<!-- Cross-system notice -->
+<nz-alert *ngIf="isCrossSystem" nzType="info" nzBanner
+  nzMessage="Cross-System Risk: Please assign a target system to each rule."
+  style="margin-bottom: 12px;"></nz-alert>
+
+<div style="padding: 16px;">
+  <div nz-row [nzGutter]="16">
+    <!-- Available Rules (left) -->
+    <div nz-col [nzSpan]="12">
+      <nz-card nzSize="small" [nzTitle]="'Available Rules (' + availableRules.length + ')'" [nzExtra]="availableActions">
+        <ng-template #availableActions>
+          <nz-space nzSize="small">
+            <button *nzSpaceItem nz-button nzSize="small" nzType="primary" (click)="addSelected()" nz-tooltip="Add Selected">
+              <span nz-icon nzType="right" nzTheme="outline"></span> Add
+            </button>
+            <button *nzSpaceItem nz-button nzSize="small" (click)="addAll()" nz-tooltip="Add All">
+              <span nz-icon nzType="double-right" nzTheme="outline"></span> All
+            </button>
+            <button *nzSpaceItem nz-button nzSize="small" (click)="loadAvailable()" nz-tooltip="Refresh">
+              <span nz-icon nzType="reload" nzTheme="outline"></span>
+            </button>
+          </nz-space>
+        </ng-template>
+
+        <nz-spin [nzSpinning]="availableLoading">
+          <nz-table #availableTable
+            [nzData]="availableRules"
+            nzSize="small"
+            nzTableLayout="fixed"
+            [nzShowPagination]="availableRules.length > 10"
+            [nzPageSize]="10"
+            [nzFrontPagination]="true"
+            [nzScroll]="{ y: '350px' }">
+            <thead>
+              <tr>
+                <th nzWidth="40px" [nzChecked]="availableAllChecked" [nzIndeterminate]="availableIndeterminate"
+                  (nzCheckedChange)="onAvailableAllChecked($event)"></th>
+                <th *ngFor="let col of availableColumns" [nzWidth]="col.width || null">{{col.header}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of availableTable.data">
+                <td [nzChecked]="setOfAvailableChecked.has(row.id)"
+                  (nzCheckedChange)="onAvailableChecked(row.id, $event)"></td>
+                <td *ngFor="let col of availableColumns">{{row[col.field]}}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-spin>
+      </nz-card>
+    </div>
+
+    <!-- Selected Rules (right) -->
+    <div nz-col [nzSpan]="12">
+      <nz-card nzSize="small" [nzTitle]="'Selected Rules (' + selectedRules.length + ')'" [nzExtra]="selectedActions">
+        <ng-template #selectedActions>
+          <nz-space nzSize="small">
+            <button *nzSpaceItem nz-button nzSize="small" nzDanger (click)="removeSelected()" nz-tooltip="Remove Selected">
+              <span nz-icon nzType="left" nzTheme="outline"></span> Remove
+            </button>
+            <button *nzSpaceItem nz-button nzSize="small" nzDanger (click)="removeAll()" nz-tooltip="Remove All">
+              <span nz-icon nzType="double-left" nzTheme="outline"></span> All
+            </button>
+          </nz-space>
+        </ng-template>
+
+        <nz-table #selectedTable
+          [nzData]="selectedRules"
+          nzSize="small"
+          nzTableLayout="fixed"
+          [nzShowPagination]="selectedRules.length > 10"
+          [nzPageSize]="10"
+          [nzFrontPagination]="true"
+          [nzScroll]="{ y: '350px' }">
+          <thead>
+            <tr>
+              <th nzWidth="40px" [nzChecked]="removeAllChecked" [nzIndeterminate]="removeIndeterminate"
+                (nzCheckedChange)="onRemoveAllChecked($event)"></th>
+              <th *ngFor="let col of selectedColumns" [nzWidth]="col.width || null">{{col.header}}</th>
+              <th *ngIf="isCrossSystem" nzWidth="150px">Target System</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of selectedTable.data">
+              <td [nzChecked]="setOfRemoveChecked.has(row.id)"
+                (nzCheckedChange)="onRemoveChecked(row.id, $event)"></td>
+              <td *ngFor="let col of selectedColumns">{{row[col.field]}}</td>
+              <td *ngIf="isCrossSystem">
+                <nz-select nzSize="small" [ngModel]="systemMap[row.id] || null"
+                  (ngModelChange)="onSystemChange(row.id, $event)" nzPlaceHolder="Select system"
+                  style="width: 100%">
+                  <nz-option *ngFor="let sys of availableSystems" [nzValue]="sys.id" [nzLabel]="sys.destinationName"></nz-option>
+                </nz-select>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </div>
+  </div>
+
+  <!-- Risk Condition -->
+  <div nz-row [nzGutter]="16" style="margin-top: 16px;">
+    <div nz-col [nzSpan]="6">
+      <nz-form-item>
+        <nz-form-control>
+          <div class="nz-float-label has-value">
+            <nz-select [(ngModel)]="selectedConditionId" nzPlaceHolder=" " (ngModelChange)="onConditionChange($event)">
+              <nz-option *ngFor="let c of riskConditions" [nzValue]="c.id" [nzLabel]="c.name"></nz-option>
+            </nz-select>
+            <label>Risk Condition</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col [nzSpan]="18" *ngIf="rcSelection === 'OTHER'">
+      <nz-form-item>
+        <nz-form-control>
+          <textarea nz-input [(ngModel)]="rCondition" placeholder="Custom risk condition..." [nzAutosize]="{minRows: 1, maxRows: 3}"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modalRef.close()">Close</button>
+  <button nz-button nzType="primary" (click)="save()">Save</button>
+</div>

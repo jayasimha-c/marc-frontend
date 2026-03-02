@@ -1,0 +1,120 @@
+<app-page-panel>
+  <ng-container header>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()">
+        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+      </button>
+      <span>{{ pageTitle }}</span>
+    </div>
+  </ng-container>
+
+  <!-- Loading -->
+  <div *ngIf="loading" style="display: flex; justify-content: center; padding: 48px 0;">
+    <nz-spin nzSimple></nz-spin>
+  </div>
+
+  <div *ngIf="!loading">
+    <nz-steps [nzCurrent]="currentStep" style="margin-bottom: 24px;">
+      <nz-step nzTitle="Configuration"></nz-step>
+      <nz-step nzTitle="Select Organizations"></nz-step>
+    </nz-steps>
+
+    <form [formGroup]="form">
+      <!-- Step 1: Configuration -->
+      <div *ngIf="currentStep === 0">
+        <nz-row [nzGutter]="16" style="margin-top: 8px;">
+          <nz-col [nzSpan]="12">
+            <nz-form-item>
+              <div class="nz-float-label" [class.has-value]="form.get('variantName')?.value">
+                <input nz-input placeholder=" " formControlName="variantName" autocomplete="off" />
+                <label>Variant Name</label>
+              </div>
+              <span style="color: #ff4d4f; font-size: 12px;" *ngIf="form.get('variantName')?.invalid && form.get('variantName')?.touched">
+                <span *ngIf="form.get('variantName')?.hasError('required')">Variant Name is required</span>
+                <span *ngIf="form.get('variantName')?.hasError('minlength')">Minimum 2 characters</span>
+              </span>
+            </nz-form-item>
+          </nz-col>
+          <nz-col [nzSpan]="12">
+            <nz-form-item>
+              <div class="nz-float-label" [class.has-value]="form.get('sapSystem')?.value">
+                <nz-select formControlName="sapSystem" nzPlaceHolder=" " nzShowSearch (ngModelChange)="onSystemChange()">
+                  <nz-option *ngFor="let sys of sapSystemList" [nzValue]="sys.id" [nzLabel]="sys.destinationName"></nz-option>
+                </nz-select>
+                <label>SAP System</label>
+              </div>
+              <span style="color: #ff4d4f; font-size: 12px;" *ngIf="form.get('sapSystem')?.invalid && form.get('sapSystem')?.touched">
+                SAP System is required
+              </span>
+            </nz-form-item>
+          </nz-col>
+        </nz-row>
+
+        <nz-alert *ngIf="formType === 'edit'" nzType="warning" nzShowIcon
+          nzMessage="Variant name and SAP System cannot be changed after creation."
+          style="margin-bottom: 16px;">
+        </nz-alert>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+          <button nz-button nzType="default" (click)="navigateBack()">Back</button>
+          <button nz-button nzType="primary" [disabled]="!canGoNext()" (click)="currentStep = 1">Next</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Select Organizations -->
+      <div *ngIf="currentStep === 1">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; margin-top: 8px;">
+          <span style="color: #666;">Select the organization names to include in this variant.</span>
+          <span style="font-size: 13px; font-weight: 500;"
+                [style.color]="checkedIds.size > 0 ? '#52c41a' : '#999'">
+            {{ checkedIds.size }} selected
+          </span>
+        </div>
+
+        <div *ngIf="!selectedSystemId" style="text-align: center; padding: 32px; color: #999; background: #fafafa; border-radius: 8px; border: 1px solid #e8e8e8;">
+          <span nz-icon nzType="info-circle" nzTheme="outline" style="font-size: 32px; display: block; margin-bottom: 8px;"></span>
+          <p>Please select a SAP System first to load organization names.</p>
+        </div>
+
+        <nz-spin [nzSpinning]="orgNamesLoading">
+          <div *ngIf="selectedSystemId && orgNamesData.length === 0 && !orgNamesLoading"
+               style="text-align: center; padding: 32px; color: #999; background: #fafafa; border-radius: 8px; border: 1px solid #e8e8e8;">
+            <span nz-icon nzType="folder" nzTheme="outline" style="font-size: 32px; display: block; margin-bottom: 8px;"></span>
+            <p>No organization names found for this system.</p>
+          </div>
+
+          <nz-table
+            *ngIf="selectedSystemId && orgNamesData.length > 0"
+            #orgTable
+            [nzData]="orgNamesData"
+            nzSize="small"
+            [nzShowPagination]="false"
+            [nzFrontPagination]="false"
+            [nzScroll]="{ y: '350px' }">
+            <thead>
+              <tr>
+                <th nzWidth="50px" [nzChecked]="allChecked" [nzIndeterminate]="indeterminate" (nzCheckedChange)="onAllChecked($event)"></th>
+                <th>Org Name</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of orgTable.data">
+                <td [nzChecked]="checkedIds.has(row.id)" (nzCheckedChange)="onItemChecked(row.id, $event)"></td>
+                <td>{{ row.name }}</td>
+                <td>{{ row.description }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-spin>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+          <button nz-button nzType="default" (click)="currentStep = 0">Back</button>
+          <button nz-button nzType="primary" [disabled]="!canSave()" (click)="onSave()">
+            {{ saving ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</app-page-panel>

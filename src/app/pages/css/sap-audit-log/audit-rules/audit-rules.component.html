@@ -1,0 +1,13 @@
+<div class="w-full p-4">
+  <app-advanced-table
+    [data]="rules"
+    [columns]="columns"
+    [loading]="loading"
+    [actions]="actions"
+    title="Audit Log Rules"
+    [showSearch]="true"
+    [showRefresh]="true"
+    (refresh)="loadRules()"
+    (rowClick)="onRowClick($event)">
+  </app-advanced-table>
+</div>

@@ -1,0 +1,66 @@
+<div style="padding: 16px;">
+  <!-- Stats Cards -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+    <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4" [nzXl]="4" style="margin-bottom: 8px;">
+      <app-statistics-card
+        title="Total Jobs"
+        [value]="jobStats.totalJobs"
+        description="All Jobs"
+        icon="history"
+        color="#1890ff">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4" [nzXl]="4" style="margin-bottom: 8px;">
+      <app-statistics-card
+        title="In Progress"
+        [value]="jobStats.inProgressJobs"
+        description="Running Jobs"
+        icon="clock-circle"
+        color="#fa8c16">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4" [nzXl]="4" style="margin-bottom: 8px;">
+      <app-statistics-card
+        title="Completed"
+        [value]="jobStats.completedJobs"
+        description="Successful Jobs"
+        icon="check-circle"
+        color="#52c41a">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4" [nzXl]="4" style="margin-bottom: 8px;">
+      <app-statistics-card
+        title="Failed"
+        [value]="jobStats.failedJobs"
+        description="Failed Jobs"
+        icon="exclamation-circle"
+        color="#f5222d">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4" [nzXl]="4" style="margin-bottom: 8px;">
+      <app-statistics-card
+        title="Partial"
+        [value]="jobStats.partialJobs"
+        description="Partial Jobs"
+        icon="warning"
+        color="#faad14">
+      </app-statistics-card>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <app-advanced-table
+    [title]="title"
+    [columns]="columns"
+    [data]="data"
+    [totalRecords]="totalRecords"
+    [actions]="actions"
+    [loading]="loading"
+    (rowClick)="onRowClicked($event)">
+    <ng-template #extraToolbar>
+      <button nz-button nzType="text" nzShape="circle" (click)="goBack()" nz-tooltip nzTooltipTitle="Back">
+        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+      </button>
+    </ng-template>
+  </app-advanced-table>
+</div>

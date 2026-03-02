@@ -1,0 +1,290 @@
+<div class="ocw">
+  <nz-card nzSize="small" nzTitle="Org Compliance Check" [nzExtra]="wizardExtra">
+    <ng-template #wizardExtra>
+      <nz-space>
+        <button *nzSpaceItem nz-button nzSize="small" nzType="text" (click)="navigateBack()">
+          <span nz-icon nzType="arrow-left" nzTheme="outline"></span> Back
+        </button>
+        <span *nzSpaceItem>
+          <nz-select nzPlaceHolder="Select SAP System" style="width: 220px;" nzSize="small"
+                     [ngModel]="selectedSystemId" (ngModelChange)="onSystemChange($event)"
+                     [nzLoading]="loadingSystems" nzShowSearch>
+            <nz-option *ngFor="let sys of sapSystems" [nzValue]="sys.id"
+                       [nzLabel]="sys.destinationName || sys.name"></nz-option>
+          </nz-select>
+        </span>
+        <button *nzSpaceItem nz-button nzSize="small" nzType="primary"
+                nz-dropdown [nzDropdownMenu]="executeMenu"
+                [disabled]="!canRunCheck() || runningCheck">
+          <span nz-icon nzType="caret-right" nzTheme="outline"></span>
+          Execute
+          <span nz-icon nzType="down" nzTheme="outline"></span>
+        </button>
+        <nz-dropdown-menu #executeMenu>
+          <ul nz-menu>
+            <li nz-menu-item (click)="onExecuteForeground()">
+              <span nz-icon nzType="caret-right" nzTheme="outline"></span> Execute
+            </li>
+            <li nz-menu-item (click)="onExecuteBackground()">
+              <span nz-icon nzType="clock-circle" nzTheme="outline"></span> Execute in Background
+            </li>
+            <li nz-menu-divider></li>
+            <li nz-menu-item (click)="selectAllRoles()" [nzDisabled]="!rolesLoaded">
+              <span nz-icon nzType="check-square" nzTheme="outline"></span> Select All Roles
+            </li>
+            <li nz-menu-item (click)="clearRoleSelection()" [nzDisabled]="selectedRoleNames.length === 0">
+              <span nz-icon nzType="close-square" nzTheme="outline"></span> Clear Selection
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </nz-space>
+    </ng-template>
+
+    <div *ngIf="!selectedSystemId" class="ocw__empty">
+      <nz-empty nzNotFoundContent="Select a SAP system to begin compliance check"></nz-empty>
+    </div>
+
+    <div *ngIf="selectedSystemId" class="ocw__grid">
+      <!-- Left Panel: Selection -->
+      <div class="ocw__selection">
+        <!-- Role Concept Template -->
+        <div class="ocw__section">
+          <div class="ocw__section-title">Role Concept Template</div>
+          <nz-select nzPlaceHolder="Optional: filter by template" style="width: 100%;" nzSize="small"
+                     [(ngModel)]="selectedRoleConceptTemplateId" nzAllowClear nzShowSearch
+                     [nzLoading]="loadingConceptTemplates">
+            <nz-option *ngFor="let t of roleConceptTemplates" [nzValue]="t.id"
+                       [nzLabel]="t.name"></nz-option>
+          </nz-select>
+        </div>
+
+        <!-- Org Templates -->
+        <div class="ocw__section">
+          <div class="ocw__section-title">
+            Org Templates
+            <nz-tag nzColor="blue">{{ selectedTemplateIds.length }} selected</nz-tag>
+          </div>
+          <nz-input-group nzSize="small" [nzPrefix]="searchIcon" style="margin-bottom: 8px;">
+            <input nz-input nzSize="small" placeholder="Search templates..."
+                   [(ngModel)]="orgTemplateSearch">
+          </nz-input-group>
+          <ng-template #searchIcon><span nz-icon nzType="search"></span></ng-template>
+
+          <div class="ocw__template-actions">
+            <a (click)="selectAllOrgTemplates()">Select All</a>
+            <nz-divider nzType="vertical"></nz-divider>
+            <a (click)="clearOrgTemplateSelection()">Clear</a>
+          </div>
+
+          <div class="ocw__template-list" *ngIf="!loadingOrgTemplates">
+            <label nz-checkbox *ngFor="let t of filteredOrgTemplates"
+                   [nzChecked]="isOrgTemplateSelected(t.id)"
+                   (nzCheckedChange)="toggleOrgTemplate(t)">
+              <span class="ocw__template-name">{{ t.templateName }}</span>
+              <span *ngIf="t.templateCode" class="ocw__template-code">({{ t.templateCode }})</span>
+            </label>
+          </div>
+          <nz-spin *ngIf="loadingOrgTemplates" nzSimple nzSize="small"></nz-spin>
+        </div>
+
+        <!-- View Roles Button -->
+        <div style="margin-top: 12px;">
+          <button nz-button nzType="primary" nzBlock nzSize="small"
+                  (click)="loadRolesForSelectedTemplates()"
+                  [disabled]="!canLoadRoles() || loadingRoles"
+                  [nzLoading]="loadingRoles">
+            <span nz-icon nzType="eye" nzTheme="outline"></span>
+            View Roles
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Panel: Roles -->
+      <div class="ocw__roles">
+        <div class="ocw__section-title">
+          Roles
+          <nz-tag nzColor="blue" *ngIf="rolesLoaded">
+            {{ selectedRoleNames.length }} / {{ roleTotalRecords }} selected
+          </nz-tag>
+        </div>
+
+        <div *ngIf="!rolesLoaded && !loadingRoles" class="ocw__empty-roles">
+          <span nz-icon nzType="filter" nzTheme="outline" style="font-size: 28px; color: #bfbfbf;"></span>
+          <p>Select org templates and click "View Roles"</p>
+        </div>
+
+        <div *ngIf="rolesLoaded">
+          <div class="ocw__role-toolbar">
+            <nz-input-group nzSize="small" [nzPrefix]="roleSearchIcon" style="flex: 1;">
+              <input nz-input nzSize="small" placeholder="Search roles..."
+                     [(ngModel)]="roleSearch" (ngModelChange)="onRoleSearchChange()">
+            </nz-input-group>
+            <ng-template #roleSearchIcon><span nz-icon nzType="search"></span></ng-template>
+          </div>
+
+          <div class="ocw__role-list">
+            <label nz-checkbox *ngFor="let role of filteredRoles"
+                   [nzChecked]="isRoleSelected(getRoleName(role))"
+                   (nzCheckedChange)="toggleRoleSelection(getRoleName(role))">
+              {{ getRoleName(role) }}
+            </label>
+          </div>
+        </div>
+
+        <nz-spin *ngIf="loadingRoles" nzSimple nzSize="small"></nz-spin>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Job Progress -->
+  <nz-card *ngIf="jobPolling" nzSize="small" style="margin-top: 12px;">
+    <div class="ocw__job-progress">
+      <span nz-icon nzType="loading" nzTheme="outline"></span>
+      Background compliance check in progress...
+      <nz-progress [nzPercent]="jobProgress" nzSize="small" style="flex: 1;"></nz-progress>
+    </div>
+  </nz-card>
+
+  <!-- Results -->
+  <nz-card *ngIf="resultsLoaded" nzSize="small"
+           nzTitle="Compliance Results" style="margin-top: 12px;" [nzExtra]="resultExtra">
+    <ng-template #resultExtra>
+      <button *ngIf="backgroundJobId" nz-button nzSize="small" nzType="default" (click)="downloadReport()">
+        <span nz-icon nzType="download" nzTheme="outline"></span> Export
+      </button>
+    </ng-template>
+
+    <!-- Summary Stats -->
+    <div class="ocw__stats" *ngIf="summary">
+      <div class="ocw__stat">
+        <span class="ocw__stat-value">{{ summary.totalRoles }}</span>
+        <span class="ocw__stat-label">Total</span>
+      </div>
+      <div class="ocw__stat ocw__stat--success">
+        <span class="ocw__stat-value">{{ summary.compliantCount }}</span>
+        <span class="ocw__stat-label">Compliant</span>
+      </div>
+      <div class="ocw__stat ocw__stat--warning">
+        <span class="ocw__stat-value">{{ summary.partialCount }}</span>
+        <span class="ocw__stat-label">Partial</span>
+      </div>
+      <div class="ocw__stat ocw__stat--error">
+        <span class="ocw__stat-value">{{ summary.nonCompliantCount }}</span>
+        <span class="ocw__stat-label">Non-Compliant</span>
+      </div>
+      <div class="ocw__stat" *ngIf="summary.errorCount > 0">
+        <span class="ocw__stat-value">{{ summary.errorCount }}</span>
+        <span class="ocw__stat-label">Errors</span>
+      </div>
+    </div>
+
+    <!-- Results Table -->
+    <nz-table #resultTable [nzData]="complianceResults" nzSize="small"
+              [nzShowPagination]="complianceResults.length > 20"
+              [nzPageSize]="20" nzFrontPagination>
+      <thead>
+        <tr>
+          <th>Role Name</th>
+          <th>Template Code</th>
+          <th>Template Name</th>
+          <th nzWidth="100px">Status</th>
+          <th nzWidth="70px">Missing</th>
+          <th nzWidth="80px">Additional</th>
+          <th nzWidth="60px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of resultTable.data" (click)="onResultRowClick(row)" style="cursor: pointer;">
+          <td><strong>{{ row.roleName }}</strong></td>
+          <td>{{ row.extractedTemplateCode || '-' }}</td>
+          <td>{{ row.templateName || '-' }}</td>
+          <td>
+            <nz-tag [nzColor]="getStatusColor(row.overallStatus)">
+              {{ getStatusLabel(row.overallStatus) }}
+            </nz-tag>
+          </td>
+          <td>{{ row.missingValueCount }}</td>
+          <td>{{ row.additionalValueCount }}</td>
+          <td>
+            <button nz-button nzType="link" nzSize="small" (click)="onResultRowClick(row); $event.stopPropagation()">
+              <span nz-icon nzType="eye" nzTheme="outline"></span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <!-- Loading overlay -->
+  <nz-card *ngIf="runningCheck" nzSize="small" style="margin-top: 12px;">
+    <div class="ocw__loading">
+      <nz-spin nzSimple></nz-spin>
+      <span>Running compliance check...</span>
+    </div>
+  </nz-card>
+
+  <!-- Detail Drawer -->
+  <nz-drawer [nzVisible]="drawerVisible" nzPlacement="right" nzWidth="600"
+             [nzTitle]="selectedResult?.roleName || 'Compliance Details'" (nzOnClose)="closeDrawer()">
+    <ng-container *nzDrawerContent>
+      <div *ngIf="selectedResult" class="ocw__detail">
+        <!-- Header Info -->
+        <nz-descriptions nzSize="small" [nzColumn]="1" nzBordered>
+          <nz-descriptions-item nzTitle="Role">{{ selectedResult.roleName }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Template">
+            {{ selectedResult.templateName || selectedResult.extractedTemplateCode || '-' }}
+          </nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Status">
+            <nz-tag [nzColor]="getStatusColor(selectedResult.overallStatus)">
+              {{ getStatusLabel(selectedResult.overallStatus) }}
+            </nz-tag>
+          </nz-descriptions-item>
+        </nz-descriptions>
+
+        <!-- Summary Stats -->
+        <div class="ocw__detail-stats">
+          <nz-tag>{{ selectedResult.fieldResults?.length || 0 }} Fields</nz-tag>
+          <nz-tag nzColor="success">{{ getTotalMatchingCount() }} Matching</nz-tag>
+          <nz-tag nzColor="warning">{{ selectedResult.missingValueCount || 0 }} Missing</nz-tag>
+          <nz-tag nzColor="error">{{ selectedResult.additionalValueCount || 0 }} Additional</nz-tag>
+          <button nz-button nzSize="small" nzType="default" (click)="copyDifferencesToClipboard()"
+                  style="margin-left: auto;">
+            <span nz-icon nzType="copy" nzTheme="outline"></span> Copy All
+          </button>
+        </div>
+
+        <!-- Field Values Table -->
+        <nz-table #fieldValueTable [nzData]="getFieldValueRows()" nzSize="small"
+                  [nzShowPagination]="false" nzFrontPagination
+                  *ngIf="selectedResult.fieldResults?.length">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th nzWidth="80px">Status</th>
+              <th>Role Value</th>
+              <th>Template Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of fieldValueTable.data" [ngClass]="row.rowClass">
+              <td class="ocw__field-name">{{ row.fieldName }}</td>
+              <td><span class="ocw__value-status" [ngClass]="row.statusClass">{{ row.status }}</span></td>
+              <td class="ocw__field-value">{{ row.roleValue }}</td>
+              <td class="ocw__field-value">{{ row.templateValue }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+
+        <!-- Error Message -->
+        <div *ngIf="selectedResult.errorMessage" style="margin-top: 12px;">
+          <nz-alert nzType="error" [nzMessage]="selectedResult.errorMessage" nzShowIcon></nz-alert>
+        </div>
+
+        <!-- No Fields -->
+        <div *ngIf="!selectedResult.fieldResults?.length" class="ocw__empty" style="margin-top: 16px;">
+          <nz-empty nzNotFoundContent="No org field data found for this role"></nz-empty>
+        </div>
+      </div>
+    </ng-container>
+  </nz-drawer>
+</div>

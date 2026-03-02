@@ -1,0 +1,24 @@
+<app-page-panel header="Central User Pivot Report">
+    <div nz-row nzJustify="start" style="margin-bottom: 12px;">
+        <nz-select [(ngModel)]="selectedDataSet" (ngModelChange)="onDataSetChange($event)" style="width: 250px;"
+            nzPlaceHolder="Select Dataset">
+            <nz-option *ngFor="let ds of dataSets" [nzValue]="ds.id" [nzLabel]="ds.name"></nz-option>
+        </nz-select>
+    </div>
+
+    <nz-spin [nzSpinning]="loading">
+        <nz-table #pivotTable [nzData]="pivotData" nzSize="small" [nzScroll]="{ x: '1200px' }" nzBordered>
+            <thead>
+                <tr *ngIf="pivotData.length > 0">
+                    <th *ngFor="let key of getKeys(pivotData[0])">{{ key }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let row of pivotTable.data">
+                    <td *ngFor="let key of getKeys(pivotData[0])">{{ row[key] }}</td>
+                </tr>
+            </tbody>
+        </nz-table>
+        <nz-empty *ngIf="pivotData.length === 0 && !loading"></nz-empty>
+    </nz-spin>
+</app-page-panel>

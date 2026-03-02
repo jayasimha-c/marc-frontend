@@ -1,0 +1,68 @@
+<!-- Header -->
+<div class="flex items-start justify-between flex-wrap gap-4 mb-4">
+  <h2 class="m-0">Reviewer Performance</h2>
+  <nz-form-item class="w-[280px] mb-0">
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="systemControl.value">
+        <nz-select nzPlaceHolder=" " nzShowSearch (ngModelChange)="sapSystemChange()" [formControl]="systemControl">
+          <nz-option *ngFor="let sys of sapSystems" [nzValue]="sys?.id" [nzLabel]="sys?.destinationName || sys?.description || sys?.sapName"></nz-option>
+        </nz-select>
+        <label>SAP System</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+</div>
+
+<!-- KPI Cards -->
+<div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Top Reviewer" [value]="statistics.topReviewer" [description]="statistics.completedReviews + ' reviews completed'" icon="user" color="#faad14" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Avg. Time Per Review" [value]="statistics.avgTimePerReview?.toFixed?.(1) || statistics.avgTimePerReview" description="hours" icon="clock-circle" color="#1890ff" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Total Pending Reviews" [value]="statistics.pendingReviews" description="tasks" icon="field-time" color="#ff4d4f" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Completed Reviews" [value]="statistics.completedReviews" description="reviews" icon="check-circle" color="#52c41a" [loading]="loading"></app-statistics-card>
+  </div>
+</div>
+
+<!-- Charts — 2 per row (lg grid) -->
+<div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+  <div nz-col [nzXs]="24" [nzMd]="12">
+    <common-apx-chart [loading]="loading" [chartOptions]="topReviewersChartOptions" size="lg"></common-apx-chart>
+  </div>
+  <div nz-col [nzXs]="24" [nzMd]="12">
+    <common-apx-chart [loading]="loading" [chartOptions]="timeDistributionChartOptions" size="lg"></common-apx-chart>
+  </div>
+</div>
+
+<!-- Reviewer Performance -->
+<nz-card class="mt-4 mb-4">
+  <app-advanced-table
+    title="Reviewer Performance"
+    [data]="performanceData"
+    [columns]="performanceColumns"
+    [loading]="loading"
+    [showPagination]="false"
+    [showSearch]="true"
+    size="middle"
+    scrollY="40vh"
+  ></app-advanced-table>
+</nz-card>
+
+<!-- Pending Reviews by Reviewer -->
+<nz-card class="mt-4">
+  <app-advanced-table
+    title="Pending Reviews by Reviewer"
+    [data]="pendingData"
+    [columns]="pendingColumns"
+    [loading]="loading"
+    [showPagination]="false"
+    [showSearch]="true"
+    size="middle"
+    scrollY="40vh"
+  ></app-advanced-table>
+</nz-card>

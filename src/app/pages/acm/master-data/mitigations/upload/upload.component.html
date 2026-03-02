@@ -1,0 +1,108 @@
+<div style="padding: 16px;">
+  <!-- Page Header -->
+  <div style="margin-bottom: 24px;">
+    <h2 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+      <span nz-icon nzType="cloud-upload" nzTheme="outline"></span>
+      Mitigation Data Upload
+    </h2>
+    <p style="color: #888; margin-top: 4px;">Upload mitigation controls, users, and owners data to the selected SAP system</p>
+  </div>
+
+  <!-- Step 1: System Selection -->
+  <nz-card nzSize="small" style="margin-bottom: 16px;">
+    <div class="section-title">
+      <span class="step-number">1</span>
+      <span nz-icon nzType="database" nzTheme="outline"></span>
+      Select Target System
+    </div>
+    <div style="max-width: 400px; margin-top: 12px;">
+      <div class="nz-float-label" [class.has-value]="selectedSapSystem">
+        <nz-select nzPlaceHolder=" " [(ngModel)]="selectedSapSystem" nzShowSearch style="width: 100%;">
+          <nz-option *ngFor="let item of sapSystemList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+        </nz-select>
+        <label>SAP System</label>
+      </div>
+    </div>
+    <nz-alert *ngIf="!selectedSapSystem" nzType="warning" nzMessage="System selection is required before uploading files"
+      [nzShowIcon]="true" style="margin-top: 12px; max-width: 400px;"></nz-alert>
+  </nz-card>
+
+  <!-- Step 2: Download Templates -->
+  <nz-card nzSize="small" style="margin-bottom: 16px;">
+    <div class="section-title">
+      <span class="step-number">2</span>
+      <span nz-icon nzType="download" nzTheme="outline"></span>
+      Download Templates
+    </div>
+    <p style="color: #888; margin: 8px 0 16px;">Download the Excel templates and fill them with your data</p>
+    <div nz-row [nzGutter]="16">
+      <div nz-col [nzSpan]="8" *ngFor="let template of templateList">
+        <nz-card nzSize="small" class="template-card" nzHoverable>
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <span nz-icon [nzType]="template.icon" nzTheme="outline" style="font-size: 24px; color: #1890ff; margin-top: 2px;"></span>
+            <div style="flex: 1;">
+              <strong>{{ template.name }}</strong>
+              <p style="color: #888; font-size: 12px; margin: 4px 0 12px;">{{ template.description }}</p>
+              <button nz-button nzType="default" nzSize="small" nzBlock (click)="downloadTemplate(template.value)">
+                <span nz-icon nzType="download" nzTheme="outline"></span> Download Template
+              </button>
+            </div>
+          </div>
+        </nz-card>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Step 3: Upload Files -->
+  <nz-card nzSize="small">
+    <div class="section-title">
+      <span class="step-number">3</span>
+      <span nz-icon nzType="upload" nzTheme="outline"></span>
+      Upload Your Files
+    </div>
+    <p style="color: #888; margin: 8px 0 16px;">Select and upload your completed Excel files</p>
+
+    <div nz-row [nzGutter]="16">
+      <div nz-col [nzSpan]="8" *ngFor="let template of templateList">
+        <div class="upload-card"
+             [class.uploading]="uploadProgress[template.value]"
+             [class.success]="uploadSuccess[template.value]">
+          <div class="upload-content">
+            <span nz-icon
+              [nzType]="uploadSuccess[template.value] ? 'check-circle' : template.icon"
+              nzTheme="outline"
+              class="upload-icon"
+              [class.success-icon]="uploadSuccess[template.value]">
+            </span>
+            <h4>{{ template.uploadBtnName }}</h4>
+
+            <input type="file" #fileInput
+              (change)="onFileChanged($event, template.value)"
+              accept=".xlsx,.xls"
+              style="display: none;">
+
+            <button nz-button nzType="primary" nzSize="small"
+              [disabled]="!selectedSapSystem || uploadProgress[template.value]"
+              (click)="fileInput.click()">
+              <span *ngIf="!uploadProgress[template.value]" nz-icon nzType="upload" nzTheme="outline"></span>
+              <span *ngIf="uploadProgress[template.value]" nz-icon nzType="loading" nzTheme="outline"></span>
+              {{ uploadProgress[template.value] ? 'Uploading...' : 'Choose File' }}
+            </button>
+
+            <p *ngIf="getFileName(template.value)" class="file-name">{{ getFileName(template.value) }}</p>
+
+            <p *ngIf="uploadSuccess[template.value]" class="success-msg">
+              <span nz-icon nzType="check-circle" nzTheme="outline"></span> Upload successful!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- File format info -->
+    <nz-alert nzType="info" style="margin-top: 16px;" [nzShowIcon]="true"
+      nzMessage="File Requirements"
+      nzDescription="Supported formats: Excel (.xlsx, .xls) | Maximum file size: 10MB | Ensure data matches the template format | Remove any empty rows before uploading">
+    </nz-alert>
+  </nz-card>
+</div>

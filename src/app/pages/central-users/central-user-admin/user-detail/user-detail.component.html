@@ -1,0 +1,454 @@
+<!-- Loading State -->
+<div *ngIf="loading" style="display: flex; justify-content: center; align-items: center; height: 256px;">
+    <nz-spin nzSimple></nz-spin>
+</div>
+
+<!-- Main Content -->
+<ng-container *ngIf="!loading && user">
+    <!-- Header -->
+    <app-page-panel>
+        <div headerSection>
+            <div nz-row nzJustify="space-between" nzAlign="middle">
+                <div nz-col>
+                    <nz-space nzAlign="center">
+                        <button *nzSpaceItem nz-button nzType="text" nzShape="circle" (click)="goBack()">
+                            <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+                        </button>
+                        <nz-avatar *nzSpaceItem [nzText]="getInitials(user.displayName || user.sapBname)"
+                            [nzStyle]="{ backgroundColor: '#1890ff', verticalAlign: 'middle' }" nzSize="large">
+                        </nz-avatar>
+                        <div *nzSpaceItem>
+                            <h1 style="margin-bottom: 0;">
+                                {{ user.displayName || user.sapBname }}
+                                <nz-tag [nzColor]="user.active ? 'success' : 'default'" style="margin-left: 8px;">
+                                    {{ user.active ? 'Active' : 'Inactive' }}
+                                </nz-tag>
+                            </h1>
+                            <span nz-typography nzType="secondary">
+                                {{ user.sapBname }}
+                                <span *ngIf="user.employeeId"> | {{ user.employeeId }}</span>
+                            </span>
+                        </div>
+                    </nz-space>
+                </div>
+                <div nz-col>
+                    <button nz-button nzType="default" (click)="loadUserDetail()">
+                        <span nz-icon nzType="reload" nzTheme="outline"></span>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </app-page-panel>
+
+    <!-- User Information -->
+    <nz-card style="margin-top: 16px;">
+        <nz-descriptions nzTitle="User Information" nzBordered nzSize="small" [nzColumn]="4">
+            <nz-descriptions-item nzTitle="Email">{{ user.primaryEmail || '-' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Department">{{ user.department || '-' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Job Title">{{ user.jobTitle || '-' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Manager">{{ user.managerName || '-' }}</nz-descriptions-item>
+        </nz-descriptions>
+    </nz-card>
+
+    <!-- Stats -->
+    <div nz-row [nzGutter]="[16, 16]" style="margin-top: 16px;">
+        <div nz-col nzXs="12" nzSm="6">
+            <app-statistics-card title="Total Systems" [value]="user.stats?.totalSystems || 0"
+                icon="cloud-server" color="#1890ff">
+            </app-statistics-card>
+        </div>
+        <div nz-col nzXs="12" nzSm="6">
+            <app-statistics-card title="Production" [value]="user.stats?.productionSystems || 0"
+                icon="safety-certificate" color="#ff4d4f">
+            </app-statistics-card>
+        </div>
+        <div nz-col nzXs="12" nzSm="6">
+            <app-statistics-card title="Total Roles" [value]="user.stats?.totalRoles || 0"
+                icon="idcard" color="#722ed1">
+            </app-statistics-card>
+        </div>
+        <div nz-col nzXs="12" nzSm="6">
+            <app-statistics-card title="Critical Roles" [value]="user.stats?.criticalRoles || 0"
+                icon="warning" color="#faad14">
+            </app-statistics-card>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <nz-card style="margin-top: 16px;">
+        <nz-tabset [(nzSelectedIndex)]="selectedTabIndex" (nzSelectChange)="onTabChange($event)">
+
+            <!-- Tab 1: System Access -->
+            <nz-tab nzTitle="System Access">
+                <div style="padding: 16px 0;">
+                    <!-- Bulk operation bar -->
+                    <div *ngIf="selectedSystems.length > 0" nz-row nzJustify="end" nzAlign="middle"
+                        style="margin-bottom: 12px;">
+                        <nz-space>
+                            <span *nzSpaceItem nz-typography nzType="secondary">{{ selectedSystems.length }} selected</span>
+                            <button *nzSpaceItem nz-button nzType="default" nzDanger nzSize="small"
+                                (click)="lockSelectedSystems()" [disabled]="operationLoading">
+                                <span nz-icon nzType="lock"></span> Lock
+                            </button>
+                            <button *nzSpaceItem nz-button nzType="default" nzSize="small"
+                                (click)="unlockSelectedSystems()" [disabled]="operationLoading">
+                                <span nz-icon nzType="unlock"></span> Unlock
+                            </button>
+                            <button *nzSpaceItem nz-button nzType="default" nzSize="small"
+                                (click)="syncSelectedSystems()" [disabled]="operationLoading">
+                                <span nz-icon nzType="sync"></span> Sync
+                            </button>
+                            <button *nzSpaceItem nz-button nzType="text" nzSize="small" (click)="clearSelection()">
+                                Clear
+                            </button>
+                        </nz-space>
+                    </div>
+
+                    <nz-collapse *ngIf="user.systems?.length > 0">
+                        <nz-collapse-panel *ngFor="let system of user.systems"
+                            [nzHeader]="systemHeader" [nzExtra]="systemExtra"
+                            [nzActive]="expandedSystemId === system.centralUserId"
+                            (nzActiveChange)="toggleSystemExpand(system)">
+
+                            <ng-template #systemHeader>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <label nz-checkbox [nzChecked]="isSystemSelected(system)"
+                                        (nzCheckedChange)="toggleSystemSelection(system)"
+                                        (click)="$event.stopPropagation()"></label>
+                                    <span style="font-weight: 600;">{{ system.sid }}</span>
+                                    <span nz-typography nzType="secondary">{{ system.client }}</span>
+                                    <nz-tag *ngIf="system.locked" nzColor="red">
+                                        <span nz-icon nzType="lock" nzTheme="outline"></span> Locked
+                                    </nz-tag>
+                                    <nz-tag [nzColor]="getEnvironmentColor(system.environmentType)">
+                                        {{ system.environmentType }}
+                                    </nz-tag>
+                                    <nz-tag [nzColor]="getUserTypeColor(system.userType)">
+                                        {{ system.userType }}
+                                    </nz-tag>
+                                </div>
+                            </ng-template>
+
+                            <ng-template #systemExtra>
+                                <span style="font-weight: 600;">{{ system.roles?.length || 0 }}</span>
+                                <span nz-typography nzType="secondary" style="margin-left: 4px;">roles</span>
+                            </ng-template>
+
+                            <!-- Roles within system -->
+                            <nz-table *ngIf="system.roles?.length > 0" [nzData]="system.roles"
+                                [nzShowPagination]="false" [nzFrontPagination]="false" nzSize="small">
+                                <thead>
+                                    <tr>
+                                        <th>Role Name</th>
+                                        <th nzWidth="100px">Type</th>
+                                        <th nzWidth="120px">Valid From</th>
+                                        <th nzWidth="120px">Valid To</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let role of system.roles">
+                                        <td>
+                                            {{ role.roleName }}
+                                            <nz-tag *ngIf="role.critical" nzColor="red" style="margin-left: 4px;">Critical</nz-tag>
+                                        </td>
+                                        <td>{{ role.roleType }}</td>
+                                        <td>{{ role.validFrom }}</td>
+                                        <td>{{ role.validTo || 'Unlimited' }}</td>
+                                    </tr>
+                                </tbody>
+                            </nz-table>
+                            <nz-empty *ngIf="!system.roles?.length" nzNotFoundContent="No roles assigned"
+                                [nzNotFoundImage]="'simple'"></nz-empty>
+                        </nz-collapse-panel>
+                    </nz-collapse>
+
+                    <nz-empty *ngIf="!user.systems?.length" nzNotFoundContent="No system access found"></nz-empty>
+                </div>
+            </nz-tab>
+
+            <!-- Tab 2: All Roles -->
+            <nz-tab nzTitle="All Roles">
+                <div style="padding: 16px 0;">
+                    <nz-spin [nzSpinning]="rolesLoading">
+                        <nz-table *ngIf="allRoles.length > 0 || rolesLoading" #rolesTable [nzData]="allRoles"
+                            [nzFrontPagination]="true" nzSize="small" [nzPageSize]="20">
+                            <thead>
+                                <tr>
+                                    <th>Role Name</th>
+                                    <th nzWidth="120px">System</th>
+                                    <th nzWidth="100px">Type</th>
+                                    <th nzWidth="120px">Valid From</th>
+                                    <th nzWidth="120px">Valid To</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let role of rolesTable.data">
+                                    <td>
+                                        <div>
+                                            <span style="font-weight: 500;">{{ role.roleName }}</span>
+                                            <nz-tag *ngIf="role.critical" nzColor="red" style="margin-left: 4px;">Critical</nz-tag>
+                                        </div>
+                                        <div *ngIf="role.roleDescription">
+                                            <small nz-typography nzType="secondary">{{ role.roleDescription }}</small>
+                                        </div>
+                                    </td>
+                                    <td><nz-tag>{{ role.system }}</nz-tag></td>
+                                    <td>{{ role.roleType }}</td>
+                                    <td>{{ role.validFrom }}</td>
+                                    <td>{{ role.validTo }}</td>
+                                </tr>
+                            </tbody>
+                        </nz-table>
+                        <nz-empty *ngIf="!rolesLoading && allRoles.length === 0"
+                            nzNotFoundContent="No roles assigned"></nz-empty>
+                    </nz-spin>
+                </div>
+            </nz-tab>
+
+            <!-- Tab 3: Transactions -->
+            <nz-tab nzTitle="Transactions">
+                <div style="padding: 16px 0;">
+                    <nz-spin [nzSpinning]="transactionsLoading">
+                        <nz-table *ngIf="allTransactions.length > 0 || transactionsLoading" #txnTable
+                            [nzData]="allTransactions" [nzFrontPagination]="true" nzSize="small" [nzPageSize]="20">
+                            <thead>
+                                <tr>
+                                    <th nzWidth="150px">Transaction</th>
+                                    <th>Description</th>
+                                    <th nzWidth="120px">System</th>
+                                    <th nzWidth="80px">Count</th>
+                                    <th nzWidth="150px">Last Used</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let txn of txnTable.data">
+                                    <td><span style="font-family: monospace; font-weight: 500;">{{ txn.txnId }}</span></td>
+                                    <td>{{ txn.txnDesc }}</td>
+                                    <td><nz-tag>{{ txn.system }}</nz-tag></td>
+                                    <td style="text-align: right; font-weight: 600;">{{ txn.count }}</td>
+                                    <td>{{ txn.lastUsed }}</td>
+                                </tr>
+                            </tbody>
+                        </nz-table>
+                        <nz-empty *ngIf="!transactionsLoading && allTransactions.length === 0"
+                            nzNotFoundContent="No transaction data available"></nz-empty>
+                    </nz-spin>
+                </div>
+            </nz-tab>
+
+            <!-- Tab 4: Risk Violations -->
+            <nz-tab nzTitle="Risk Violations">
+                <div style="padding: 16px 0;">
+                    <nz-spin [nzSpinning]="risksLoading">
+                        <!-- Risk summary badges -->
+                        <div *ngIf="!risksLoading && allRisks.length > 0" style="margin-bottom: 12px;">
+                            <nz-space nzWrap>
+                                <ng-container *nzSpaceItem>
+                                    <nz-tag nzColor="red" *ngIf="getRiskCountByType('critical') > 0">
+                                        {{ getRiskCountByType('critical') }} Critical
+                                    </nz-tag>
+                                </ng-container>
+                                <ng-container *nzSpaceItem>
+                                    <nz-tag nzColor="orange" *ngIf="getRiskCountByType('high') > 0">
+                                        {{ getRiskCountByType('high') }} High
+                                    </nz-tag>
+                                </ng-container>
+                                <ng-container *nzSpaceItem>
+                                    <nz-tag nzColor="gold" *ngIf="getRiskCountByType('medium') > 0">
+                                        {{ getRiskCountByType('medium') }} Medium
+                                    </nz-tag>
+                                </ng-container>
+                                <ng-container *nzSpaceItem>
+                                    <nz-tag nzColor="default" *ngIf="getRiskCountByType('low') > 0">
+                                        {{ getRiskCountByType('low') }} Low
+                                    </nz-tag>
+                                </ng-container>
+                            </nz-space>
+                        </div>
+
+                        <nz-table *ngIf="allRisks.length > 0 || risksLoading" #riskTable
+                            [nzData]="allRisks" [nzFrontPagination]="true" nzSize="small" [nzPageSize]="20">
+                            <thead>
+                                <tr>
+                                    <th>Risk</th>
+                                    <th>Rule</th>
+                                    <th nzWidth="100px">System</th>
+                                    <th>Business Process</th>
+                                    <th nzWidth="150px">Mitigation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let risk of riskTable.data">
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <nz-badge [nzColor]="risk.color || '#888'" nzDot></nz-badge>
+                                            <span style="font-weight: 500;">{{ risk.riskName }}</span>
+                                        </div>
+                                        <small nz-typography nzType="secondary">{{ risk.riskType }}</small>
+                                    </td>
+                                    <td>
+                                        {{ risk.ruleName }}
+                                        <div *ngIf="risk.ruleDesc">
+                                            <small nz-typography nzType="secondary">{{ risk.ruleDesc }}</small>
+                                        </div>
+                                    </td>
+                                    <td><nz-tag>{{ risk.system }}</nz-tag></td>
+                                    <td>
+                                        {{ risk.businessProcess }}
+                                        <div *ngIf="risk.businessSubProcess">
+                                            <small nz-typography nzType="secondary">{{ risk.businessSubProcess }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <nz-tag *ngIf="risk.mitigationName" nzColor="green">{{ risk.mitigationName }}</nz-tag>
+                                        <nz-tag *ngIf="!risk.mitigationName" nzColor="red">Open</nz-tag>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </nz-table>
+                        <nz-empty *ngIf="!risksLoading && allRisks.length === 0"
+                            nzNotFoundContent="No risk violations found"></nz-empty>
+                    </nz-spin>
+                </div>
+            </nz-tab>
+
+            <!-- Tab 5: Rules -->
+            <nz-tab nzTitle="Rules">
+                <div style="padding: 16px 0;">
+                    <!-- System selector -->
+                    <div *ngIf="user?.systems?.length" style="margin-bottom: 12px;">
+                        <nz-select [ngModel]="selectedRuleSystemId" (ngModelChange)="onRuleSystemSelect($event)"
+                            nzPlaceHolder="Select System" nzShowSearch style="width: 250px;">
+                            <nz-option *ngFor="let sys of user.systems" [nzValue]="sys.centralUserId"
+                                [nzLabel]="getSystemDisplayName(sys)"></nz-option>
+                        </nz-select>
+                    </div>
+
+                    <nz-spin [nzSpinning]="rulesLoading">
+                        <nz-table *ngIf="allRules.length > 0 || rulesLoading" #rulesTable
+                            [nzData]="allRules" [nzFrontPagination]="true" nzSize="small" [nzPageSize]="20">
+                            <thead>
+                                <tr>
+                                    <th>Rule Name</th>
+                                    <th>Description</th>
+                                    <th nzWidth="150px">Transaction</th>
+                                    <th nzWidth="150px">Executed Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let rule of rulesTable.data">
+                                    <td>{{ rule.ruleName }}</td>
+                                    <td>{{ rule.ruleDesc }}</td>
+                                    <td>
+                                        <span style="font-family: monospace;">{{ rule.tranCode }}</span>
+                                        <div *ngIf="rule.tranName">
+                                            <small nz-typography nzType="secondary">{{ rule.tranName }}</small>
+                                        </div>
+                                    </td>
+                                    <td>{{ rule.createdDate | date:'medium' }}</td>
+                                </tr>
+                            </tbody>
+                        </nz-table>
+                        <nz-empty *ngIf="!rulesLoading && selectedRuleSystemId && allRules.length === 0"
+                            nzNotFoundContent="No rule execution history found"></nz-empty>
+                    </nz-spin>
+
+                    <nz-empty *ngIf="!user?.systems?.length" nzNotFoundContent="No systems available"></nz-empty>
+                </div>
+            </nz-tab>
+
+            <!-- Tab 6: SOD Controls -->
+            <nz-tab nzTitle="SOD Controls">
+                <div style="padding: 16px 0;">
+                    <!-- System selector -->
+                    <div *ngIf="user?.systems?.length" style="margin-bottom: 12px;">
+                        <nz-select [ngModel]="selectedSODSystemId" (ngModelChange)="onSODSystemSelect($event)"
+                            nzPlaceHolder="Select System" nzShowSearch style="width: 250px;">
+                            <nz-option *ngFor="let sys of user.systems" [nzValue]="sys.centralUserId"
+                                [nzLabel]="getSystemDisplayName(sys)"></nz-option>
+                        </nz-select>
+                    </div>
+
+                    <nz-spin [nzSpinning]="sodControlsLoading">
+                        <nz-table *ngIf="allSODControls.length > 0 || sodControlsLoading" #sodTable
+                            [nzData]="allSODControls" [nzFrontPagination]="true" nzSize="small" [nzPageSize]="20">
+                            <thead>
+                                <tr>
+                                    <th>Control Name</th>
+                                    <th>Description</th>
+                                    <th nzWidth="100px">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let ctrl of sodTable.data">
+                                    <td>{{ ctrl.controlName }}</td>
+                                    <td>{{ ctrl.desc }}</td>
+                                    <td>
+                                        <button nz-button nzType="link" nzSize="small"
+                                            (click)="viewSODControlDetails(ctrl)" nz-tooltip
+                                            nzTooltipTitle="View Details">
+                                            <span nz-icon nzType="eye" nzTheme="outline"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </nz-table>
+                        <nz-empty *ngIf="!sodControlsLoading && selectedSODSystemId && allSODControls.length === 0"
+                            nzNotFoundContent="No SOD control results found"></nz-empty>
+                    </nz-spin>
+
+                    <nz-empty *ngIf="!user?.systems?.length" nzNotFoundContent="No systems available"></nz-empty>
+                </div>
+            </nz-tab>
+
+            <!-- Tab 7: Requests -->
+            <nz-tab nzTitle="Requests">
+                <div style="padding: 16px 0;">
+                    <nz-spin [nzSpinning]="requestsLoading">
+                        <nz-table *ngIf="allRequests.length > 0 || requestsLoading" #reqTable
+                            [nzData]="allRequests" [nzFrontPagination]="true" nzSize="small" [nzPageSize]="20">
+                            <thead>
+                                <tr>
+                                    <th nzWidth="120px">Request ID</th>
+                                    <th nzWidth="100px">Type</th>
+                                    <th nzWidth="100px">System</th>
+                                    <th>Role</th>
+                                    <th nzWidth="130px">Requested By</th>
+                                    <th nzWidth="130px">Date</th>
+                                    <th nzWidth="110px">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let req of reqTable.data">
+                                    <td><span style="font-family: monospace;">{{ req.requestId }}</span></td>
+                                    <td>{{ req.type }}</td>
+                                    <td><nz-tag>{{ req.system }}</nz-tag></td>
+                                    <td>{{ req.roleName }}</td>
+                                    <td>{{ req.requestedBy }}</td>
+                                    <td>{{ req.requestedDate }}</td>
+                                    <td>
+                                        <nz-tag [nzColor]="getRequestStatusColor(req.status)">{{ req.status }}</nz-tag>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </nz-table>
+                        <nz-empty *ngIf="!requestsLoading && allRequests.length === 0"
+                            nzNotFoundContent="No request history found"></nz-empty>
+                    </nz-spin>
+                </div>
+            </nz-tab>
+        </nz-tabset>
+    </nz-card>
+</ng-container>
+
+<!-- Not Found -->
+<div *ngIf="!loading && !user" style="text-align: center; padding: 64px 0;">
+    <span nz-icon nzType="user-delete" nzTheme="outline" style="font-size: 48px; color: #bfbfbf;"></span>
+    <h2 style="margin-top: 16px;">User Not Found</h2>
+    <p nz-typography nzType="secondary">The requested user could not be found.</p>
+    <button nz-button nzType="primary" (click)="goBack()" style="margin-top: 16px;">
+        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+        Back to Users
+    </button>
+</div>

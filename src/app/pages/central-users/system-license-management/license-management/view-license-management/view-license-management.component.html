@@ -1,0 +1,32 @@
+<ng-container *ngIf="formType === 'Change License Type'; else transactionView">
+    <form [formGroup]="form" nz-form nzLayout="vertical">
+        <nz-form-item>
+            <nz-form-control nzErrorTip="License is required">
+                <div class="nz-float-label" [class.has-value]="form.get('license')?.value">
+                    <nz-select formControlName="license" nzPlaceHolder=" " nzShowSearch>
+                        <nz-option *ngFor="let i of licenseTypes" [nzValue]="i" [nzLabel]="i"></nz-option>
+                    </nz-select>
+                    <label>Choose License</label>
+                </div>
+            </nz-form-control>
+        </nz-form-item>
+    </form>
+</ng-container>
+
+<ng-template #transactionView>
+    <app-advanced-table
+        [columns]="columns"
+        [data]="data"
+        [loading]="loading"
+        [serverSide]="true"
+        [totalRecords]="total"
+        [showSearch]="false"
+        [showRefresh]="false"
+        (queryParamsChange)="onQueryParamsChange($event)">
+    </app-advanced-table>
+</ng-template>
+
+<div class="modal-footer">
+    <button nz-button nzType="default" (click)="modal.close()">Close</button>
+    <button nz-button nzType="primary" (click)="save()" *ngIf="formType === 'Change License Type'">Execute</button>
+</div>

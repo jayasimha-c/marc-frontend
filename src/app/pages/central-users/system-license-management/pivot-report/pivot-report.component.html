@@ -1,0 +1,24 @@
+<app-page-panel header="License Pivot Report">
+    <div style="margin-bottom: 16px; display: flex; gap: 12px; align-items: center;">
+        <nz-select [(ngModel)]="selectedVariant" nzPlaceHolder="Select Variant" nzShowSearch style="width: 300px;">
+            <nz-option *ngFor="let v of variantNames" [nzValue]="v" [nzLabel]="v"></nz-option>
+        </nz-select>
+        <button nz-button nzType="primary" (click)="loadData()" [disabled]="!selectedVariant">
+            <span nz-icon nzType="search"></span> Load
+        </button>
+    </div>
+
+    <nz-table #pivotTable [nzData]="data" nzSize="small" [nzLoading]="loading" nzBordered
+        [nzScroll]="{ x: '100%' }">
+        <thead>
+            <tr>
+                <th *ngFor="let col of columns">{{ col }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of pivotTable.data">
+                <td *ngFor="let col of columns">{{ row[col] }}</td>
+            </tr>
+        </tbody>
+    </nz-table>
+</app-page-panel>

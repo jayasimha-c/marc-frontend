@@ -1,0 +1,23 @@
+.add-user-input {
+  width: 240px;
+}
+
+.user-cell {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.4;
+}
+
+.user-name {
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.user-detail {
+  font-size: 12px;
+  color: #999;
+}
+
+.dirty-row {
+  background-color: #fffbe6;
+}

@@ -1,0 +1,93 @@
+<!-- System Selection -->
+<nz-form-item>
+  <nz-form-control>
+    <div class="nz-float-label" [class.has-value]="selectedSystemId">
+      <nz-select [(ngModel)]="selectedSystemId" nzPlaceHolder=" " nzShowSearch [nzDisabled]="isEdit">
+        <nz-option *ngFor="let sys of systems" [nzValue]="sys.id"
+                   [nzLabel]="sys.destinationName || sys.name"></nz-option>
+      </nz-select>
+      <label>SAP System</label>
+    </div>
+  </nz-form-control>
+</nz-form-item>
+
+<!-- Enable Schedule -->
+<div style="margin: 12px 0;">
+  <label nz-checkbox [(ngModel)]="enableSchedule">Enable Scheduled Execution</label>
+</div>
+
+<!-- Schedule Fields -->
+<div *ngIf="enableSchedule" style="padding-left: 16px; border-left: 2px solid #1890ff;">
+  <div nz-row [nzGutter]="16">
+    <div nz-col nzSpan="12">
+      <nz-form-item>
+        <nz-form-control>
+          <div class="nz-float-label" [class.has-value]="startDate">
+            <nz-date-picker [(ngModel)]="startDate" nzShowTime nzPlaceHolder=" " style="width: 100%;"></nz-date-picker>
+            <label>Start Date and Time</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col nzSpan="12">
+      <nz-form-item>
+        <nz-form-control>
+          <div class="nz-float-label" [class.has-value]="endDate">
+            <nz-date-picker [(ngModel)]="endDate" nzShowTime nzPlaceHolder=" " style="width: 100%;"></nz-date-picker>
+            <label>End Date and Time</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+  </div>
+
+  <div style="margin: 8px 0;">
+    <label nz-checkbox [(ngModel)]="repeatPeriodically">Repeat Periodically</label>
+  </div>
+
+  <div *ngIf="repeatPeriodically" nz-row [nzGutter]="16">
+    <div nz-col nzSpan="8">
+      <nz-form-item>
+        <nz-form-control>
+          <div class="nz-float-label has-value">
+            <nz-select [(ngModel)]="repeatAfterDays" nzPlaceHolder=" ">
+              <nz-option *ngFor="let d of dayOptions" [nzValue]="d" [nzLabel]="d + ''"></nz-option>
+            </nz-select>
+            <label>Days</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col nzSpan="8">
+      <nz-form-item>
+        <nz-form-control>
+          <div class="nz-float-label has-value">
+            <nz-select [(ngModel)]="repeatAfterHours" nzPlaceHolder=" ">
+              <nz-option *ngFor="let h of hourOptions" [nzValue]="h" [nzLabel]="h + ''"></nz-option>
+            </nz-select>
+            <label>Hours</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col nzSpan="8">
+      <nz-form-item>
+        <nz-form-control>
+          <div class="nz-float-label has-value">
+            <nz-select [(ngModel)]="repeatAfterMinutes" nzPlaceHolder=" ">
+              <nz-option *ngFor="let m of minuteOptions" [nzValue]="m" [nzLabel]="m + ''"></nz-option>
+            </nz-select>
+            <label>Minutes</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="onCancel()">Cancel</button>
+  <button nz-button nzType="primary" (click)="onSave()" [disabled]="saving">
+    {{ saving ? 'Saving...' : 'Save' }}
+  </button>
+</div>

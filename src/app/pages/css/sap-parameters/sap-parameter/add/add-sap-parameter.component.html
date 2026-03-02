@@ -1,0 +1,64 @@
+<div class="w-full std-top-left-spacing">
+  <nz-card>
+    @if (formType !== 'view') {
+      <div class="flex items-center gap-3 mb-4">
+        <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()" class="text-gray-500">
+          <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+        </button>
+        <span class="font-semibold text-xl">{{ formType === 'edit' ? 'Edit' : 'Add' }} SAP Parameter</span>
+      </div>
+    }
+
+    <form [formGroup]="form" class="flex flex-col gap-2">
+      <section class="flex gap-5">
+        <nz-form-item class="w-1/2">
+          <nz-form-control [nzErrorTip]="'Parameter Name is required'">
+            <div class="nz-float-label" [class.has-value]="form.get('parameterName')!.value">
+              <input nz-input placeholder=" " formControlName="parameterName" />
+              <label>SAP Parameter Name</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item class="w-1/3">
+          <nz-form-control [nzErrorTip]="'Parameter Type is required'">
+            <div class="nz-float-label" [class.has-value]="form.get('parameterType')!.value">
+              <nz-select formControlName="parameterType" nzPlaceHolder=" ">
+                <nz-option *ngFor="let entry of parameterTypeOptions" [nzValue]="entry[0]" [nzLabel]="entry[1]"></nz-option>
+              </nz-select>
+              <label>Parameter Type</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </section>
+
+      <nz-form-item>
+        <nz-form-control>
+          <div class="nz-float-label" [class.has-value]="form.get('description')!.value">
+            <textarea nz-input placeholder=" " formControlName="description"
+              [nzAutosize]="{ minRows: 3, maxRows: 5 }"></textarea>
+            <label>Description</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+
+      <section class="flex gap-5">
+        <nz-form-item class="w-1/3">
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="form.get('minSapVersion')!.value">
+              <input nz-input placeholder=" " formControlName="minSapVersion" />
+              <label>Min SAP Version</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </section>
+    </form>
+
+    @if (formType !== 'view') {
+      <div class="flex gap-2 mt-4">
+        <button nz-button nzType="default" (click)="onBack()">Back</button>
+        <button nz-button nzType="primary" (click)="onSave()">Save</button>
+      </div>
+    }
+  </nz-card>
+</div>

@@ -1,0 +1,52 @@
+<div style="padding: 16px;">
+  <form [formGroup]="form" nz-form nzLayout="vertical">
+    <nz-form-item>
+      <nz-form-label nzRequired>SAP System</nz-form-label>
+      <nz-form-control nzErrorTip="SAP System is required">
+        <nz-select formControlName="sapSystemId" nzPlaceHolder="Select SAP System" nzShowSearch>
+          <nz-option *ngFor="let type of sapSystemList" [nzValue]="type[0]" [nzLabel]="type[1]"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label nzRequired>Analysis Target</nz-form-label>
+      <nz-form-control nzErrorTip="Analysis Target is required">
+        <nz-select formControlName="analysisTarget" nzPlaceHolder="Select Target">
+          <nz-option *ngFor="let type of analysisTargetList" [nzValue]="type[1]" [nzLabel]="type[1]"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label nzRequired>Analysis Type</nz-form-label>
+      <nz-form-control nzErrorTip="Analysis Type is required">
+        <nz-select formControlName="analysisType" nzPlaceHolder="Select Type">
+          <nz-option *ngFor="let type of analysisTypeList" [nzValue]="type[1]" [nzLabel]="type[1]"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label nzRequired>Variants</nz-form-label>
+      <nz-form-control nzErrorTip="Variants is required">
+        <nz-select formControlName="variants" nzPlaceHolder="Select Variants" nzMode="multiple">
+          <nz-option *ngFor="let i of variantsList" [nzValue]="i.id" [nzLabel]="i.description"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-card nzSize="small" nzTitle="Other Options" style="margin-top: 8px;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label nz-checkbox formControlName="excludeInactive">Exclude Inactive Users</label>
+        <label nz-checkbox formControlName="excludeUnassigned">Exclude Unassigned</label>
+        <label nz-checkbox formControlName="includeMitigations">Include Mitigations</label>
+        <label nz-checkbox formControlName="orgFieldCheck">Org Field Check</label>
+      </div>
+    </nz-card>
+  </form>
+</div>
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+  <button nz-button nzType="primary" (click)="next()">Next</button>
+</div>

@@ -1,0 +1,57 @@
+<app-page-panel header="Systems License Information">
+    <div nz-row nzJustify="end" style="margin-bottom: 12px;">
+        <nz-space>
+            <button *nzSpaceItem nz-button nzType="primary" (click)="save()" [disabled]="!editMode">
+                <span nz-icon nzType="save"></span> Save
+            </button>
+            <button *nzSpaceItem nz-button (click)="addRow()">
+                <span nz-icon nzType="plus-circle"></span> Add Row
+            </button>
+            <button *nzSpaceItem nz-button (click)="cancel()">
+                <span nz-icon nzType="close-circle"></span> Cancel
+            </button>
+        </nz-space>
+    </div>
+
+    <nz-table #licTable [nzData]="data" nzSize="small" [nzFrontPagination]="false"
+        [nzShowPagination]="false" [nzLoading]="loading" nzBordered>
+        <thead>
+            <tr>
+                <th>License Type</th>
+                <th>Description</th>
+                <th>Purchased</th>
+                <th>Cost Per Unit</th>
+                <th>Total Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of licTable.data">
+                <td>
+                    <ng-container *ngIf="editMode; else licTypeView">
+                        <input nz-input [(ngModel)]="row.licenseType" />
+                    </ng-container>
+                    <ng-template #licTypeView>{{ row.licenseType }}</ng-template>
+                </td>
+                <td>
+                    <ng-container *ngIf="editMode; else descView">
+                        <input nz-input [(ngModel)]="row.description" />
+                    </ng-container>
+                    <ng-template #descView>{{ row.description }}</ng-template>
+                </td>
+                <td>
+                    <ng-container *ngIf="editMode; else purchView">
+                        <input nz-input [(ngModel)]="row.purchased" />
+                    </ng-container>
+                    <ng-template #purchView>{{ row.purchased }}</ng-template>
+                </td>
+                <td>
+                    <ng-container *ngIf="editMode; else priceView">
+                        <input nz-input [(ngModel)]="row.licensePrice" />
+                    </ng-container>
+                    <ng-template #priceView>{{ row.licensePrice }}</ng-template>
+                </td>
+                <td>{{ getTotalValue(row) | number:'1.2-2' }}</td>
+            </tr>
+        </tbody>
+    </nz-table>
+</app-page-panel>

@@ -1,0 +1,11 @@
+<app-advanced-table
+  title="SAP Parameters"
+  [columns]="columns"
+  [data]="data"
+  (rowClick)="onRowClick($event)">
+</app-advanced-table>
+
+<div class="flex justify-end gap-3 mt-4 pt-4 border-t">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+  <button nz-button nzType="primary" [disabled]="!selectedRow" (click)="onConnect()">Connect</button>
+</div>

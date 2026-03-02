@@ -1,0 +1,76 @@
+<app-advanced-table
+  title="Teams Bot Activity"
+  [columns]="columns"
+  [data]="data"
+  [loading]="loading"
+  [total]="total"
+  [serverSide]="true"
+  [actions]="actions"
+  [showSearch]="true"
+  (queryParamsChange)="onQueryChange($event)"
+  (refresh)="loadData()"
+  (rowClick)="onRowClick($event)">
+</app-advanced-table>
+
+<!-- Activity Detail Side Panel -->
+<app-side-panel
+  #detailPanel
+  title="Activity Detail"
+  [subtitle]="selectedRow?.teamsUserName || ''"
+  width="500px"
+  (closed)="onPanelClosed()">
+  <div panel-content *ngIf="selectedRow">
+
+    <!-- User Information -->
+    <nz-divider [nzText]="userTitle" nzOrientation="left"></nz-divider>
+    <ng-template #userTitle>
+      <span nz-icon nzType="user" nzTheme="outline"></span> User Information
+    </ng-template>
+    <nz-descriptions [nzColumn]="2" nzSize="small" nzBordered>
+      <nz-descriptions-item nzTitle="Teams User">{{ selectedRow.teamsUserName || '—' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="MARC User">{{ selectedRow.marcUsername || '—' }}</nz-descriptions-item>
+    </nz-descriptions>
+
+    <!-- Activity Details -->
+    <nz-divider [nzText]="activityTitle" nzOrientation="left"></nz-divider>
+    <ng-template #activityTitle>
+      <span nz-icon nzType="thunderbolt" nzTheme="outline"></span> Activity
+    </ng-template>
+    <nz-descriptions [nzColumn]="2" nzSize="small" nzBordered>
+      <nz-descriptions-item nzTitle="Type">{{ selectedRow.activityType || '—' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Status">
+        <nz-tag [nzColor]="getStatusColor(selectedRow.status)">{{ selectedRow.status || '—' }}</nz-tag>
+      </nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Command"><code>{{ selectedRow.command || '—' }}</code></nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Arguments"><code>{{ selectedRow.commandArgs || '—' }}</code></nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Duration">{{ selectedRow.durationFormatted || '—' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Time">{{ selectedRow.createdAtDisplay || '—' }}</nz-descriptions-item>
+    </nz-descriptions>
+
+    <!-- Error (conditional) -->
+    <ng-container *ngIf="selectedRow.errorMessage">
+      <nz-divider [nzText]="errorTitle" nzOrientation="left"></nz-divider>
+      <ng-template #errorTitle>
+        <span nz-icon nzType="close-circle" nzTheme="outline"></span> Error
+      </ng-template>
+      <nz-alert nzType="error" [nzMessage]="selectedRow.errorMessage" nzShowIcon></nz-alert>
+    </ng-container>
+
+    <!-- Technical Details -->
+    <nz-divider [nzText]="techTitle" nzOrientation="left"></nz-divider>
+    <ng-template #techTitle>
+      <span nz-icon nzType="code" nzTheme="outline"></span> Technical
+    </ng-template>
+    <nz-descriptions [nzColumn]="1" nzSize="small" nzBordered>
+      <nz-descriptions-item nzTitle="Conversation ID"><code>{{ selectedRow.conversationId || '—' }}</code></nz-descriptions-item>
+    </nz-descriptions>
+    <pre *ngIf="selectedRow.responseData" class="ta-response-data">{{ selectedRow.responseData }}</pre>
+
+    <!-- Copy Button -->
+    <div class="ta-copy-bar">
+      <button nz-button nzType="default" nzSize="small" (click)="onCopyToClipboard()">
+        <span nz-icon nzType="copy" nzTheme="outline"></span> Copy to Clipboard
+      </button>
+    </div>
+  </div>
+</app-side-panel>

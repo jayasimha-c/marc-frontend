@@ -1,0 +1,382 @@
+<app-page-panel [header]="isChangePage ? 'Update SAP Access Request' : 'Create SAP Access Request'">
+
+    <form [formGroup]="requestForm" nz-form nzLayout="vertical">
+
+        <!-- Step 1: Select User -->
+        <nz-card nzSize="small" class="mb-3">
+            <div nz-row>
+                <div nz-col nzSpan="24">
+                    <nz-form-item>
+                        <nz-form-label nzRequired>Step 1: Search AD User</nz-form-label>
+                        <nz-form-control>
+                            <nz-input-group [nzPrefix]="searchIcon" [nzSuffix]="userSearching ? loadingTpl : null">
+                                <input nz-input [ngModel]="userSearchValue" [ngModelOptions]="{standalone: true}"
+                                    (ngModelChange)="onUserSearch($event)"
+                                    placeholder="Search by User ID, Name, or Email" />
+                            </nz-input-group>
+                            <ng-template #searchIcon><span nz-icon nzType="search"></span></ng-template>
+                            <ng-template #loadingTpl><span nz-icon nzType="loading"></span></ng-template>
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+            </div>
+
+            <!-- Search results dropdown -->
+            <nz-list *ngIf="userSearchResults.length > 0" nzSize="small" nzBordered
+                style="max-height:200px;overflow-y:auto;margin-bottom:8px">
+                <nz-list-item *ngFor="let user of userSearchResults" style="cursor:pointer"
+                    (click)="selectUser(user)">
+                    <nz-list-item-meta [nzTitle]="user.firstName + ' ' + user.lastName"
+                        [nzDescription]="user.samAccountName + ' | ' + user.email">
+                        <nz-list-item-meta-avatar>
+                            <nz-avatar [nzText]="(user.firstName?.charAt(0) || '') + (user.lastName?.charAt(0) || '')"
+                                nzSize="small" style="background-color:#1890ff"></nz-avatar>
+                        </nz-list-item-meta-avatar>
+                    </nz-list-item-meta>
+                    <ul nz-list-item-actions>
+                        <nz-list-item-action>
+                            <span>{{ user.department }}</span>
+                        </nz-list-item-action>
+                    </ul>
+                </nz-list-item>
+            </nz-list>
+
+            <!-- Selected user info -->
+            <nz-descriptions *ngIf="selectedUser" nzSize="small" nzBordered [nzColumn]="4">
+                <nz-descriptions-item nzTitle="Name">{{ selectedUser.firstName }} {{ selectedUser.lastName }}
+                </nz-descriptions-item>
+                <nz-descriptions-item nzTitle="User ID">{{ selectedUser.samAccountName }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Email">{{ selectedUser.email }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Department">{{ selectedUser.department || '-' }}
+                </nz-descriptions-item>
+            </nz-descriptions>
+        </nz-card>
+
+        <!-- Step 2: Select Systems -->
+        <nz-card *ngIf="selectedUser" nzSize="small" class="mb-3">
+            <div style="margin-bottom:8px">
+                <strong>Step 2: Select SAP Systems</strong>
+                <nz-tag style="margin-left:8px">{{ selectedSystems.length }} selected</nz-tag>
+            </div>
+
+            <nz-empty *ngIf="sapSystems.length === 0" nzNotFoundImage="simple"
+                nzNotFoundContent="No SAP systems available"></nz-empty>
+
+            <div nz-row [nzGutter]="[8,8]">
+                <div nz-col [nzXs]="12" [nzSm]="8" [nzMd]="6" [nzLg]="4" *ngFor="let sys of sapSystems">
+                    <nz-card nzSize="small" nzHoverable [style.border-color]="sys.selected ? '#1890ff' : null"
+                        style="cursor:pointer" (click)="onSystemToggle(sys, !sys.selected)">
+                        <label nz-checkbox [ngModel]="sys.selected" [ngModelOptions]="{standalone: true}"
+                            (ngModelChange)="onSystemToggle(sys, $event)"
+                            (click)="$event.stopPropagation()">
+                            <strong>{{ sys.destinationName }}</strong>
+                        </label>
+                        <br>
+                        <nz-tag [nzColor]="sys.exist ? 'orange' : 'green'" style="margin-top:4px">
+                            {{ sys.exist ? 'Exists' : 'New' }}
+                        </nz-tag>
+                    </nz-card>
+                </div>
+            </div>
+        </nz-card>
+
+        <!-- Step 3: Business Processes -->
+        <nz-card *ngIf="selectedSystems.length > 0 && dropDownList.length > 0" nzSize="small" class="mb-3">
+            <div style="margin-bottom:8px"><strong>Step 3: Business Processes</strong></div>
+
+            <div nz-row [nzGutter]="16">
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6" *ngFor="let item of dropDownList">
+                    <nz-form-item>
+                        <nz-form-label nzRequired>{{ item.name }}</nz-form-label>
+                        <nz-form-control>
+                            <nz-select [(ngModel)]="item.selected" [ngModelOptions]="{standalone: true}"
+                                nzPlaceHolder="Select..." style="width:100%">
+                                <nz-option *ngFor="let opt of item.value" [nzValue]="opt.id"
+                                    [nzLabel]="opt.name"></nz-option>
+                            </nz-select>
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+            </div>
+        </nz-card>
+
+        <!-- Step 4: Assign Roles via Catalogues -->
+        <nz-card *ngIf="selectedSystems.length > 0" nzSize="small" class="mb-3">
+            <div style="margin-bottom:8px"><strong>Step 4: Assign Roles</strong></div>
+
+            <!-- Catalogue search -->
+            <nz-input-group [nzPrefix]="catSearchIcon" style="margin-bottom:12px">
+                <input nz-input [ngModel]="catalogueSearchValue" [ngModelOptions]="{standalone: true}"
+                    (ngModelChange)="onCatalogueSearch($event)" placeholder="Search role catalogues..." />
+            </nz-input-group>
+            <ng-template #catSearchIcon><span nz-icon nzType="search"></span></ng-template>
+
+            <!-- Catalogue search results -->
+            <nz-list *ngIf="catalogueSearchResults.length > 0" nzSize="small" nzBordered
+                style="max-height:180px;overflow-y:auto;margin-bottom:12px">
+                <nz-list-item *ngFor="let cat of catalogueSearchResults" style="cursor:pointer"
+                    (click)="addCatalogue(cat)">
+                    <nz-list-item-meta [nzTitle]="cat.roleName"
+                        [nzDescription]="cat.businessProcess || ''">
+                    </nz-list-item-meta>
+                    <ul nz-list-item-actions>
+                        <nz-list-item-action>
+                            <nz-tag nzColor="green">{{ cat.sapSystem }}</nz-tag>
+                        </nz-list-item-action>
+                    </ul>
+                </nz-list-item>
+            </nz-list>
+
+            <!-- Selected roles table -->
+            <nz-empty *ngIf="selectedRoleList.length === 0" nzNotFoundImage="simple"
+                nzNotFoundContent="Search and add role catalogues above"></nz-empty>
+
+            <nz-table *ngIf="selectedRoleList.length > 0" #roleTable [nzData]="selectedRoleList"
+                [nzShowPagination]="selectedRoleList.length > 15" [nzPageSize]="15"
+                [nzScroll]="{ y: '350px' }" nzSize="small">
+                <thead>
+                    <tr>
+                        <th>Role Name</th>
+                        <th nzWidth="140px">System</th>
+                        <th nzWidth="120px">Valid From</th>
+                        <th nzWidth="120px">Valid To</th>
+                        <th nzWidth="50px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let role of roleTable.data; let i = index">
+                        <td>
+                            <strong>{{ role.rolename }}</strong>
+                            <br><small>{{ role.description }}</small>
+                            <nz-tag *ngIf="role.oldRole" nzColor="blue" style="margin-left:4px">Existing</nz-tag>
+                        </td>
+                        <td>{{ role.destinationName }}</td>
+                        <td>
+                            <input nz-input nzSize="small" type="date" [(ngModel)]="role.validFrom"
+                                [ngModelOptions]="{standalone: true}" />
+                        </td>
+                        <td>
+                            <input nz-input nzSize="small" type="date" [(ngModel)]="role.validTo"
+                                [ngModelOptions]="{standalone: true}" />
+                        </td>
+                        <td nzAlign="center">
+                            <button nz-button nzType="text" nzSize="small" nzDanger
+                                (click)="removeRole(role, i)">
+                                <span nz-icon nzType="close"></span>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </nz-table>
+        </nz-card>
+
+        <!-- Step 5: User Groups -->
+        <nz-card *ngIf="selectedSystems.length > 0 && availableUserGroups.length > 0" nzSize="small" class="mb-3">
+            <div style="margin-bottom:8px">
+                <strong>Step 5: Select User Groups</strong>
+                <nz-tag style="margin-left:8px">{{ selectedUserGroups.length }} selected</nz-tag>
+            </div>
+
+            <div nz-row [nzGutter]="[8,8]">
+                <div nz-col [nzXs]="12" [nzSm]="8" [nzMd]="6" [nzLg]="4" *ngFor="let ug of availableUserGroups">
+                    <nz-card nzSize="small" nzHoverable
+                        [style.border-color]="isUserGroupSelected(ug) ? '#1890ff' : null">
+                        <label nz-checkbox [ngModel]="isUserGroupSelected(ug)"
+                            [ngModelOptions]="{standalone: true}"
+                            (ngModelChange)="onUserGroupToggle(ug, $event)">
+                            {{ ug.group }}
+                        </label>
+                        <br>
+                        <nz-tag nzColor="green" style="margin-top:4px">{{ ug.sapDestination }}</nz-tag>
+                    </nz-card>
+                </div>
+            </div>
+        </nz-card>
+
+        <!-- Step 6: User Information -->
+        <nz-card *ngIf="selectedSystems.length > 0" nzSize="small" class="mb-3">
+            <div style="margin-bottom:8px"><strong>Step 6: User Information &amp; Request Details</strong></div>
+
+            <div nz-row [nzGutter]="16">
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+                    <nz-form-item>
+                        <nz-form-label nzRequired>First Name</nz-form-label>
+                        <nz-form-control nzErrorTip="Required">
+                            <input nz-input formControlName="firstName" />
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+                    <nz-form-item>
+                        <nz-form-label nzRequired>Last Name</nz-form-label>
+                        <nz-form-control nzErrorTip="Required">
+                            <input nz-input formControlName="lastName" />
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+                    <nz-form-item>
+                        <nz-form-label nzRequired>Email</nz-form-label>
+                        <nz-form-control nzErrorTip="Valid email required">
+                            <input nz-input formControlName="email" />
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+                    <nz-form-item>
+                        <nz-form-label>Account Number</nz-form-label>
+                        <nz-form-control>
+                            <input nz-input formControlName="accountNumber" />
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+                    <nz-form-item>
+                        <nz-form-label nzRequired>User Type</nz-form-label>
+                        <nz-form-control>
+                            <nz-select formControlName="userType" style="width:100%">
+                                <nz-option *ngFor="let t of userTypeList" [nzValue]="t"
+                                    [nzLabel]="t"></nz-option>
+                            </nz-select>
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+                    <nz-form-item>
+                        <nz-form-label>Department</nz-form-label>
+                        <nz-form-control>
+                            <input nz-input formControlName="department" />
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+                    <nz-form-item>
+                        <nz-form-label>Function</nz-form-label>
+                        <nz-form-control>
+                            <input nz-input formControlName="function" />
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+                    <nz-form-item>
+                        <nz-form-label nzRequired>Valid From</nz-form-label>
+                        <nz-form-control>
+                            <input nz-input type="date" formControlName="validFrom" />
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+                    <nz-form-item>
+                        <nz-form-label nzRequired>Valid To</nz-form-label>
+                        <nz-form-control>
+                            <input nz-input type="date" formControlName="validTo" />
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+                    <nz-form-item>
+                        <nz-form-label>Spool Device</nz-form-label>
+                        <nz-form-control>
+                            <input nz-input formControlName="spoolDevice" />
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+                    <nz-form-item>
+                        <nz-form-label>Logon Language</nz-form-label>
+                        <nz-form-control>
+                            <input nz-input formControlName="logonLanguage" />
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4">
+                    <nz-form-item>
+                        <nz-form-label>Cost Center</nz-form-label>
+                        <nz-form-control>
+                            <input nz-input formControlName="costCenter" />
+                        </nz-form-control>
+                    </nz-form-item>
+                </div>
+            </div>
+        </nz-card>
+
+        <!-- Actions -->
+        <nz-card *ngIf="selectedSystems.length > 0 && selectedRoleList.length > 0" nzSize="small" class="mb-3">
+            <div nz-row nzJustify="space-between" nzAlign="middle">
+                <div nz-col>
+                    <button nz-button nzType="default" (click)="runRiskAnalysis()"
+                        *ngIf="!riskAnalysisResults"
+                        [disabled]="selectedRoleList.length === 0 || selectedUserGroups.length === 0">
+                        <span nz-icon nzType="experiment"></span> Run Risk Analysis
+                    </button>
+                    <button nz-button nzType="default" *ngIf="riskAnalysisResults"
+                        (click)="showRiskAnalysis = !showRiskAnalysis">
+                        <span nz-icon nzType="bar-chart"></span>
+                        {{ showRiskAnalysis ? 'Hide' : 'Show' }} Risk Analysis
+                    </button>
+                    <nz-tag *ngIf="riskAnalysisResults?.status === 'running'" nzColor="processing"
+                        style="margin-left:8px">
+                        <span nz-icon nzType="loading"></span> Running...
+                    </nz-tag>
+                    <nz-tag *ngIf="riskAnalysisResults?.status === 'complete'" nzColor="success"
+                        style="margin-left:8px">
+                        <span nz-icon nzType="check-circle"></span> Complete
+                    </nz-tag>
+                </div>
+                <div nz-col>
+                    <button nz-button nzType="default" (click)="resetForm()" style="margin-right:8px">
+                        <span nz-icon nzType="reload"></span> Reset
+                    </button>
+                    <button nz-button nzType="primary" [disabled]="!canSubmit" [nzLoading]="isSubmitting"
+                        (click)="submitRequest()">
+                        <span nz-icon nzType="send"></span> {{ isChangePage ? 'Update' : 'Submit' }} Request
+                    </button>
+                </div>
+            </div>
+        </nz-card>
+
+        <!-- Risk Analysis Results -->
+        <nz-card *ngIf="showRiskAnalysis && riskAnalysisData" nzSize="small" class="mb-3">
+            <div style="margin-bottom:8px"><strong>Risk Analysis Report</strong></div>
+
+            <nz-tabset [(nzSelectedIndex)]="selectedAnalysisTab" [nzAnimated]="false">
+                <nz-tab *ngFor="let sysKey of getSystemKeys()" [nzTitle]="sysKey">
+                    <nz-descriptions nzSize="small" nzBordered [nzColumn]="3">
+                        <nz-descriptions-item nzTitle="System">{{ sysKey }}</nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Target">User</nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Type">Simulation</nz-descriptions-item>
+                    </nz-descriptions>
+
+                    <nz-table *ngIf="riskAnalysisData[sysKey]?.violations" #riskTable
+                        [nzData]="riskAnalysisData[sysKey].violations || []"
+                        [nzShowPagination]="true" [nzPageSize]="10" nzSize="small" style="margin-top:8px">
+                        <thead>
+                            <tr>
+                                <th>Risk ID</th>
+                                <th>Description</th>
+                                <th nzWidth="80px" nzAlign="center">Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let v of riskTable.data">
+                                <td>{{ v.riskId || v.id }}</td>
+                                <td>{{ v.description || v.riskDescription }}</td>
+                                <td nzAlign="center">
+                                    <nz-tag
+                                        [nzColor]="v.level === 'HIGH' ? 'red' : v.level === 'MEDIUM' ? 'orange' : 'green'">
+                                        {{ v.level }}
+                                    </nz-tag>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </nz-table>
+
+                    <nz-empty *ngIf="!riskAnalysisData[sysKey]?.violations?.length" nzNotFoundImage="simple"
+                        nzNotFoundContent="No violations found" style="padding:20px 0"></nz-empty>
+                </nz-tab>
+            </nz-tabset>
+        </nz-card>
+
+    </form>
+
+</app-page-panel>

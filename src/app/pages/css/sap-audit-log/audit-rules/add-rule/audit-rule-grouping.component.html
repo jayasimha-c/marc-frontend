@@ -1,0 +1,13 @@
+<nz-collapse>
+  <nz-collapse-panel nzHeader="Grouping" [nzExtra]="groupDesc" [nzActive]="false">
+    <ng-template #groupDesc>
+      <span class="text-gray-500 text-sm">Group the logs by a audit log column</span>
+    </ng-template>
+
+    <form [formGroup]="form" class="flex flex-row gap-5 flex-wrap mt-2">
+      <label nz-checkbox *ngFor="let field of fields" [formControlName]="field" class="w-1/4">
+        {{ fieldNames[field] }}
+      </label>
+    </form>
+  </nz-collapse-panel>
+</nz-collapse>

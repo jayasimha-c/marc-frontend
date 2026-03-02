@@ -1,0 +1,55 @@
+<nz-card class="dashboard-card h-full {{ customClass }}" [ngClass]="{
+    'fixed inset-0 z-[1000] m-0 !rounded-none': isMaximized
+  }">
+
+    <!-- Card Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 0;min-height:40px">
+        <span style="display:inline-flex;align-items:center;gap:8px;min-width:0">
+            <span nz-icon [nzType]="chartOptions?.icon || getAntIcon(chartOptions?.chart?.type)"
+                nzTheme="outline" style="font-size:14px;color:#1890ff;flex-shrink:0"></span>
+            <span class="card-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ chartOptions?.title?.text }}</span>
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:4px;flex-shrink:0">
+            <ng-content select="[header]"></ng-content>
+            <button *ngIf="hasAction" nz-button nzType="text" nzSize="small" nz-tooltip
+                [nzTooltipTitle]="actionLabel" (click)="onActionClick()">
+                <span nz-icon [nzType]="getAntIcon(actionIcon)" nzTheme="outline"></span>
+            </button>
+            <button nz-button nzType="text" nzSize="small"
+                (click)="$event.stopPropagation(); toggleMaximize()" nz-tooltip
+                [nzTooltipTitle]="isMaximized ? 'Minimize' : 'Maximize'">
+                <span nz-icon [nzType]="isMaximized ? 'fullscreen-exit' : 'fullscreen'" nzTheme="outline"></span>
+            </button>
+        </span>
+    </div>
+
+    <!-- Card Content -->
+    <div class="card-content" [ngClass]="{
+        'card-content--sm': size === 'sm' && !isMaximized,
+        'card-content--md': size === 'md' && !isMaximized,
+        'card-content--lg': size === 'lg' && !isMaximized,
+        'card-content--auto': size === 'auto' && !isMaximized,
+        'card-content--maximized': isMaximized
+    }">
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex flex-col items-center justify-center h-full">
+            <nz-spin nzSimple></nz-spin>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="error && !loading" class="flex flex-col items-center justify-center h-full">
+            <nz-result nzStatus="error" [nzTitle]="error">
+                <div nz-result-extra>
+                    <button nz-button nzType="primary" nzSize="small" (click)="cardClick.emit()">
+                        <span nz-icon nzType="reload"></span> Retry
+                    </button>
+                </div>
+            </nz-result>
+        </div>
+
+        <!-- Chart -->
+        <div *ngIf="!loading && !error" class="h-full">
+            <div #apxChartElement class="w-full h-full"></div>
+        </div>
+    </div>
+</nz-card>

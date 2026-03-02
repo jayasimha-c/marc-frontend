@@ -1,0 +1,148 @@
+/* ─── Dashboard Card Base ─── */
+.dashboard-card {
+    border-radius: 4px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02);
+    background-color: #fff;
+}
+
+.dark .dashboard-card {
+    border-color: #334155;
+    background-color: #1e293b;
+}
+
+/* ─── Card Header ─── */
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 0;
+    min-height: 40px;
+}
+
+.card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.85);
+    line-height: 1.4;
+    margin: 0;
+}
+
+.dark .card-title {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.card-subtitle {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.45);
+    line-height: 1.4;
+    margin-top: 2px;
+}
+
+.dark .card-subtitle {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* ─── Chart Size Presets ─── */
+.card-content {
+    width: 100%;
+    padding: 4px 8px 8px;
+}
+
+.card-content--sm {
+    height: 200px;
+}
+
+.card-content--md {
+    height: 300px;
+}
+
+.card-content--lg {
+    height: 400px;
+}
+
+.card-content--auto {
+    height: auto;
+    min-height: 250px;
+}
+
+.card-content--maximized {
+    height: calc(100vh - 60px) !important;
+}
+
+/* ─── ApexCharts Tooltip ─── */
+::ng-deep .apexcharts-tooltip {
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: inherit;
+}
+
+::ng-deep .apexcharts-tooltip-title {
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 8px;
+    margin-bottom: 0;
+}
+
+::ng-deep .apexcharts-tooltip-series-group {
+    padding: 4px 8px !important;
+}
+
+::ng-deep .dark .apexcharts-tooltip {
+    background: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+
+::ng-deep .dark .apexcharts-tooltip-title {
+    background: #0f172a;
+    border-bottom-color: #334155;
+}
+
+/* ─── Prevent passive event listener warning ─── */
+::ng-deep .apexcharts-canvas {
+    touch-action: auto;
+}
+
+/* ─── ApexCharts Global Overrides ─── */
+::ng-deep .apexcharts-title-text {
+    display: none !important;
+}
+
+::ng-deep .apexcharts-legend {
+    padding: 4px 0 0 !important;
+}
+
+::ng-deep .apexcharts-legend-text {
+    font-size: 12px !important;
+    color: rgba(0, 0, 0, 0.65) !important;
+}
+
+::ng-deep .dark .apexcharts-legend-text {
+    color: rgba(255, 255, 255, 0.65) !important;
+}
+
+::ng-deep .apexcharts-gridline {
+    stroke: #f0f0f0;
+}
+
+::ng-deep .dark .apexcharts-gridline {
+    stroke: #334155;
+}
+
+::ng-deep .apexcharts-xaxis-label,
+::ng-deep .apexcharts-yaxis-label {
+    font-size: 11px !important;
+    fill: rgba(0, 0, 0, 0.45) !important;
+}
+
+::ng-deep .dark .apexcharts-xaxis-label,
+::ng-deep .dark .apexcharts-yaxis-label {
+    fill: rgba(255, 255, 255, 0.45) !important;
+}

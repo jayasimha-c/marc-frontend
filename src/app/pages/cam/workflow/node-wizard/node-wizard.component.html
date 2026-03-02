@@ -1,0 +1,186 @@
+<app-page-panel [header]="isEditMode ? 'Edit Node Type' : 'Create Node Type'">
+
+    <nz-spin [nzSpinning]="loading">
+
+        <nz-steps [nzCurrent]="currentStep" nzSize="small" class="mb-6">
+            <nz-step nzTitle="Basic Info"></nz-step>
+            <nz-step nzTitle="Approver Groups"></nz-step>
+            <nz-step nzTitle="Review"></nz-step>
+        </nz-steps>
+
+        <!-- Step 0: Basic Information -->
+        <div *ngIf="currentStep === 0">
+            <nz-card nzTitle="Node Type Information">
+                <form nz-form [formGroup]="basicInfoForm" nzLayout="vertical">
+                    <div nz-row [nzGutter]="24">
+                        <div nz-col [nzSpan]="12">
+                            <nz-form-item>
+                                <nz-form-label nzRequired>Name</nz-form-label>
+                                <nz-form-control nzErrorTip="Name is required (2-50 characters)">
+                                    <input nz-input formControlName="name" placeholder="Enter node type name" />
+                                </nz-form-control>
+                            </nz-form-item>
+                        </div>
+                    </div>
+                    <nz-divider nzText="Settings" nzOrientation="left"></nz-divider>
+                    <div nz-row [nzGutter]="[24, 16]">
+                        <div nz-col [nzSpan]="8">
+                            <label nz-checkbox formControlName="commentsRequired">Comments Required</label>
+                        </div>
+                        <div nz-col [nzSpan]="8">
+                            <label nz-checkbox formControlName="mustCheckRisk">SoD Mandatory</label>
+                        </div>
+                        <div nz-col [nzSpan]="8">
+                            <label nz-checkbox formControlName="approveIfRiskPresent">Approve Despite Risks</label>
+                        </div>
+                        <div nz-col [nzSpan]="8">
+                            <label nz-checkbox formControlName="enableRiskDetour">Enable Risk Detour</label>
+                        </div>
+                        <div nz-col [nzSpan]="8" *ngIf="basicInfoForm.get('enableRiskDetour')?.value">
+                            <label nz-checkbox formControlName="riskDetourNode">Risk Detour Node</label>
+                        </div>
+                    </div>
+                    <div nz-row [nzGutter]="24" class="mt-4"
+                        *ngIf="basicInfoForm.get('enableRiskDetour')?.value">
+                        <div nz-col [nzSpan]="12">
+                            <nz-form-item>
+                                <nz-form-label>Detour Node</nz-form-label>
+                                <nz-form-control>
+                                    <nz-select formControlName="detourNodeId" nzPlaceHolder="Select detour node"
+                                        nzAllowClear>
+                                        <nz-option *ngFor="let n of detourNodes" [nzValue]="n.id"
+                                            [nzLabel]="n.name"></nz-option>
+                                    </nz-select>
+                                </nz-form-control>
+                            </nz-form-item>
+                        </div>
+                    </div>
+                </form>
+            </nz-card>
+        </div>
+
+        <!-- Step 1: Approver Groups -->
+        <div *ngIf="currentStep === 1">
+            <nz-card nzTitle="Approver Groups" [nzExtra]="addGroupTpl">
+                <ng-template #addGroupTpl>
+                    <button nz-button nzType="primary" nzSize="small" (click)="addGroup()">
+                        <span nz-icon nzType="plus"></span> Add Group
+                    </button>
+                </ng-template>
+
+                <div *ngIf="approverGroups.length === 0" class="node-empty-state">
+                    <nz-empty nzNotFoundContent="No approver groups. Click 'Add Group' to create one."></nz-empty>
+                </div>
+
+                <div *ngFor="let group of approverGroups; let i = index" class="node-group-card">
+                    <div class="node-group-card__header">
+                        <span class="node-group-card__title">Group {{ i + 1 }}</span>
+                        <button nz-button nzType="text" nzSize="small" nzDanger (click)="removeGroup(i)">
+                            <span nz-icon nzType="delete"></span>
+                        </button>
+                    </div>
+                    <div nz-row [nzGutter]="16">
+                        <div nz-col [nzSpan]="8">
+                            <nz-form-item>
+                                <nz-form-label>Name</nz-form-label>
+                                <nz-form-control>
+                                    <input nz-input [(ngModel)]="group.name" placeholder="Group name" />
+                                </nz-form-control>
+                            </nz-form-item>
+                        </div>
+                        <div nz-col [nzSpan]="8">
+                            <nz-form-item>
+                                <nz-form-label>Description</nz-form-label>
+                                <nz-form-control>
+                                    <input nz-input [(ngModel)]="group.description"
+                                        placeholder="Description" />
+                                </nz-form-control>
+                            </nz-form-item>
+                        </div>
+                        <div nz-col [nzSpan]="8">
+                            <nz-form-item>
+                                <nz-form-label>Approvers</nz-form-label>
+                                <nz-form-control>
+                                    <nz-select [(ngModel)]="group.selectedUserIds" nzMode="multiple"
+                                        nzPlaceHolder="Select approvers" nzShowSearch>
+                                        <nz-option *ngFor="let u of availableUsers" [nzValue]="u.id + ''"
+                                            [nzLabel]="u.username || u.firstName"></nz-option>
+                                    </nz-select>
+                                </nz-form-control>
+                            </nz-form-item>
+                        </div>
+                    </div>
+                </div>
+            </nz-card>
+        </div>
+
+        <!-- Step 2: Review -->
+        <div *ngIf="currentStep === 2">
+            <div nz-row [nzGutter]="[16, 16]">
+                <div nz-col [nzSpan]="12">
+                    <nz-card nzTitle="Node Type Information">
+                        <nz-descriptions [nzColumn]="1" nzBordered nzSize="small">
+                            <nz-descriptions-item nzTitle="Name">{{ basicInfoForm.get('name')?.getRawValue() }}</nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="Comments Required">
+                                <nz-tag [nzColor]="basicInfoForm.get('commentsRequired')?.value ? 'green' : 'default'">
+                                    {{ basicInfoForm.get('commentsRequired')?.value ? 'Yes' : 'No' }}
+                                </nz-tag>
+                            </nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="SoD Mandatory">
+                                <nz-tag [nzColor]="basicInfoForm.get('mustCheckRisk')?.value ? 'green' : 'default'">
+                                    {{ basicInfoForm.get('mustCheckRisk')?.value ? 'Yes' : 'No' }}
+                                </nz-tag>
+                            </nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="Approve Despite Risks">
+                                <nz-tag [nzColor]="basicInfoForm.get('approveIfRiskPresent')?.value ? 'orange' : 'default'">
+                                    {{ basicInfoForm.get('approveIfRiskPresent')?.value ? 'Yes' : 'No' }}
+                                </nz-tag>
+                            </nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="Risk Detour">
+                                <nz-tag [nzColor]="basicInfoForm.get('enableRiskDetour')?.value ? 'blue' : 'default'">
+                                    {{ basicInfoForm.get('enableRiskDetour')?.value ? 'Enabled' : 'Disabled' }}
+                                </nz-tag>
+                            </nz-descriptions-item>
+                        </nz-descriptions>
+                    </nz-card>
+                </div>
+                <div nz-col [nzSpan]="12">
+                    <nz-card nzTitle="Approver Groups">
+                        <div *ngIf="approverGroups.length === 0">
+                            <nz-empty nzNotFoundContent="No approver groups configured"></nz-empty>
+                        </div>
+                        <nz-list nzSize="small" nzBordered *ngIf="approverGroups.length > 0">
+                            <nz-list-item *ngFor="let g of approverGroups">
+                                <nz-list-item-meta [nzTitle]="g.name || '(Unnamed)'"
+                                    [nzDescription]="g.description || ''">
+                                </nz-list-item-meta>
+                                <span>{{ (g.selectedUserIds || []).length }} approver(s)</span>
+                            </nz-list-item>
+                        </nz-list>
+                    </nz-card>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="mt-4" style="display:flex;justify-content:space-between">
+            <button nz-button (click)="navigateBack()">
+                <span nz-icon nzType="arrow-left"></span> Back to List
+            </button>
+            <div>
+                <button nz-button *ngIf="currentStep > 0" (click)="onPrevious()" class="mr-2">
+                    <span nz-icon nzType="left"></span> Previous
+                </button>
+                <button nz-button nzType="primary" *ngIf="currentStep < 2" (click)="onNext()">
+                    Next <span nz-icon nzType="right"></span>
+                </button>
+                <button nz-button nzType="primary" *ngIf="currentStep === 2" (click)="onSave()"
+                    [nzLoading]="loading">
+                    <span nz-icon nzType="save"></span> Save Node Type
+                </button>
+            </div>
+        </div>
+
+    </nz-spin>
+
+</app-page-panel>

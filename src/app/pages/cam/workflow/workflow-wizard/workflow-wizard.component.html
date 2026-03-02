@@ -1,0 +1,221 @@
+<app-page-panel [header]="isEditMode ? 'Edit Workflow' : 'Create Workflow'">
+
+    <nz-spin [nzSpinning]="loading">
+
+        <nz-steps [nzCurrent]="currentStep" nzSize="small" class="mb-6">
+            <nz-step nzTitle="Basic Info"></nz-step>
+            <nz-step nzTitle="Settings"></nz-step>
+            <nz-step nzTitle="Workflow Nodes"></nz-step>
+            <nz-step nzTitle="Review"></nz-step>
+        </nz-steps>
+
+        <!-- Step 0: Basic Information -->
+        <div *ngIf="currentStep === 0">
+            <nz-card nzTitle="Basic Information">
+                <form nz-form [formGroup]="basicInfoForm" nzLayout="vertical">
+                    <div nz-row [nzGutter]="24">
+                        <div nz-col [nzSpan]="12">
+                            <nz-form-item>
+                                <nz-form-label nzRequired>Workflow Name</nz-form-label>
+                                <nz-form-control nzErrorTip="Name is required (3-100 characters)">
+                                    <input nz-input formControlName="name" placeholder="Enter workflow name" />
+                                </nz-form-control>
+                            </nz-form-item>
+                        </div>
+                        <div nz-col [nzSpan]="12">
+                            <nz-form-item>
+                                <nz-form-label nzRequired>Workflow Type</nz-form-label>
+                                <nz-form-control nzErrorTip="Type is required">
+                                    <nz-select formControlName="type" nzPlaceHolder="Select type">
+                                        <nz-option *ngFor="let t of workflowTypes" [nzValue]="t.value"
+                                            [nzLabel]="t.label"></nz-option>
+                                    </nz-select>
+                                </nz-form-control>
+                            </nz-form-item>
+                        </div>
+                    </div>
+                </form>
+            </nz-card>
+        </div>
+
+        <!-- Step 1: Settings -->
+        <div *ngIf="currentStep === 1">
+            <nz-card nzTitle="Workflow Settings">
+                <form nz-form [formGroup]="settingsForm" nzLayout="vertical">
+                    <div nz-row [nzGutter]="24">
+                        <div nz-col [nzSpan]="12">
+                            <nz-form-item>
+                                <nz-form-control>
+                                    <label nz-checkbox formControlName="changeRoles">
+                                        Allow users to edit roles in the request
+                                    </label>
+                                </nz-form-control>
+                            </nz-form-item>
+                        </div>
+                        <div nz-col [nzSpan]="12">
+                            <nz-form-item>
+                                <nz-form-control>
+                                    <label nz-checkbox formControlName="selfApprove">
+                                        Allow requesters to approve their own requests
+                                    </label>
+                                </nz-form-control>
+                            </nz-form-item>
+                        </div>
+                    </div>
+                </form>
+            </nz-card>
+        </div>
+
+        <!-- Step 2: Workflow Nodes -->
+        <div *ngIf="currentStep === 2">
+            <div nz-row [nzGutter]="16">
+                <!-- Selected Nodes (Flow Builder) -->
+                <div nz-col [nzSpan]="16">
+                    <nz-card nzTitle="Workflow Flow" [nzExtra]="nodeCountTpl">
+                        <ng-template #nodeCountTpl>
+                            <nz-tag nzColor="blue">{{ selectedNodes.length }} node(s)</nz-tag>
+                        </ng-template>
+
+                        <div *ngIf="selectedNodes.length === 0" class="wf-empty-state">
+                            <nz-empty nzNotFoundContent="Add nodes from the right panel to build your workflow"></nz-empty>
+                        </div>
+
+                        <div cdkDropList (cdkDropListDropped)="dropNode($event)" class="wf-flow-list"
+                            *ngIf="selectedNodes.length > 0">
+
+                            <!-- Start indicator -->
+                            <div class="wf-flow-indicator">
+                                <nz-tag nzColor="green"><span nz-icon nzType="play-circle"></span> Start</nz-tag>
+                            </div>
+
+                            <div *ngFor="let sn of selectedNodes; let i = index" cdkDrag class="wf-flow-node">
+                                <div class="wf-flow-connector"></div>
+                                <div class="wf-flow-card">
+                                    <div class="wf-flow-card__handle" cdkDragHandle>
+                                        <span nz-icon nzType="holder" nzTheme="outline"></span>
+                                    </div>
+                                    <div class="wf-flow-card__info">
+                                        <span class="wf-flow-card__order">{{ i + 1 }}</span>
+                                        <span class="wf-flow-card__name">{{ sn.node?.name }}</span>
+                                    </div>
+                                    <div class="wf-flow-card__actions">
+                                        <button nz-button nzType="text" nzSize="small" (click)="moveNodeUp(i)"
+                                            [disabled]="i === 0" nz-tooltip nzTooltipTitle="Move Up">
+                                            <span nz-icon nzType="arrow-up"></span>
+                                        </button>
+                                        <button nz-button nzType="text" nzSize="small" (click)="moveNodeDown(i)"
+                                            [disabled]="i === selectedNodes.length - 1" nz-tooltip nzTooltipTitle="Move Down">
+                                            <span nz-icon nzType="arrow-down"></span>
+                                        </button>
+                                        <button nz-button nzType="text" nzSize="small" nzDanger (click)="removeNode(i)"
+                                            nz-tooltip nzTooltipTitle="Remove">
+                                            <span nz-icon nzType="delete"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- End indicator -->
+                            <div class="wf-flow-connector"></div>
+                            <div class="wf-flow-indicator">
+                                <nz-tag nzColor="red"><span nz-icon nzType="stop"></span> End</nz-tag>
+                            </div>
+                        </div>
+                    </nz-card>
+                </div>
+
+                <!-- Available Nodes -->
+                <div nz-col [nzSpan]="8">
+                    <nz-card nzTitle="Available Nodes">
+                        <div *ngIf="getAvailableNodesFiltered().length === 0" class="wf-empty-state">
+                            <nz-empty nzNotFoundContent="All nodes have been added"></nz-empty>
+                        </div>
+                        <div *ngFor="let node of getAvailableNodesFiltered()" class="wf-available-node"
+                            (click)="addNode(node)">
+                            <span nz-icon nzType="plus-circle" nzTheme="outline" class="mr-2"
+                                style="color:#1890ff"></span>
+                            {{ node.name }}
+                        </div>
+                    </nz-card>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Review -->
+        <div *ngIf="currentStep === 3">
+            <div nz-row [nzGutter]="[16, 16]">
+                <div nz-col [nzSpan]="12">
+                    <nz-card nzTitle="Basic Information">
+                        <nz-descriptions [nzColumn]="1" nzBordered nzSize="small">
+                            <nz-descriptions-item nzTitle="Name">{{ basicInfoForm.get('name')?.value }}</nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="Type">{{ getTypeName() }}</nz-descriptions-item>
+                        </nz-descriptions>
+                    </nz-card>
+                </div>
+                <div nz-col [nzSpan]="12">
+                    <nz-card nzTitle="Settings">
+                        <nz-descriptions [nzColumn]="1" nzBordered nzSize="small">
+                            <nz-descriptions-item nzTitle="Can Edit Roles">
+                                <nz-tag [nzColor]="settingsForm.get('changeRoles')?.value ? 'green' : 'default'">
+                                    {{ settingsForm.get('changeRoles')?.value ? 'Yes' : 'No' }}
+                                </nz-tag>
+                            </nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="Self-Approve">
+                                <nz-tag [nzColor]="settingsForm.get('selfApprove')?.value ? 'green' : 'default'">
+                                    {{ settingsForm.get('selfApprove')?.value ? 'Yes' : 'No' }}
+                                </nz-tag>
+                            </nz-descriptions-item>
+                        </nz-descriptions>
+                    </nz-card>
+                </div>
+                <div nz-col [nzSpan]="24">
+                    <nz-card nzTitle="Workflow Nodes">
+                        <nz-table [nzData]="selectedNodes" nzSize="small" [nzShowPagination]="false" nzBordered>
+                            <thead>
+                                <tr>
+                                    <th nzWidth="60px">#</th>
+                                    <th>Node Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let sn of selectedNodes; let i = index">
+                                    <td>{{ i + 1 }}</td>
+                                    <td>{{ sn.node?.name }}</td>
+                                </tr>
+                            </tbody>
+                        </nz-table>
+                    </nz-card>
+                </div>
+                <div nz-col [nzSpan]="24">
+                    <nz-card nzTitle="Activation">
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <nz-switch [(ngModel)]="isActive"></nz-switch>
+                            <span>{{ isActive ? 'Active' : 'Inactive' }}</span>
+                        </div>
+                    </nz-card>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="mt-4" style="display:flex;justify-content:space-between">
+            <button nz-button (click)="navigateBack()">
+                <span nz-icon nzType="arrow-left"></span> Back to List
+            </button>
+            <div>
+                <button nz-button *ngIf="currentStep > 0" (click)="onPrevious()" class="mr-2">
+                    <span nz-icon nzType="left"></span> Previous
+                </button>
+                <button nz-button nzType="primary" *ngIf="currentStep < 3" (click)="onNext()">
+                    Next <span nz-icon nzType="right"></span>
+                </button>
+                <button nz-button nzType="primary" *ngIf="currentStep === 3" (click)="onSave()"
+                    [nzLoading]="loading">
+                    <span nz-icon nzType="save"></span> Save Workflow
+                </button>
+            </div>
+        </div>
+
+    </nz-spin>
+
+</app-page-panel>

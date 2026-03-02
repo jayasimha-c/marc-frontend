@@ -1,0 +1,105 @@
+<app-page-panel [header]="'Business Processes'">
+  <!-- Header Toolbar -->
+  <div headerSection style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+    <nz-input-group [nzSuffix]="suffixIcon" style="width: 200px;">
+      <input nz-input [(ngModel)]="searchTerm" (input)="filterTree()" placeholder="Search..." />
+    </nz-input-group>
+    <ng-template #suffixIcon>
+      <span nz-icon nzType="search" nzTheme="outline"></span>
+    </ng-template>
+    <button nz-button nzType="text" nzShape="circle" nz-tooltip nzTooltipTitle="Expand All" (click)="expandAll()">
+      <span nz-icon nzType="column-height" nzTheme="outline"></span>
+    </button>
+    <button nz-button nzType="text" nzShape="circle" nz-tooltip nzTooltipTitle="Collapse All" (click)="collapseAll()">
+      <span nz-icon nzType="minus-square" nzTheme="outline"></span>
+    </button>
+    <button nz-button nzType="primary" (click)="addProcess()">
+      <span nz-icon nzType="plus" nzTheme="outline"></span> Add Process
+    </button>
+  </div>
+
+  <!-- Count -->
+  <div class="tree-count">{{ treeData.length }} business process(es)</div>
+
+  <!-- Loading -->
+  <nz-spin [nzSpinning]="loading">
+    <!-- Empty State -->
+    <nz-empty *ngIf="!loading && treeData.length === 0 && !searchTerm"
+      nzNotFoundContent="No Business Processes Found"
+      [nzNotFoundImage]="'simple'">
+      <ng-template #nzNotFoundFooter>
+        <button nz-button nzType="primary" (click)="addProcess()">
+          <span nz-icon nzType="plus" nzTheme="outline"></span> Add Business Process
+        </button>
+      </ng-template>
+    </nz-empty>
+
+    <!-- No Search Results -->
+    <nz-empty *ngIf="!loading && treeData.length === 0 && searchTerm"
+      [nzNotFoundContent]="'No processes match &quot;' + searchTerm + '&quot;'"
+      [nzNotFoundImage]="'simple'">
+      <ng-template #nzNotFoundFooter>
+        <button nz-button nzType="default" (click)="searchTerm = ''; filterTree()">Clear Search</button>
+      </ng-template>
+    </nz-empty>
+
+    <!-- Tree -->
+    <div *ngIf="!loading && treeData.length > 0" class="tree-container">
+      <ng-container *ngFor="let node of treeData">
+        <!-- Process node (parent) -->
+        <div class="tree-node parent-node"
+             [class.selected]="isSelected(node)"
+             (click)="selectNode(node)">
+          <!-- Toggle -->
+          <button *ngIf="node.children?.length" nz-button nzType="text" nzSize="small" nzShape="circle"
+            class="toggle-btn" (click)="toggleNode(node); $event.stopPropagation()">
+            <span nz-icon [nzType]="isExpanded(node) ? 'down' : 'right'" nzTheme="outline"></span>
+          </button>
+          <span *ngIf="!node.children?.length" class="toggle-spacer"></span>
+
+          <span nz-icon [nzType]="node.children?.length ? 'apartment' : 'cluster'" nzTheme="outline"
+            class="node-icon process-icon" [class.empty]="!node.children?.length"></span>
+          <span class="node-name">{{ node.name }}</span>
+          <span class="child-count">({{ getChildCount(node) }})</span>
+
+          <div class="node-actions">
+            <button nz-button nzType="text" nzSize="small" nzShape="circle" nz-tooltip nzTooltipTitle="Add Sub-Process"
+              (click)="addSubProcess(node, $event)" class="action-btn add-btn">
+              <span nz-icon nzType="plus" nzTheme="outline"></span>
+            </button>
+            <button nz-button nzType="text" nzSize="small" nzShape="circle" nz-tooltip nzTooltipTitle="Edit"
+              (click)="editNode(node, $event)" class="action-btn">
+              <span nz-icon nzType="edit" nzTheme="outline"></span>
+            </button>
+            <button nz-button nzType="text" nzSize="small" nzShape="circle" nz-tooltip nzTooltipTitle="Delete"
+              (click)="deleteNode(node, $event)" class="action-btn delete-btn">
+              <span nz-icon nzType="delete" nzTheme="outline"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Children (sub-processes) -->
+        <div *ngIf="isExpanded(node) && node.children?.length" class="nested-children">
+          <div *ngFor="let child of node.children"
+               class="tree-node leaf-node"
+               [class.selected]="isSelected(child)"
+               (click)="selectNode(child)">
+            <span class="toggle-spacer"></span>
+            <span nz-icon nzType="enter" nzTheme="outline" class="node-icon subprocess-icon"></span>
+            <span class="node-name">{{ child.name }}</span>
+            <div class="node-actions">
+              <button nz-button nzType="text" nzSize="small" nzShape="circle" nz-tooltip nzTooltipTitle="Edit"
+                (click)="editNode(child, $event)" class="action-btn">
+                <span nz-icon nzType="edit" nzTheme="outline"></span>
+              </button>
+              <button nz-button nzType="text" nzSize="small" nzShape="circle" nz-tooltip nzTooltipTitle="Delete"
+                (click)="deleteNode(child, $event)" class="action-btn delete-btn">
+                <span nz-icon nzType="delete" nzTheme="outline"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </nz-spin>
+</app-page-panel>

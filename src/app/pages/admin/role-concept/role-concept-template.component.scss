@@ -1,0 +1,117 @@
+.role-concept__container {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    height: 100%;
+
+    .role-concept__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px;
+        border-bottom: 1px solid #f0f0f0;
+
+        h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        p {
+            margin: 4px 0 0;
+            color: rgba(0, 0, 0, 0.45);
+            font-size: 14px;
+        }
+    }
+
+    .role-concept__content {
+        flex: 1 1 auto;
+        padding: 24px;
+        overflow: auto;
+    }
+}
+
+.w-full {
+    width: 100%;
+}
+
+.mb-4 {
+    margin-bottom: 16px;
+}
+
+.mb-2 {
+    margin-bottom: 8px;
+}
+
+.mt-2 {
+    margin-top: 8px;
+}
+
+.mt-4 {
+    margin-top: 16px;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.font-bold {
+    font-weight: bold;
+}
+
+.text-hint {
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.text-sm {
+    font-size: 14px;
+}
+
+.nz-float-label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    label {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        transition: all 0.2s ease-out;
+        color: rgba(0, 0, 0, 0.45);
+        font-size: 14px;
+        background: transparent;
+        padding: 0 4px;
+        z-index: 1;
+    }
+
+    &.has-value label,
+    &:focus-within label {
+        top: 0;
+        transform: translateY(-50%) scale(0.85);
+        transform-origin: left top;
+        color: #1890ff;
+        background: white;
+    }
+
+    nz-select,
+    input {
+        width: 100%;
+    }
+
+    nz-select {
+        ::ng-deep .ant-select-selector {
+            height: 40px !important;
+            padding-top: 8px !important;
+            align-items: center;
+        }
+    }
+
+    input {
+        height: 40px;
+        padding-top: 12px;
+        padding-bottom: 4px;
+    }
+}

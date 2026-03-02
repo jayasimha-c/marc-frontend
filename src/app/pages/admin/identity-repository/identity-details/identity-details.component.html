@@ -1,0 +1,215 @@
+<div class="id-detail__loading" *ngIf="loading">
+  <nz-spin nzSimple nzSize="large"></nz-spin>
+</div>
+
+<ng-container *ngIf="!loading && identity">
+  <div class="id-detail__header">
+    <div class="id-detail__header-top">
+      <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()" nz-tooltip nzTooltipTitle="Back">
+        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+      </button>
+      <nz-avatar [nzText]="getInitials(identity.displayName)" [nzSize]="36" nzShape="square"
+        [ngStyle]="{ 'background-color': identity.active ? '#1890ff' : '#bfbfbf', 'border-radius': '4px' }">
+      </nz-avatar>
+      <div class="id-detail__header-info">
+        <div class="id-detail__header-name">
+          {{ identity.displayName || 'Unknown' }}
+          <nz-tag [nzColor]="identity.active ? 'success' : 'error'">{{ identity.active ? 'Active' : 'Inactive' }}</nz-tag>
+          <ng-container *ngFor="let type of getGroupedAccountTypes()">
+            <nz-tag [nzColor]="getTagColor(type)">{{ getAppAbbreviation(type) }} ({{ getLinkedAccountsGroupedByType()[type].length }})</nz-tag>
+          </ng-container>
+        </div>
+        <div class="id-detail__header-meta">
+          <span *ngIf="identity.primaryEmail"><span nz-icon nzType="mail" nzTheme="outline"></span> {{ identity.primaryEmail }}</span>
+          <nz-divider nzType="vertical" *ngIf="identity.primaryEmail && identity.department"></nz-divider>
+          <span *ngIf="identity.department"><span nz-icon nzType="bank" nzTheme="outline"></span> {{ identity.department }}</span>
+          <nz-divider nzType="vertical" *ngIf="(identity.primaryEmail || identity.department) && identity.jobTitle"></nz-divider>
+          <span *ngIf="identity.jobTitle"><span nz-icon nzType="solution" nzTheme="outline"></span> {{ identity.jobTitle }}</span>
+          <nz-divider nzType="vertical" *ngIf="identity.sourceTypeDisplay"></nz-divider>
+          <span *ngIf="identity.sourceTypeDisplay">{{ identity.sourceTypeDisplay }}</span>
+          <nz-divider nzType="vertical" *ngIf="identity.employeeId"></nz-divider>
+          <span *ngIf="identity.employeeId">EID: <code>{{ identity.employeeId }}</code></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nz-card [nzBordered]="false" class="id-detail__tabs-card">
+    <nz-tabset [(nzSelectedIndex)]="selectedTabIndex">
+      <nz-tab nzTitle="Overview">
+        <div nz-row [nzGutter]="[16, 16]">
+          <div nz-col [nzXs]="24" [nzLg]="12" *ngIf="hasSectionData(personalFields)">
+            <nz-card nzSize="small" [nzTitle]="personalTitle">
+              <ng-template #personalTitle>
+                <span nz-icon nzType="user" nzTheme="outline" class="id-detail__section-icon"></span> Personal
+              </ng-template>
+              <nz-descriptions [nzColumn]="1" nzSize="small">
+                <nz-descriptions-item *ngFor="let field of getVisibleFields(personalFields)" [nzTitle]="field.label">
+                  <code *ngIf="field.mono">{{ getFieldValue(field.key) }}</code>
+                  <ng-container *ngIf="!field.mono">{{ getFieldValue(field.key) }}</ng-container>
+                </nz-descriptions-item>
+              </nz-descriptions>
+            </nz-card>
+          </div>
+
+          <div nz-col [nzXs]="24" [nzLg]="12" *ngIf="hasSectionData(employmentFields)">
+            <nz-card nzSize="small" [nzTitle]="employmentTitle">
+              <ng-template #employmentTitle>
+                <span nz-icon nzType="solution" nzTheme="outline" class="id-detail__section-icon"></span> Employment
+              </ng-template>
+              <nz-descriptions [nzColumn]="1" nzSize="small">
+                <nz-descriptions-item *ngFor="let field of getVisibleFields(employmentFields)" [nzTitle]="field.label">
+                  <code *ngIf="field.mono">{{ getFieldValue(field.key) }}</code>
+                  <ng-container *ngIf="!field.mono">{{ getFieldValue(field.key) }}</ng-container>
+                </nz-descriptions-item>
+              </nz-descriptions>
+            </nz-card>
+          </div>
+
+          <div nz-col [nzXs]="24" [nzLg]="12" *ngIf="hasSectionData(organizationFields)">
+            <nz-card nzSize="small" [nzTitle]="orgTitle">
+              <ng-template #orgTitle>
+                <span nz-icon nzType="bank" nzTheme="outline" class="id-detail__section-icon"></span> Organization
+              </ng-template>
+              <nz-descriptions [nzColumn]="1" nzSize="small">
+                <nz-descriptions-item *ngFor="let field of getVisibleFields(organizationFields)" [nzTitle]="field.label">
+                  <code>{{ getFieldValue(field.key) }}</code>
+                </nz-descriptions-item>
+              </nz-descriptions>
+            </nz-card>
+          </div>
+
+          <div nz-col [nzXs]="24" [nzLg]="12" *ngIf="hasSectionData(systemFields)">
+            <nz-card nzSize="small" [nzTitle]="systemTitle">
+              <ng-template #systemTitle>
+                <span nz-icon nzType="key" nzTheme="outline" class="id-detail__section-icon"></span> System IDs
+              </ng-template>
+              <nz-descriptions [nzColumn]="1" nzSize="small">
+                <nz-descriptions-item *ngFor="let field of getVisibleFields(systemFields)" [nzTitle]="field.label">
+                  <code>{{ getFieldValue(field.key) }}</code>
+                </nz-descriptions-item>
+              </nz-descriptions>
+            </nz-card>
+          </div>
+        </div>
+      </nz-tab>
+
+      <nz-tab [nzTitle]="accountsTabTitle">
+        <ng-template #accountsTabTitle>
+          Linked Accounts
+          <nz-badge *ngIf="linkedAccounts.length > 0" [nzCount]="linkedAccounts.length"
+            [nzStyle]="{ backgroundColor: '#1890ff' }" class="id-detail__tab-badge"></nz-badge>
+        </ng-template>
+
+        <div *ngIf="accountsLoading" class="id-detail__center">
+          <nz-spin nzSimple></nz-spin>
+        </div>
+
+        <nz-empty *ngIf="!accountsLoading && linkedAccounts.length === 0"
+          nzNotFoundContent="No linked accounts found"></nz-empty>
+
+        <ng-container *ngIf="!accountsLoading && linkedAccounts.length > 0">
+          <div class="id-detail__accounts-toolbar">
+            <span class="id-detail__accounts-count">
+              {{ linkedAccounts.length }} Account{{ linkedAccounts.length !== 1 ? 's' : '' }}
+            </span>
+            <nz-space>
+              <button *nzSpaceItem nz-button nzType="text" nzShape="circle"
+                nz-tooltip [nzTooltipTitle]="showConfidenceLegend ? 'Hide legend' : 'Show legend'"
+                (click)="toggleConfidenceLegend()">
+                <span nz-icon nzType="info-circle" nzTheme="outline"></span>
+              </button>
+              <nz-radio-group *nzSpaceItem [(ngModel)]="accountsViewMode" nzButtonStyle="solid" nzSize="small">
+                <label nz-radio-button nzValue="table">
+                  <span nz-icon nzType="unordered-list" nzTheme="outline"></span>
+                </label>
+                <label nz-radio-button nzValue="cards">
+                  <span nz-icon nzType="appstore" nzTheme="outline"></span>
+                </label>
+              </nz-radio-group>
+            </nz-space>
+          </div>
+
+          <nz-alert *ngIf="showConfidenceLegend" nzType="info" [nzMessage]="legendContent"
+            nzCloseable (nzOnClose)="showConfidenceLegend = false" class="id-detail__legend">
+            <ng-template #legendContent>
+              <nz-tag nzColor="success">HIGH</nz-tag> Exact match
+              <nz-divider nzType="vertical"></nz-divider>
+              <nz-tag nzColor="warning">MEDIUM</nz-tag> Multiple fields
+              <nz-divider nzType="vertical"></nz-divider>
+              <nz-tag nzColor="error">LOW</nz-tag> Partial match
+            </ng-template>
+          </nz-alert>
+
+          <nz-table *ngIf="accountsViewMode === 'table'"
+            #accountsTable [nzData]="linkedAccounts" [nzShowPagination]="false"
+            nzSize="small" [nzBordered]="true">
+            <thead>
+              <tr>
+                <th>System</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Confidence</th>
+                <th>Activity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let account of accountsTable.data" [class.id-detail__row-inactive]="isAccountInactive(account)">
+                <td>
+                  <nz-tag [nzColor]="getTagColor(account.applicationType)">
+                    {{ getAppAbbreviation(account.applicationType) }}
+                  </nz-tag>
+                  {{ account.connectionName || account.systemName || 'Unknown' }}
+                </td>
+                <td><code>{{ account.accountUsername || '—' }}</code></td>
+                <td>{{ account.accountEmail || '—' }}</td>
+                <td>
+                  <nz-badge [nzStatus]="isAccountInactive(account) ? 'error' : 'success'"
+                    [nzText]="account.statusLabel || 'Active'"></nz-badge>
+                </td>
+                <td>
+                  <nz-tag *ngIf="account.matchConfidence" [nzColor]="getConfidenceColor(account.matchConfidence)">
+                    {{ account.matchConfidence }}
+                  </nz-tag>
+                  <span *ngIf="!account.matchConfidence">—</span>
+                </td>
+                <td>{{ account.lastSyncedDisplay }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+
+          <nz-collapse *ngIf="accountsViewMode === 'cards'">
+            <nz-collapse-panel *ngFor="let account of linkedAccounts"
+              [nzHeader]="panelHeader" [nzExtra]="panelExtra">
+              <ng-template #panelHeader>
+                <nz-tag [nzColor]="getTagColor(account.applicationType)">
+                  {{ getAppAbbreviation(account.applicationType) }}
+                </nz-tag>
+                {{ account.connectionName || account.systemName }}
+                <span class="id-detail__panel-username">{{ account.accountUsername || '—' }}</span>
+              </ng-template>
+              <ng-template #panelExtra>
+                <nz-badge [nzStatus]="isAccountInactive(account) ? 'error' : 'success'"
+                  [nzText]="account.statusLabel || 'Active'"></nz-badge>
+                <nz-tag *ngIf="account.matchConfidence" [nzColor]="getConfidenceColor(account.matchConfidence)"
+                  class="id-detail__extra-tag">
+                  {{ account.matchConfidence }}
+                </nz-tag>
+              </ng-template>
+
+              <nz-descriptions [nzColumn]="{ xs: 1, sm: 2, md: 3 }" nzSize="small" nzBordered>
+                <nz-descriptions-item nzTitle="Account ID"><code>{{ account.accountId || '—' }}</code></nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Email">{{ account.accountEmail || '—' }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Match Method"><code>{{ account.matchMethod || account.linkingField || '—' }}</code></nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Linking Value"><code>{{ account.linkingValue || '—' }}</code></nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Phase" *ngIf="account.correlationPhase">{{ account.correlationPhase }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Last Synced">{{ formatDate(account.lastSyncedAt) }}</nz-descriptions-item>
+              </nz-descriptions>
+            </nz-collapse-panel>
+          </nz-collapse>
+        </ng-container>
+      </nz-tab>
+    </nz-tabset>
+  </nz-card>
+</ng-container>

@@ -1,0 +1,46 @@
+<app-inline-table
+  #paramsTable
+  title="CAM Parameters"
+  [data]="data"
+  [columns]="columns"
+  [actions]="actions"
+  [loading]="loading"
+  [editMode]="'always'"
+  [showPagination]="false"
+  [showSearch]="true"
+  [showRowActions]="true"
+  scrollY="calc(100vh - 240px)"
+  size="middle"
+  [newRowDefaults]="{ description: '', value: '', helpText: '' }"
+  (dataChange)="data = $event"
+  (dirtyChange)="onDirtyChange($event)"
+></app-inline-table>
+
+<!-- Dynamic value column template -->
+<ng-template #valueTpl let-row let-value="value" let-index="index">
+  <!-- Boolean params: Yes/No dropdown -->
+  <ng-container *ngIf="isBooleanParam(row.description)">
+    <nz-select nzSize="small" style="width: 100%"
+      [(ngModel)]="row.value"
+      (ngModelChange)="onValueChange(row)">
+      <nz-option nzValue="Yes" nzLabel="Yes"></nz-option>
+      <nz-option nzValue="No" nzLabel="No"></nz-option>
+    </nz-select>
+  </ng-container>
+
+  <!-- Default Support Node: nodeNames dropdown -->
+  <ng-container *ngIf="isNodeParam(row.description)">
+    <nz-select nzSize="small" style="width: 100%" nzShowSearch
+      [(ngModel)]="row.value"
+      (ngModelChange)="onValueChange(row)">
+      <nz-option *ngFor="let node of nodeNames" [nzValue]="node" [nzLabel]="node"></nz-option>
+    </nz-select>
+  </ng-container>
+
+  <!-- Everything else: free text -->
+  <ng-container *ngIf="!isBooleanParam(row.description) && !isNodeParam(row.description)">
+    <input nz-input nzSize="small"
+      [(ngModel)]="row.value"
+      (ngModelChange)="onValueChange(row)" />
+  </ng-container>
+</ng-template>

@@ -1,0 +1,151 @@
+.ot {
+  &__empty, &__loading {
+    padding: 40px 0;
+    text-align: center;
+  }
+
+  &__no-data {
+    padding: 24px;
+  }
+
+  // Matrix wrapper
+  &__matrix-wrapper {
+    margin-top: 4px;
+  }
+
+  &__matrix-scroll {
+    overflow-x: auto;
+    max-height: calc(100vh - 240px);
+    overflow-y: auto;
+  }
+
+  &__matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  &__matrix-th {
+    background: #e6f0fa;
+    border: 1px solid #d9e8f5;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    color: #262626;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    min-width: 120px;
+    white-space: nowrap;
+
+    &--checkbox {
+      width: 40px;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    &--field {
+      position: sticky;
+      left: 40px;
+      z-index: 3;
+      min-width: 140px;
+      background: #d4e6f5;
+    }
+  }
+
+  &__tmpl-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__tmpl-name {
+    font-weight: 600;
+    cursor: help;
+  }
+
+  &__tmpl-code {
+    font-size: 10px;
+    color: #8c8c8c;
+  }
+
+  &__tmpl-actions {
+    display: flex;
+    gap: 0;
+    margin-top: 2px;
+
+    button {
+      padding: 0 2px;
+      font-size: 12px;
+    }
+  }
+
+  &__matrix-td {
+    border: 1px solid #f0f0f0;
+    padding: 4px 8px;
+    font-size: 12px;
+    vertical-align: middle;
+
+    &--checkbox {
+      width: 40px;
+      text-align: center;
+    }
+
+    &--field {
+      position: sticky;
+      left: 40px;
+      background: #fafafa;
+      font-weight: 500;
+      z-index: 1;
+      cursor: help;
+    }
+  }
+
+  &__cell-value {
+    cursor: pointer;
+    padding: 2px 0;
+    min-height: 20px;
+
+    &:hover {
+      background: #e6f7ff;
+      border-radius: 2px;
+    }
+  }
+
+  &__cell-edit {
+    input {
+      width: 100%;
+      font-size: 12px;
+    }
+  }
+
+  // Version History
+  &__version-item {
+    margin-bottom: 4px;
+  }
+
+  &__version-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  &__version-num {
+    font-weight: 600;
+    font-size: 12px;
+    color: #595959;
+  }
+
+  &__version-summary {
+    font-size: 12px;
+    color: #595959;
+    margin-bottom: 4px;
+  }
+
+  &__version-meta {
+    font-size: 11px;
+    color: #8c8c8c;
+  }
+}

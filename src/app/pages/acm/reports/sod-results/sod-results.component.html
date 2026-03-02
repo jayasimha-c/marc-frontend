@@ -1,0 +1,314 @@
+<app-page-panel header="SOD Results">
+  <div headerSection>
+    <button nz-button nzType="primary" nzSize="small" (click)="addJobsToCompare()">
+      <span nz-icon nzType="swap" nzTheme="outline"></span>
+      Compare Jobs
+    </button>
+  </div>
+
+  <nz-tabset [nzAnimated]="false" [(nzSelectedIndex)]="selectedTabIndex" (nzSelectedIndexChange)="onTabChange($event)">
+
+    <!-- Offline Tab -->
+    <nz-tab nzTitle="Offline">
+      <ng-template nz-tab>
+        <ng-container *ngTemplateOutlet="abapTabContent; context: { $implicit: tabs[0] }"></ng-container>
+      </ng-template>
+    </nz-tab>
+
+    <!-- Simulation Tab -->
+    <nz-tab nzTitle="Simulation">
+      <ng-template nz-tab>
+        <ng-container *ngTemplateOutlet="abapTabContent; context: { $implicit: tabs[1] }"></ng-container>
+      </ng-template>
+    </nz-tab>
+
+    <!-- Online Tab -->
+    <nz-tab nzTitle="Online">
+      <ng-template nz-tab>
+        <ng-container *ngTemplateOutlet="abapTabContent; context: { $implicit: tabs[2] }"></ng-container>
+      </ng-template>
+    </nz-tab>
+
+    <!-- Dashboard Tab -->
+    <nz-tab nzTitle="Dashboard">
+      <ng-template nz-tab>
+        <ng-container *ngTemplateOutlet="dashboardTabContent; context: { $implicit: tabs[3] }"></ng-container>
+      </ng-template>
+    </nz-tab>
+
+    <!-- Non-ABAP Tab -->
+    <nz-tab nzTitle="Non-ABAP">
+      <ng-template nz-tab>
+        <ng-container *ngTemplateOutlet="nonAbapTabContent; context: { $implicit: tabs[4] }"></ng-container>
+      </ng-template>
+    </nz-tab>
+
+  </nz-tabset>
+</app-page-panel>
+
+<!-- ─── ABAP Tab Template (Offline / Simulation / Online) ──────────── -->
+<ng-template #abapTabContent let-tab>
+  <div class="tab-toolbar">
+    <nz-input-group nzSize="small" [nzPrefix]="searchIcon" style="width: 240px;">
+      <input nz-input placeholder="Search..." [ngModel]="tab.globalFilter" (ngModelChange)="onGlobalFilterChange($event, tab)" />
+    </nz-input-group>
+    <ng-template #searchIcon><span nz-icon nzType="search"></span></ng-template>
+  </div>
+
+  <nz-table
+    #abapTable
+    nzSize="small"
+    nzTableLayout="fixed"
+    [nzData]="tab.data"
+    [nzLoading]="tab.loading"
+    [nzTotal]="tab.totalRecords"
+    [nzPageIndex]="tab.pageIndex"
+    [nzPageSize]="tab.pageSize"
+    [nzFrontPagination]="false"
+    nzShowSizeChanger
+    [nzPageSizeOptions]="[10, 20, 50, 100]"
+    [nzShowTotal]="totalTemplate"
+    [nzScroll]="{ x: '1200px' }"
+    (nzQueryParams)="onQueryParamsChange($event, tab)">
+
+    <thead>
+      <tr>
+        <th nzWidth="45px"
+            [(nzChecked)]="tab.allChecked"
+            [nzIndeterminate]="tab.indeterminate"
+            (nzCheckedChange)="onAllChecked($event, tab)">
+        </th>
+        <th nzWidth="110px" nzColumnKey="sapSystemName" [nzSortFn]="true">System</th>
+        <th nzColumnKey="profileName" [nzSortFn]="true">Profile</th>
+        <th nzWidth="110px" nzColumnKey="status" [nzSortFn]="true">Status</th>
+        <th nzWidth="160px" nzColumnKey="startedOnStr" [nzSortFn]="true" nzSortOrder="ascend">Started On</th>
+        <th nzWidth="90px" nzColumnKey="targetType" [nzSortFn]="true">Target</th>
+        <th nzWidth="100px" nzColumnKey="analysisType" [nzSortFn]="true">Analysis</th>
+        <th nzWidth="95px" nzColumnKey="mitigationsIncluded" nzAlign="center">Mitigation</th>
+        <th nzWidth="95px" nzColumnKey="includeOrgFields" nzAlign="center">Org Fields</th>
+        <th nzWidth="100px" nzColumnKey="runBy" [nzSortFn]="true">Run By</th>
+        <th nzWidth="60px" nzRight nzAlign="center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of abapTable.data">
+        <td [nzChecked]="tab.selectedRows.has(row)" (nzCheckedChange)="onItemChecked(row, $event, tab)"></td>
+        <td>{{ row.sapSystemName }}</td>
+        <td nzEllipsis>{{ row.profileName }}</td>
+        <td><nz-tag [nzColor]="getStatusColor(row.status)">{{ row.status }}</nz-tag></td>
+        <td>{{ row.startedOn }}</td>
+        <td>{{ row.targetType }}</td>
+        <td>{{ row.analysisType }}</td>
+        <td nzAlign="center">
+          <span nz-icon [nzType]="row.mitigationsIncluded ? 'check' : 'minus'" [style.color]="row.mitigationsIncluded ? '#52c41a' : '#d9d9d9'"></span>
+        </td>
+        <td nzAlign="center">
+          <span nz-icon [nzType]="row.includeOrgFields ? 'check' : 'minus'" [style.color]="row.includeOrgFields ? '#52c41a' : '#d9d9d9'"></span>
+        </td>
+        <td>{{ row.runBy }}</td>
+        <td nzRight nzAlign="center">
+          <button nz-button nzType="text" nzSize="small" nz-dropdown [nzDropdownMenu]="abapRowMenu" nzTrigger="click">
+            <span nz-icon nzType="more" nzTheme="outline"></span>
+          </button>
+          <nz-dropdown-menu #abapRowMenu="nzDropdownMenu">
+            <ul nz-menu>
+              <li nz-menu-item (click)="onView(row, tab)">
+                <span nz-icon nzType="eye" nzTheme="outline"></span> View
+              </li>
+              <li nz-menu-item (click)="onViewWithBpmn(row, tab)" *ngIf="tab.type === 'ANALYSIS' || tab.type === 'ONLINE'">
+                <span nz-icon nzType="apartment" nzTheme="outline"></span> View with BPMN
+              </li>
+              <li nz-menu-item (click)="onOrgCheck(row)" *ngIf="tab.type !== 'ANALYSIS'">
+                <span nz-icon nzType="audit" nzTheme="outline"></span> Org Check
+              </li>
+              <li nz-menu-item (click)="onPivot(row, tab)">
+                <span nz-icon nzType="table" nzTheme="outline"></span> Pivot
+              </li>
+              <li nz-menu-item (click)="onSodStatistics(row)" *ngIf="tab.type !== 'SIMULATION'">
+                <span nz-icon nzType="bar-chart" nzTheme="outline"></span> SOD Statistics
+              </li>
+              <li nz-menu-item (click)="onRoleSODMatrix(row)" *ngIf="tab.type === 'ANALYSIS' || tab.type === 'ONLINE'">
+                <span nz-icon nzType="holder" nzTheme="outline"></span> Role SOD Matrix
+              </li>
+              <li nz-menu-divider></li>
+              <li nz-menu-item nzDanger (click)="onDelete(tab)">
+                <span nz-icon nzType="delete" nzTheme="outline"></span> Delete
+              </li>
+            </ul>
+          </nz-dropdown-menu>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</ng-template>
+
+<!-- ─── Dashboard Tab Template (no sapSystemName column) ───────────── -->
+<ng-template #dashboardTabContent let-tab>
+  <div class="tab-toolbar">
+    <nz-input-group nzSize="small" [nzPrefix]="searchIconDash" style="width: 240px;">
+      <input nz-input placeholder="Search..." [ngModel]="tab.globalFilter" (ngModelChange)="onGlobalFilterChange($event, tab)" />
+    </nz-input-group>
+    <ng-template #searchIconDash><span nz-icon nzType="search"></span></ng-template>
+  </div>
+
+  <nz-table
+    #dashboardTable
+    nzSize="small"
+    nzTableLayout="fixed"
+    [nzData]="tab.data"
+    [nzLoading]="tab.loading"
+    [nzTotal]="tab.totalRecords"
+    [nzPageIndex]="tab.pageIndex"
+    [nzPageSize]="tab.pageSize"
+    [nzFrontPagination]="false"
+    nzShowSizeChanger
+    [nzPageSizeOptions]="[10, 20, 50, 100]"
+    [nzShowTotal]="totalTemplate"
+    [nzScroll]="{ x: '1100px' }"
+    (nzQueryParams)="onQueryParamsChange($event, tab)">
+
+    <thead>
+      <tr>
+        <th nzWidth="45px"
+            [(nzChecked)]="tab.allChecked"
+            [nzIndeterminate]="tab.indeterminate"
+            (nzCheckedChange)="onAllChecked($event, tab)">
+        </th>
+        <th nzColumnKey="profileName" [nzSortFn]="true">Profile</th>
+        <th nzWidth="110px" nzColumnKey="status" [nzSortFn]="true">Status</th>
+        <th nzWidth="160px" nzColumnKey="startedOnStr" [nzSortFn]="true" nzSortOrder="ascend">Started On</th>
+        <th nzWidth="90px" nzColumnKey="targetType" [nzSortFn]="true">Target</th>
+        <th nzWidth="100px" nzColumnKey="analysisType" [nzSortFn]="true">Analysis</th>
+        <th nzWidth="95px" nzColumnKey="mitigationsIncluded" nzAlign="center">Mitigation</th>
+        <th nzWidth="95px" nzColumnKey="includeOrgFields" nzAlign="center">Org Fields</th>
+        <th nzWidth="100px" nzColumnKey="runBy" [nzSortFn]="true">Run By</th>
+        <th nzWidth="60px" nzRight nzAlign="center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of dashboardTable.data">
+        <td [nzChecked]="tab.selectedRows.has(row)" (nzCheckedChange)="onItemChecked(row, $event, tab)"></td>
+        <td nzEllipsis>{{ row.profileName }}</td>
+        <td><nz-tag [nzColor]="getStatusColor(row.status)">{{ row.status }}</nz-tag></td>
+        <td>{{ row.startedOn }}</td>
+        <td>{{ row.targetType }}</td>
+        <td>{{ row.analysisType }}</td>
+        <td nzAlign="center">
+          <span nz-icon [nzType]="row.mitigationsIncluded ? 'check' : 'minus'" [style.color]="row.mitigationsIncluded ? '#52c41a' : '#d9d9d9'"></span>
+        </td>
+        <td nzAlign="center">
+          <span nz-icon [nzType]="row.includeOrgFields ? 'check' : 'minus'" [style.color]="row.includeOrgFields ? '#52c41a' : '#d9d9d9'"></span>
+        </td>
+        <td>{{ row.runBy }}</td>
+        <td nzRight nzAlign="center">
+          <button nz-button nzType="text" nzSize="small" nz-dropdown [nzDropdownMenu]="dashRowMenu" nzTrigger="click">
+            <span nz-icon nzType="more" nzTheme="outline"></span>
+          </button>
+          <nz-dropdown-menu #dashRowMenu="nzDropdownMenu">
+            <ul nz-menu>
+              <li nz-menu-item (click)="onView(row, tab)">
+                <span nz-icon nzType="eye" nzTheme="outline"></span> View
+              </li>
+              <li nz-menu-item (click)="onOrgCheck(row)">
+                <span nz-icon nzType="audit" nzTheme="outline"></span> Org Check
+              </li>
+              <li nz-menu-item (click)="onPivot(row, tab)">
+                <span nz-icon nzType="table" nzTheme="outline"></span> Pivot
+              </li>
+              <li nz-menu-item (click)="onSodStatistics(row)">
+                <span nz-icon nzType="bar-chart" nzTheme="outline"></span> SOD Statistics
+              </li>
+              <li nz-menu-divider></li>
+              <li nz-menu-item nzDanger (click)="onDelete(tab)">
+                <span nz-icon nzType="delete" nzTheme="outline"></span> Delete
+              </li>
+            </ul>
+          </nz-dropdown-menu>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</ng-template>
+
+<!-- ─── Non-ABAP Tab Template ──────────────────────────────────────── -->
+<ng-template #nonAbapTabContent let-tab>
+  <div class="tab-toolbar">
+    <nz-input-group nzSize="small" [nzPrefix]="searchIconNa" style="width: 240px;">
+      <input nz-input placeholder="Search..." [ngModel]="tab.globalFilter" (ngModelChange)="onGlobalFilterChange($event, tab)" />
+    </nz-input-group>
+    <ng-template #searchIconNa><span nz-icon nzType="search"></span></ng-template>
+  </div>
+
+  <nz-table
+    #nonAbapTable
+    nzSize="small"
+    nzTableLayout="fixed"
+    [nzData]="tab.data"
+    [nzLoading]="tab.loading"
+    [nzTotal]="tab.totalRecords"
+    [nzPageIndex]="tab.pageIndex"
+    [nzPageSize]="tab.pageSize"
+    [nzFrontPagination]="false"
+    nzShowSizeChanger
+    [nzPageSizeOptions]="[10, 20, 50, 100]"
+    [nzShowTotal]="totalTemplate"
+    [nzScroll]="{ x: '1100px' }"
+    (nzQueryParams)="onQueryParamsChange($event, tab)">
+
+    <thead>
+      <tr>
+        <th nzWidth="45px"
+            [(nzChecked)]="tab.allChecked"
+            [nzIndeterminate]="tab.indeterminate"
+            (nzCheckedChange)="onAllChecked($event, tab)">
+        </th>
+        <th nzWidth="110px" nzColumnKey="systemName" [nzSortFn]="true">System</th>
+        <th nzColumnKey="profileName" [nzSortFn]="true">Profile</th>
+        <th nzWidth="110px" nzColumnKey="status" [nzSortFn]="true">Status</th>
+        <th nzWidth="160px" nzColumnKey="startedOn" [nzSortFn]="true" nzSortOrder="ascend">Started On</th>
+        <th nzWidth="120px" nzColumnKey="systemType" [nzSortFn]="true">System Type</th>
+        <th nzWidth="120px" nzColumnKey="profileType" [nzSortFn]="true">Profile Type</th>
+        <th nzWidth="100px" nzColumnKey="analysisType" [nzSortFn]="true">Analysis</th>
+        <th nzWidth="100px" nzColumnKey="runBy" [nzSortFn]="true">Run By</th>
+        <th nzWidth="60px" nzRight nzAlign="center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of nonAbapTable.data">
+        <td [nzChecked]="tab.selectedRows.has(row)" (nzCheckedChange)="onItemChecked(row, $event, tab)"></td>
+        <td>{{ row.systemName }}</td>
+        <td nzEllipsis>{{ row.profileName }}</td>
+        <td><nz-tag [nzColor]="getStatusColor(row.status)">{{ row.status }}</nz-tag></td>
+        <td>{{ row.startedOn }}</td>
+        <td>{{ row.systemType }}</td>
+        <td>{{ row.profileType }}</td>
+        <td>{{ row.analysisType }}</td>
+        <td>{{ row.runBy }}</td>
+        <td nzRight nzAlign="center">
+          <button nz-button nzType="text" nzSize="small" nz-dropdown [nzDropdownMenu]="nonAbapRowMenu" nzTrigger="click">
+            <span nz-icon nzType="more" nzTheme="outline"></span>
+          </button>
+          <nz-dropdown-menu #nonAbapRowMenu="nzDropdownMenu">
+            <ul nz-menu>
+              <li nz-menu-item (click)="onView(row, tab)">
+                <span nz-icon nzType="eye" nzTheme="outline"></span> View
+              </li>
+              <li nz-menu-item (click)="onPivot(row, tab)">
+                <span nz-icon nzType="table" nzTheme="outline"></span> Pivot
+              </li>
+              <li nz-menu-divider></li>
+              <li nz-menu-item nzDanger (click)="onDelete(tab)">
+                <span nz-icon nzType="delete" nzTheme="outline"></span> Delete
+              </li>
+            </ul>
+          </nz-dropdown-menu>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</ng-template>
+
+<!-- ─── Shared Total Template ──────────────────────────────────────── -->
+<ng-template #totalTemplate let-total let-range="range">
+  {{ range[0] }}-{{ range[1] }} of {{ total }} items
+</ng-template>

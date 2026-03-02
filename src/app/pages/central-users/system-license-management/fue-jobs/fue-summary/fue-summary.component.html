@@ -1,0 +1,16 @@
+<app-page-panel header="FUE Summary">
+    <div style="margin-bottom: 12px;">
+        <button nz-button nzType="text" nzShape="circle" (click)="goBack()"
+            nz-tooltip nzTooltipTitle="Back to Jobs">
+            <span nz-icon nzType="arrow-left"></span>
+        </button>
+    </div>
+
+    <app-advanced-table
+        [columns]="columns"
+        [data]="data"
+        [loading]="loading"
+        [total]="total"
+        [showSearch]="true">
+    </app-advanced-table>
+</app-page-panel>

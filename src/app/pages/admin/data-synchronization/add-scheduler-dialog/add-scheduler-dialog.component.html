@@ -1,0 +1,425 @@
+<!-- Loading Spinner -->
+<div *ngIf="loading" class="sched-dialog__loading">
+  <nz-spin nzSimple></nz-spin>
+</div>
+
+<form *ngIf="!loading" [formGroup]="form">
+  <!-- Row 1: Sync Type -->
+  <div class="sched-dialog__row">
+    <nz-form-item class="sched-dialog__field">
+      <nz-form-control nzErrorTip="Sync Type is required">
+        <div class="nz-float-label" [class.has-value]="form.get('syncType')?.value">
+          <nz-select formControlName="syncType" nzPlaceHolder=" " nzShowSearch
+                     (ngModelChange)="onSyncTypeChange($event)">
+            <nz-option *ngFor="let st of syncTypes" [nzValue]="st.value" [nzLabel]="st.label"></nz-option>
+          </nz-select>
+          <label>Sync Type</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+
+  <!-- Data Scope Info -->
+  <nz-alert *ngIf="selectedSyncType" nzType="info" [nzMessage]="'Data to sync: ' + selectedSyncType.dataScope" nzShowIcon class="sched-dialog__alert"></nz-alert>
+
+  <!-- Row 2: Task Name & SAP System/Concept -->
+  <div class="sched-dialog__row">
+    <nz-form-item [class.sched-dialog__field]="!isIdentityCorrelation()" [class.sched-dialog__field--full]="isIdentityCorrelation()">
+      <nz-form-control nzErrorTip="Task Name is required">
+        <div class="nz-float-label" [class.has-value]="form.get('name')?.value">
+          <input nz-input placeholder=" " formControlName="name" />
+          <label>Task Name</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- SAP System (hidden for Identity Correlation and Role Catalogue) -->
+    <nz-form-item class="sched-dialog__field" *ngIf="!isIdentityCorrelation() && !isRoleCatalogueSync()">
+      <nz-form-control nzErrorTip="SAP System is required">
+        <div class="nz-float-label" [class.has-value]="form.get('sapSystemId')?.value">
+          <nz-select formControlName="sapSystemId" nzPlaceHolder=" " nzShowSearch>
+            <nz-option *ngFor="let sys of sapSystems" [nzValue]="sys.id" [nzLabel]="sys.destinationName"></nz-option>
+          </nz-select>
+          <label>SAP System</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Concept dropdown (Role Catalogue only) -->
+    <nz-form-item class="sched-dialog__field" *ngIf="isRoleCatalogueSync()">
+      <nz-form-control nzErrorTip="RC Concept is required">
+        <div class="nz-float-label" [class.has-value]="form.get('conceptId')?.value">
+          <nz-select formControlName="conceptId" nzPlaceHolder=" " nzShowSearch
+                     (ngModelChange)="onConceptChange($event)">
+            <nz-option *ngFor="let concept of rcConcepts" [nzValue]="concept.id"
+                       [nzLabel]="concept.name + (concept.linkedSystemCount ? ' (' + concept.linkedSystemCount + ' systems)' : '')">
+            </nz-option>
+          </nz-select>
+          <label>RC Concept</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+
+  <!-- Concept Info Panel -->
+  <div *ngIf="isRoleCatalogueSync() && selectedConcept" class="sched-dialog__concept-info">
+    <div class="sched-dialog__concept-header">
+      <span nz-icon nzType="appstore" nzTheme="outline" class="sched-dialog__concept-icon"></span>
+      <span class="sched-dialog__concept-name">{{selectedConcept.name}}</span>
+    </div>
+    <p *ngIf="selectedConcept.description" class="sched-dialog__concept-desc">{{selectedConcept.description}}</p>
+    <div class="sched-dialog__concept-systems">
+      <span nz-icon nzType="database" nzTheme="outline"></span>
+      <strong>{{selectedConcept.linkedSystemCount || 0}}</strong> linked system(s) will be synced
+    </div>
+  </div>
+
+  <nz-alert *ngIf="isRoleCatalogueSync() && rcConcepts.length === 0" nzType="warning"
+            nzMessage="No RC Concepts available. Please create concepts in Role Management first." nzShowIcon
+            class="sched-dialog__alert"></nz-alert>
+
+  <!-- Row 3: Sync Mode (non-Transaction) -->
+  <div class="sched-dialog__row" *ngIf="!isTransactionSync()">
+    <nz-form-item class="sched-dialog__field">
+      <nz-form-control nzErrorTip="Sync Mode is required">
+        <div class="nz-float-label" [class.has-value]="form.get('syncMode')?.value">
+          <nz-select formControlName="syncMode" nzPlaceHolder=" ">
+            <nz-option nzValue="INCREMENTAL" nzLabel="Incremental (Only changed records)" *ngIf="selectedSyncType?.supportsIncremental"></nz-option>
+            <nz-option nzValue="FULL" nzLabel="Full (All records)"></nz-option>
+          </nz-select>
+          <label>Sync Mode</label>
+        </div>
+      </nz-form-control>
+      <div class="sched-dialog__hint sched-dialog__hint--warn" *ngIf="selectedSyncType && !selectedSyncType.supportsIncremental">
+        Only Full mode is available for this sync type
+      </div>
+    </nz-form-item>
+  </div>
+
+  <!-- Transaction Sync specific -->
+  <ng-container *ngIf="isTransactionSync()">
+    <div class="sched-dialog__row">
+      <nz-form-item class="sched-dialog__field">
+        <nz-form-control>
+          <div class="nz-float-label has-value">
+            <nz-select formControlName="oneTimeRun" nzPlaceHolder=" ">
+              <nz-option [nzValue]="true" nzLabel="Yes"></nz-option>
+              <nz-option [nzValue]="false" nzLabel="No"></nz-option>
+            </nz-select>
+            <label>One Time Run?</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item class="sched-dialog__field">
+        <nz-form-control>
+          <div class="nz-float-label has-value">
+            <nz-select formControlName="monthlyRun" nzPlaceHolder=" "
+                       (ngModelChange)="onMonthlyRunToggle($event)">
+              <nz-option [nzValue]="true" nzLabel="Yes"></nz-option>
+              <nz-option [nzValue]="false" nzLabel="No"></nz-option>
+            </nz-select>
+            <label>Run for an entire month?</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <div class="sched-dialog__row" *ngIf="form.get('monthlyRun')?.value">
+      <nz-form-item class="sched-dialog__field">
+        <nz-form-control nzErrorTip="Month is required">
+          <div class="nz-float-label has-value">
+            <nz-date-picker nzMode="month" formControlName="monthRunDate" style="width: 100%"></nz-date-picker>
+            <label>Month</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+  </ng-container>
+
+  <!-- ServiceNow Sync specific -->
+  <ng-container *ngIf="isServiceNowSync()">
+    <div class="sched-dialog__section-title">Sync Options</div>
+    <div class="sched-dialog__checkbox-row">
+      <label nz-checkbox formControlName="snowSyncUsers">Sync Users</label>
+      <label nz-checkbox formControlName="snowSyncRoles">Sync Roles</label>
+      <label nz-checkbox formControlName="snowSyncGroups">Sync Groups</label>
+      <label nz-checkbox formControlName="snowSyncUserRoles">Sync User-Role Assignments</label>
+    </div>
+
+    <div class="sched-dialog__section-title">Additional Options</div>
+    <div class="sched-dialog__checkbox-row">
+      <label nz-checkbox formControlName="snowActiveUsersOnly">Active Users Only</label>
+      <label nz-checkbox formControlName="snowDeleteOrphans">Delete Orphans (Full Sync)</label>
+    </div>
+
+    <div class="sched-dialog__row sched-dialog__row--half">
+      <nz-form-item>
+        <nz-form-control>
+          <div class="nz-float-label" [class.has-value]="form.get('snowMaxRecords')?.value !== null">
+            <input nz-input placeholder=" " type="number" formControlName="snowMaxRecords" min="0" />
+            <label>Max Records per Entity (0 = unlimited)</label>
+          </div>
+        </nz-form-control>
+        <div class="sched-dialog__hint">Limit records fetched per entity type. Use 0 for no limit.</div>
+      </nz-form-item>
+    </div>
+  </ng-container>
+
+  <!-- Batch/Page size for SAP RFC calls -->
+  <ng-container *ngIf="isAbapProgramSync() || isRoleSync() || isUserRoleSync() || isTstctSync() || isFirefighterLogSync()">
+    <div class="sched-dialog__section-title">Sync Options</div>
+    <div class="sched-dialog__row sched-dialog__row--half">
+      <nz-form-item>
+        <nz-form-control>
+          <div class="nz-float-label" [class.has-value]="form.get('abapPageSize')?.value">
+            <input nz-input placeholder=" " type="number" formControlName="abapPageSize" min="100" max="50000" />
+            <label>Batch Size (Records per fetch)</label>
+          </div>
+        </nz-form-control>
+        <div class="sched-dialog__hint">Number of records to fetch per SAP RFC call. Default: 5000</div>
+      </nz-form-item>
+    </div>
+
+    <ng-container *ngIf="isRoleSync()">
+      <label nz-checkbox formControlName="roleSyncOrgValues" class="sched-dialog__checkbox">
+        Sync Organizational Values (AGR_1252)
+      </label>
+      <div class="sched-dialog__hint sched-dialog__hint--indent" *ngIf="form.get('roleSyncOrgValues')?.value">
+        Extracts authorization field values from AGR_1252 table. This can significantly increase sync time.
+      </div>
+    </ng-container>
+
+    <nz-alert *ngIf="isRoleSync() || isUserRoleSync()" nzType="info" nzShowIcon class="sched-dialog__alert"
+              [nzMessage]="isRoleSync() ? 'Role Sync always runs in Full mode to detect deleted roles.' : 'User-Role Sync always runs in Full mode to detect deleted assignments.'">
+    </nz-alert>
+
+    <nz-alert *ngIf="isFirefighterLogSync()" nzType="info" nzShowIcon class="sched-dialog__alert"
+              nzMessage="Syncs pending firefighter log review sessions from SAP GRC MSMP workflow.">
+    </nz-alert>
+  </ng-container>
+
+  <!-- Anomaly Detection specific -->
+  <ng-container *ngIf="isAnomalyDetection()">
+    <div class="sched-dialog__section-title">Analysis Options</div>
+    <div class="sched-dialog__row sched-dialog__row--half">
+      <nz-form-item>
+        <nz-form-control>
+          <div class="nz-float-label" [class.has-value]="form.get('analysisWindowDays')?.value">
+            <nz-select formControlName="analysisWindowDays" nzPlaceHolder=" ">
+              <nz-option *ngFor="let opt of analysisWindowOptions" [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
+            </nz-select>
+            <label>Analysis Window</label>
+          </div>
+        </nz-form-control>
+        <div class="sched-dialog__hint">Time period of user behavior data to analyze</div>
+      </nz-form-item>
+    </div>
+
+    <nz-alert nzType="info" nzShowIcon class="sched-dialog__alert"
+              nzMessage="Runs Isolation Forest ML on aggregated user behavior to detect anomalous patterns.">
+    </nz-alert>
+  </ng-container>
+
+  <!-- Audit Log Sync info -->
+  <nz-alert *ngIf="isAuditLogSync()" nzType="info" nzShowIcon class="sched-dialog__alert"
+            nzMessage="Extracts SAP Security Audit Log entries via BAPI. Logs are deduplicated by hash.">
+  </nz-alert>
+
+  <!-- CIS Sync specific -->
+  <ng-container *ngIf="isCISSync()">
+    <div class="sched-dialog__section-title">Sync Options</div>
+    <div class="sched-dialog__checkbox-row">
+      <label nz-checkbox formControlName="cisSyncUsers">Sync Users</label>
+      <label nz-checkbox formControlName="cisSyncGroups">Sync Groups</label>
+    </div>
+
+    <div class="sched-dialog__section-title">Additional Options</div>
+    <div class="sched-dialog__checkbox-row">
+      <label nz-checkbox formControlName="cisActiveUsersOnly">Active Users Only</label>
+      <label nz-checkbox formControlName="cisDeleteOrphans">Delete Orphans (Full Sync)</label>
+    </div>
+  </ng-container>
+
+  <!-- Identity Correlation specific -->
+  <ng-container *ngIf="isIdentityCorrelation()">
+    <div class="sched-dialog__section-title">Identity Sources to Correlate</div>
+    <p class="sched-dialog__hint">Select the connections to include in correlation. At least one connection must be selected.</p>
+
+    <div *ngIf="!correlationSources" class="sched-dialog__loading-text">Loading connections...</div>
+
+    <div *ngIf="correlationSources" class="sched-dialog__sources">
+      <!-- Active Directory -->
+      <div class="sched-dialog__source" *ngIf="correlationSources.adConnections?.length > 0">
+        <div class="sched-dialog__source-header">
+          <span class="sched-dialog__source-title">Active Directory (On-Prem)</span>
+          <div class="sched-dialog__source-actions">
+            <button type="button" nz-button nzType="link" nzSize="small" (click)="selectAllConnections('ad')">Select All</button>
+            <button type="button" nz-button nzType="text" nzSize="small" (click)="clearAllConnections('ad')">Clear</button>
+          </div>
+        </div>
+        <div class="sched-dialog__conn-list">
+          <label nz-checkbox *ngFor="let conn of correlationSources.adConnections"
+                 [ngModel]="isConnectionSelected('ad', conn.id)" [ngModelOptions]="{standalone: true}"
+                 (ngModelChange)="toggleConnectionSelection('ad', conn.id)" class="sched-dialog__conn-item">
+            <span class="sched-dialog__conn-name">{{conn.name}}</span>
+            <span class="sched-dialog__conn-desc" *ngIf="conn.description">{{conn.description}}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Azure AD -->
+      <div class="sched-dialog__source" *ngIf="correlationSources.azureConnections?.length > 0">
+        <div class="sched-dialog__source-header">
+          <span class="sched-dialog__source-title">Azure AD / Entra ID</span>
+          <div class="sched-dialog__source-actions">
+            <button type="button" nz-button nzType="link" nzSize="small" (click)="selectAllConnections('azure')">Select All</button>
+            <button type="button" nz-button nzType="text" nzSize="small" (click)="clearAllConnections('azure')">Clear</button>
+          </div>
+        </div>
+        <div class="sched-dialog__conn-list">
+          <label nz-checkbox *ngFor="let conn of correlationSources.azureConnections"
+                 [ngModel]="isConnectionSelected('azure', conn.id)" [ngModelOptions]="{standalone: true}"
+                 (ngModelChange)="toggleConnectionSelection('azure', conn.id)" class="sched-dialog__conn-item">
+            <span class="sched-dialog__conn-name">{{conn.name}}</span>
+            <span class="sched-dialog__conn-desc" *ngIf="conn.description">{{conn.description}}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- CIS -->
+      <div class="sched-dialog__source" *ngIf="correlationSources.cisConnections?.length > 0">
+        <div class="sched-dialog__source-header">
+          <span class="sched-dialog__source-title">SAP Cloud Identity (CIS)</span>
+          <div class="sched-dialog__source-actions">
+            <button type="button" nz-button nzType="link" nzSize="small" (click)="selectAllConnections('cis')">Select All</button>
+            <button type="button" nz-button nzType="text" nzSize="small" (click)="clearAllConnections('cis')">Clear</button>
+          </div>
+        </div>
+        <div class="sched-dialog__conn-list">
+          <label nz-checkbox *ngFor="let conn of correlationSources.cisConnections"
+                 [ngModel]="isConnectionSelected('cis', conn.id)" [ngModelOptions]="{standalone: true}"
+                 (ngModelChange)="toggleConnectionSelection('cis', conn.id)" class="sched-dialog__conn-item">
+            <span class="sched-dialog__conn-name">{{conn.name}}</span>
+            <span class="sched-dialog__conn-desc" *ngIf="conn.description">{{conn.description}}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- ServiceNow -->
+      <div class="sched-dialog__source" *ngIf="correlationSources.snowConnections?.length > 0">
+        <div class="sched-dialog__source-header">
+          <span class="sched-dialog__source-title">ServiceNow</span>
+          <div class="sched-dialog__source-actions">
+            <button type="button" nz-button nzType="link" nzSize="small" (click)="selectAllConnections('snow')">Select All</button>
+            <button type="button" nz-button nzType="text" nzSize="small" (click)="clearAllConnections('snow')">Clear</button>
+          </div>
+        </div>
+        <div class="sched-dialog__conn-list">
+          <label nz-checkbox *ngFor="let conn of correlationSources.snowConnections"
+                 [ngModel]="isConnectionSelected('snow', conn.id)" [ngModelOptions]="{standalone: true}"
+                 (ngModelChange)="toggleConnectionSelection('snow', conn.id)" class="sched-dialog__conn-item">
+            <span class="sched-dialog__conn-name">{{conn.name}}</span>
+            <span class="sched-dialog__conn-desc" *ngIf="conn.description">{{conn.description}}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- SAP Systems -->
+      <div class="sched-dialog__source" *ngIf="correlationSources.sapConnections?.length > 0">
+        <div class="sched-dialog__source-header">
+          <span class="sched-dialog__source-title">SAP ECC / S4HANA</span>
+          <div class="sched-dialog__source-actions">
+            <button type="button" nz-button nzType="link" nzSize="small" (click)="selectAllConnections('sap')">Select All</button>
+            <button type="button" nz-button nzType="text" nzSize="small" (click)="clearAllConnections('sap')">Clear</button>
+          </div>
+        </div>
+        <div class="sched-dialog__conn-list">
+          <label nz-checkbox *ngFor="let conn of correlationSources.sapConnections"
+                 [ngModel]="isConnectionSelected('sap', conn.id)" [ngModelOptions]="{standalone: true}"
+                 (ngModelChange)="toggleConnectionSelection('sap', conn.id)" class="sched-dialog__conn-item">
+            <span class="sched-dialog__conn-name">{{conn.name}}</span>
+            <span class="sched-dialog__conn-desc" *ngIf="conn.description">{{conn.description}}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- No connections -->
+      <nz-alert *ngIf="!correlationSources.adConnections?.length && !correlationSources.azureConnections?.length &&
+                        !correlationSources.cisConnections?.length && !correlationSources.snowConnections?.length &&
+                        !correlationSources.sapConnections?.length"
+                nzType="warning" nzShowIcon
+                nzMessage="No identity sources configured. Please configure connections first.">
+      </nz-alert>
+    </div>
+  </ng-container>
+
+  <!-- Row 4: Start/End Date -->
+  <div class="sched-dialog__row">
+    <nz-form-item class="sched-dialog__field">
+      <nz-form-control nzErrorTip="Start Date and Time is required">
+        <div class="nz-float-label has-value">
+          <nz-date-picker formControlName="startDateAndTime" nzShowTime nzFormat="yyyy-MM-dd HH:mm" style="width: 100%"
+                          [nzPlaceHolder]="'Start Date and Time'"></nz-date-picker>
+          <label>Start Date and Time</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item class="sched-dialog__field" *ngIf="!form.get('monthlyRun')?.value">
+      <nz-form-control nzErrorTip="End Date and Time is required">
+        <div class="nz-float-label has-value">
+          <nz-date-picker formControlName="endDateAndTime" nzShowTime nzFormat="yyyy-MM-dd HH:mm" style="width: 100%"
+                          [nzPlaceHolder]="'End Date and Time'"></nz-date-picker>
+          <label>End Date and Time</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+
+  <!-- Row 5: Repeat Options (non-Transaction) -->
+  <ng-container *ngIf="!isTransactionSync()">
+    <!-- Audit Log: Frequency dropdown -->
+    <ng-container *ngIf="isAuditLogSync()">
+      <div class="sched-dialog__row sched-dialog__row--half">
+        <nz-form-item>
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="form.get('repeatIntervalMinutes')?.value">
+              <nz-select formControlName="repeatIntervalMinutes" nzPlaceHolder=" ">
+                <nz-option *ngFor="let opt of frequencyOptions" [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
+              </nz-select>
+              <label>Extraction Frequency</label>
+            </div>
+          </nz-form-control>
+          <div class="sched-dialog__hint">How often to extract audit log entries from SAP</div>
+        </nz-form-item>
+      </div>
+    </ng-container>
+
+    <!-- Other: Repeat checkbox + days -->
+    <ng-container *ngIf="!isAuditLogSync()">
+      <label nz-checkbox formControlName="repeatPeriodically" (ngModelChange)="onRepeatToggle($event)" class="sched-dialog__checkbox">
+        Repeat Periodically?
+      </label>
+
+      <div class="sched-dialog__row sched-dialog__row--half">
+        <nz-form-item>
+          <nz-form-control nzErrorTip="Repeat interval is required">
+            <div class="nz-float-label" [class.has-value]="form.get('repeatAfterDays')?.value">
+              <nz-select formControlName="repeatAfterDays" nzPlaceHolder=" ">
+                <nz-option *ngFor="let d of days" [nzValue]="d" [nzLabel]="d + (d === 1 ? ' day' : ' days')"></nz-option>
+              </nz-select>
+              <label>Repeat After (Days)</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </ng-container>
+  </ng-container>
+</form>
+
+<!-- Footer -->
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="close()">Close</button>
+  <button nz-button nzType="primary" (click)="save()" [nzLoading]="saving">Save</button>
+</div>

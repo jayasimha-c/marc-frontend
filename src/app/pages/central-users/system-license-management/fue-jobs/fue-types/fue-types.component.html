@@ -1,0 +1,97 @@
+<app-page-panel header="FUE User Types & Conversion Ratios">
+    <div nz-row nzJustify="end" style="margin-bottom: 12px;">
+        <nz-space nzWrap>
+            <button *nzSpaceItem nz-button nzType="primary" (click)="save()" [disabled]="!editMode">
+                <span nz-icon nzType="save"></span> Save
+            </button>
+            <button *nzSpaceItem nz-button (click)="toggleEdit()">
+                <span nz-icon nzType="edit"></span> Edit
+            </button>
+            <button *nzSpaceItem nz-button (click)="cancel()">
+                <span nz-icon nzType="close-circle"></span> Cancel
+            </button>
+            <button *nzSpaceItem nz-button (click)="addRow()">
+                <span nz-icon nzType="plus-circle"></span> Add Row
+            </button>
+            <button *nzSpaceItem nz-button nzDanger (click)="deleteRow()">
+                <span nz-icon nzType="delete"></span> Delete
+            </button>
+            <button *nzSpaceItem nz-button (click)="exportCsv()">
+                <span nz-icon nzType="download"></span> Export
+            </button>
+            <button *nzSpaceItem nz-button (click)="addInitialData()">
+                <span nz-icon nzType="plus"></span> Add Initial Data
+            </button>
+            <button *nzSpaceItem nz-button (click)="openSimulator()">
+                <span nz-icon nzType="experiment"></span> Simulate
+            </button>
+            <button *nzSpaceItem nz-button (click)="generateAcmMapping()">
+                <span nz-icon nzType="swap"></span> ACM to FUE Mapping
+            </button>
+        </nz-space>
+    </div>
+
+    <nz-table #fueTable [nzData]="data" nzSize="small" [nzFrontPagination]="false"
+        [nzShowPagination]="false" [nzLoading]="loading" nzBordered>
+        <thead>
+            <tr>
+                <th nzWidth="100px">Code</th>
+                <th nzWidth="200px">Name</th>
+                <th nzWidth="120px">FUE Weight</th>
+                <th nzWidth="120px">Users / FUE</th>
+                <th nzWidth="120px">Tier Priority</th>
+                <th nzWidth="120px">Display Order</th>
+                <th nzWidth="100px">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of fueTable.data" (click)="onRowClick(row)"
+                [style.background]="selectedRow === row ? '#e6f7ff' : ''"
+                style="cursor: pointer;">
+                <td>
+                    <ng-container *ngIf="editMode; else codeView">
+                        <input nz-input [(ngModel)]="row.code" />
+                    </ng-container>
+                    <ng-template #codeView>{{ row.code }}</ng-template>
+                </td>
+                <td>
+                    <ng-container *ngIf="editMode; else nameView">
+                        <input nz-input [(ngModel)]="row.name" />
+                    </ng-container>
+                    <ng-template #nameView>{{ row.name }}</ng-template>
+                </td>
+                <td>
+                    <ng-container *ngIf="editMode; else weightView">
+                        <nz-input-number [(ngModel)]="row.fueWeight" [nzStep]="0.001" [nzMin]="0"
+                            style="width: 100%;"></nz-input-number>
+                    </ng-container>
+                    <ng-template #weightView>{{ row.fueWeight }}</ng-template>
+                </td>
+                <td>
+                    <ng-container *ngIf="editMode; else usersView">
+                        <nz-input-number [(ngModel)]="row.usersPerFue" [nzStep]="0.1" [nzMin]="0"
+                            style="width: 100%;"></nz-input-number>
+                    </ng-container>
+                    <ng-template #usersView>{{ row.usersPerFue }}</ng-template>
+                </td>
+                <td>
+                    <ng-container *ngIf="editMode; else prioView">
+                        <nz-input-number [(ngModel)]="row.tierPriority" [nzStep]="1" [nzMin]="0"
+                            style="width: 100%;"></nz-input-number>
+                    </ng-container>
+                    <ng-template #prioView>{{ row.tierPriority }}</ng-template>
+                </td>
+                <td>
+                    <ng-container *ngIf="editMode; else orderView">
+                        <nz-input-number [(ngModel)]="row.displayOrder" [nzStep]="1" [nzMin]="0"
+                            style="width: 100%;"></nz-input-number>
+                    </ng-container>
+                    <ng-template #orderView>{{ row.displayOrder }}</ng-template>
+                </td>
+                <td>
+                    <nz-tag [nzColor]="row.active ? 'green' : 'default'">{{ row.status }}</nz-tag>
+                </td>
+            </tr>
+        </tbody>
+    </nz-table>
+</app-page-panel>

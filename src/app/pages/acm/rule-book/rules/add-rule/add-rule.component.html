@@ -1,0 +1,82 @@
+<form [formGroup]="form">
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Rule ID is required">
+      <div class="nz-float-label" [class.has-value]="form.get('ruleName')?.value">
+        <input nz-input placeholder=" " formControlName="ruleName" />
+        <label>Rule ID</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Description is required">
+      <div class="nz-float-label" [class.has-value]="form.get('ruleDescription')?.value">
+        <textarea nz-input placeholder=" " formControlName="ruleDescription"
+          [nzAutosize]="{ minRows: 1, maxRows: 5 }"></textarea>
+        <label>Rule Description</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Rule Type is required">
+      <div class="nz-float-label" [class.has-value]="form.get('ruleTypeId')?.value">
+        <nz-select formControlName="ruleTypeId" nzPlaceHolder=" " nzShowSearch>
+          <nz-option *ngFor="let rt of ruleTypes" [nzValue]="rt.id" [nzLabel]="rt.name"></nz-option>
+        </nz-select>
+        <label>Rule Type</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Business Process is required">
+      <div class="nz-float-label" [class.has-value]="form.get('businessProcessId')?.value">
+        <nz-select formControlName="businessProcessId" nzPlaceHolder=" " nzShowSearch
+          (ngModelChange)="onBusinessProcessChange($event)">
+          <nz-option *ngFor="let bp of businessProcess" [nzValue]="bp.id" [nzLabel]="bp.name"></nz-option>
+        </nz-select>
+        <label>Business Process</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Sub Process is required">
+      <div class="nz-float-label" [class.has-value]="form.get('subProcId')?.value">
+        <nz-select formControlName="subProcId" nzPlaceHolder=" " nzShowSearch>
+          <nz-option *ngFor="let sp of businessSubProcess" [nzValue]="sp.id" [nzLabel]="sp.name"></nz-option>
+        </nz-select>
+        <label>Business Sub Process</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control nzErrorTip="System Type is required">
+      <div class="nz-float-label" [class.has-value]="form.get('systemType')?.value">
+        <nz-select formControlName="systemType" nzPlaceHolder=" ">
+          <nz-option *ngFor="let st of systemTypes" [nzValue]="st" [nzLabel]="st"></nz-option>
+        </nz-select>
+        <label>System Type</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="form.get('gdpr')?.value !== null && form.get('gdpr')?.value !== ''">
+        <nz-select formControlName="gdpr" nzPlaceHolder=" ">
+          <nz-option [nzValue]="true" nzLabel="Yes"></nz-option>
+          <nz-option [nzValue]="false" nzLabel="No"></nz-option>
+        </nz-select>
+        <label>GDPR</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+</form>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="close()">Close</button>
+  <button nz-button nzType="primary" [disabled]="form.invalid" (click)="save()">Save</button>
+</div>

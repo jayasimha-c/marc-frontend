@@ -1,0 +1,29 @@
+<section class="flex gap-5 mt-2">
+  <nz-form-item class="w-90">
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="tagDropdown.value">
+        <input nz-input placeholder=" " [formControl]="tagDropdown" [nzAutocomplete]="auto">
+        <nz-autocomplete #auto (selectionChange)="onOptionSelected($event)">
+          @for (option of filteredOptions | async; track option.id) {
+            <nz-auto-option [nzValue]="option.name">
+              {{ option?.name }}
+            </nz-auto-option>
+          }
+        </nz-autocomplete>
+        <label>Tags</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div class="self-center flex flex-wrap gap-1">
+    @for (selectedTag of selectedTags; track selectedTag.id) {
+      <nz-tag nzMode="closeable" (nzOnClose)="removeTag(selectedTag)">
+        {{ selectedTag.name }}
+      </nz-tag>
+    }
+  </div>
+
+  <div *ngIf="tagDropdown.hasError('multipleSelected')" class="text-red-500 text-sm">
+    Only one tag is allowed.
+  </div>
+</section>

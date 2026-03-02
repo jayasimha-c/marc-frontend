@@ -1,0 +1,15 @@
+:host {
+    display: block;
+}
+
+input.ant-input {
+    border: 1px solid transparent;
+    transition: all 0.3s;
+    background: transparent;
+
+    &:hover,
+    &:focus {
+        border-color: #1890ff;
+        background: #fff;
+    }
+}

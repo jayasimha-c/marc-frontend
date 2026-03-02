@@ -1,0 +1,241 @@
+<nz-card [nzBordered]="false">
+  <!-- System Selector -->
+  <div class="sync__header">
+    <h4 nz-typography style="margin: 0;">ServiceNow Sync Configuration</h4>
+    <nz-space>
+      <nz-select *nzSpaceItem style="width: 280px;"
+        [(ngModel)]="selectedSystemId"
+        (ngModelChange)="onSystemChange()"
+        nzPlaceHolder="Select a System"
+        nzShowSearch>
+        <nz-option *ngFor="let system of systems" [nzValue]="system.id" [nzLabel]="system.destinationName"></nz-option>
+      </nz-select>
+      <button *nzSpaceItem nz-button nzType="default" [disabled]="!selectedSystemId" (click)="refreshStatus()">
+        <span nz-icon nzType="reload" nzTheme="outline"></span> Refresh
+      </button>
+    </nz-space>
+  </div>
+
+  <nz-spin [nzSpinning]="loading">
+    <!-- No Systems -->
+    <nz-empty *ngIf="!loading && systems.length === 0"
+      nzNotFoundContent="No ServiceNow Systems Found">
+    </nz-empty>
+
+    <div *ngIf="selectedSystemId && !loading">
+      <!-- Sync Status Dashboard -->
+      <nz-divider nzText="Sync Status Dashboard" nzOrientation="left"></nz-divider>
+
+      <div class="sync__stats-grid">
+        <div class="sync__stat-card">
+          <span nz-icon nzType="user" nzTheme="outline" class="sync__stat-icon sync__stat-icon--blue"></span>
+          <div>
+            <div class="sync__stat-value">{{ syncStats?.totalUsers || 0 }}</div>
+            <div class="sync__stat-label">Users</div>
+            <div class="sync__stat-sub">{{ syncStats?.activeUsers || 0 }} active</div>
+          </div>
+        </div>
+        <div class="sync__stat-card">
+          <span nz-icon nzType="key" nzTheme="outline" class="sync__stat-icon sync__stat-icon--purple"></span>
+          <div>
+            <div class="sync__stat-value">{{ syncStats?.totalRoles || 0 }}</div>
+            <div class="sync__stat-label">Roles</div>
+          </div>
+        </div>
+        <div class="sync__stat-card">
+          <span nz-icon nzType="team" nzTheme="outline" class="sync__stat-icon sync__stat-icon--green"></span>
+          <div>
+            <div class="sync__stat-value">{{ syncStats?.totalGroups || 0 }}</div>
+            <div class="sync__stat-label">Groups</div>
+          </div>
+        </div>
+        <div class="sync__stat-card">
+          <span nz-icon nzType="idcard" nzTheme="outline" class="sync__stat-icon sync__stat-icon--orange"></span>
+          <div>
+            <div class="sync__stat-value">{{ syncStats?.totalUserRoles || 0 }}</div>
+            <div class="sync__stat-label">User-Roles</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Next sync info -->
+      <div *ngIf="config" class="sync__schedule-info">
+        <nz-descriptions [nzColumn]="2" nzSize="small">
+          <nz-descriptions-item nzTitle="Next Incremental Sync">{{ config.nextIncrementalSync | date:'medium' }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Next Full Sync">{{ config.nextFullSync | date:'medium' }}</nz-descriptions-item>
+        </nz-descriptions>
+        <nz-alert *ngIf="syncRunning" nzType="info" nzMessage="Sync in progress..." nzShowIcon [nzIcon]="syncSpinner"></nz-alert>
+        <ng-template #syncSpinner><span nz-icon nzType="loading" nzTheme="outline"></span></ng-template>
+      </div>
+
+      <!-- Configuration Form -->
+      <nz-divider nzText="Sync Configuration" nzOrientation="left"></nz-divider>
+
+      <form [formGroup]="configForm" nz-form nzLayout="vertical">
+        <!-- Enable Toggle -->
+        <nz-form-item>
+          <nz-form-control>
+            <label nz-checkbox formControlName="enabled">Enable Sync</label>
+          </nz-form-control>
+        </nz-form-item>
+
+        <!-- Entity Selection -->
+        <h5 nz-typography>Entity Selection</h5>
+        <div class="sync__entity-grid">
+          <label nz-checkbox formControlName="syncUsers">Sync Users</label>
+          <label nz-checkbox formControlName="syncRoles">Sync Roles</label>
+          <label nz-checkbox formControlName="syncGroups">Sync Groups</label>
+          <label nz-checkbox formControlName="syncUserRoles">Sync User-Roles</label>
+        </div>
+
+        <!-- Incremental Sync Schedule -->
+        <h5 nz-typography style="margin-top: 16px;">Incremental Sync Schedule</h5>
+        <div *ngIf="!configForm.get('useCustomIncrementalCron')?.value" class="sync__schedule-row">
+          <span>Every:</span>
+          <nz-form-item class="sync__schedule-field">
+            <nz-form-label>Days</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="incrementalDays" style="width: 80px;">
+                <nz-option *ngFor="let d of days" [nzValue]="d" [nzLabel]="'' + d"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item class="sync__schedule-field">
+            <nz-form-label>Hours</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="incrementalHours" style="width: 80px;">
+                <nz-option *ngFor="let h of hours" [nzValue]="h" [nzLabel]="'' + h"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item class="sync__schedule-field">
+            <nz-form-label>Minutes</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="incrementalMins" style="width: 80px;">
+                <nz-option *ngFor="let m of mins" [nzValue]="m" [nzLabel]="'' + m"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div *ngIf="configForm.get('useCustomIncrementalCron')?.value" class="sync__cron-row">
+          <nz-form-item style="flex: 1;">
+            <nz-form-label>CRON Expression</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="incrementalCron" placeholder="0 0/30 * * * ?">
+            </nz-form-control>
+          </nz-form-item>
+          <span nz-icon nzType="question-circle" nzTheme="outline"
+            nz-tooltip nzTooltipTitle="Quartz CRON: seconds minutes hours day month weekday"
+            style="color: #8c8c8c; cursor: help; margin-top: 32px;"></span>
+        </div>
+        <label nz-checkbox formControlName="useCustomIncrementalCron">Use custom CRON</label>
+
+        <!-- Full Sync Schedule -->
+        <h5 nz-typography style="margin-top: 16px;">Full Sync Schedule</h5>
+        <div *ngIf="!configForm.get('useCustomFullSyncCron')?.value" class="sync__schedule-row">
+          <span>Every:</span>
+          <nz-form-item class="sync__schedule-field">
+            <nz-form-label>Days</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="fullSyncDays" style="width: 80px;">
+                <nz-option *ngFor="let d of days" [nzValue]="d" [nzLabel]="'' + d"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item class="sync__schedule-field">
+            <nz-form-label>Hours</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="fullSyncHours" style="width: 80px;">
+                <nz-option *ngFor="let h of hours" [nzValue]="h" [nzLabel]="'' + h"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item class="sync__schedule-field">
+            <nz-form-label>Minutes</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="fullSyncMins" style="width: 80px;">
+                <nz-option *ngFor="let m of mins" [nzValue]="m" [nzLabel]="'' + m"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div *ngIf="configForm.get('useCustomFullSyncCron')?.value" class="sync__cron-row">
+          <nz-form-item style="flex: 1;">
+            <nz-form-label>CRON Expression</nz-form-label>
+            <nz-form-control>
+              <input nz-input formControlName="fullSyncCron" placeholder="0 0 2 * * ?">
+            </nz-form-control>
+          </nz-form-item>
+          <span nz-icon nzType="question-circle" nzTheme="outline"
+            nz-tooltip nzTooltipTitle="Quartz CRON: seconds minutes hours day month weekday"
+            style="color: #8c8c8c; cursor: help; margin-top: 32px;"></span>
+        </div>
+        <label nz-checkbox formControlName="useCustomFullSyncCron">Use custom CRON</label>
+
+        <!-- Advanced Options -->
+        <h5 nz-typography style="margin-top: 16px;">Advanced Options</h5>
+        <div class="sync__advanced-grid">
+          <nz-form-item>
+            <nz-form-label>Page Size</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="pageSize" [nzMin]="100" [nzMax]="10000" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label>Max Records (0 = unlimited)</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="maxRecords" [nzMin]="0" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label>Retry Count</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="retryCount" [nzMin]="0" [nzMax]="10" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label>Retry Delay (seconds)</nz-form-label>
+            <nz-form-control>
+              <nz-input-number formControlName="retryDelaySeconds" [nzMin]="10" [nzMax]="600" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div class="sync__entity-grid" style="margin-bottom: 16px;">
+          <label nz-checkbox formControlName="activeUsersOnly">Active Users Only</label>
+          <label nz-checkbox formControlName="deleteOrphans">Delete Orphan Records</label>
+        </div>
+
+        <button nz-button nzType="primary" [nzLoading]="saving" [disabled]="saving || !configForm.valid" (click)="saveConfig()">
+          <span nz-icon nzType="save" nzTheme="outline"></span> Save Configuration
+        </button>
+      </form>
+
+      <!-- Manual Sync Actions -->
+      <nz-divider nzText="Manual Sync Actions" nzOrientation="left"></nz-divider>
+
+      <nz-space style="margin-bottom: 12px;">
+        <button *nzSpaceItem nz-button nzType="primary" [disabled]="syncRunning" (click)="triggerIncrementalSync()">
+          <span nz-icon nzType="caret-right" nzTheme="outline"></span> Run Incremental Sync
+        </button>
+        <button *nzSpaceItem nz-button nzType="primary" nzDanger [disabled]="syncRunning" (click)="triggerFullSync()">
+          <span nz-icon nzType="fast-forward" nzTheme="outline"></span> Run Full Sync
+        </button>
+      </nz-space>
+
+      <nz-alert nzType="warning" nzShowIcon
+        nzMessage="Running sync will fetch data from ServiceNow. This may take several minutes depending on data volume.">
+      </nz-alert>
+
+      <!-- Sync History -->
+      <nz-divider nzText="Sync History" nzOrientation="left"></nz-divider>
+
+      <app-advanced-table
+        [data]="logsData"
+        [columns]="logsColumns"
+        [total]="logsTotal"
+        [showPagination]="true"
+        size="small">
+      </app-advanced-table>
+    </div>
+  </nz-spin>
+</nz-card>

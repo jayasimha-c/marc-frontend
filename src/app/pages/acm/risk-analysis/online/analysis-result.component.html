@@ -1,0 +1,146 @@
+<div style="position: relative;">
+  <button nz-button nzType="text" nzShape="circle"
+          *ngIf="analysisMenuList && analysisMenuList.length > 0"
+          nz-dropdown [nzDropdownMenu]="menu" nzTrigger="click"
+          style="position: absolute; right: 8px; top: 4px; z-index: 10;">
+    <span nz-icon nzType="more" nzTheme="outline"></span>
+  </button>
+  <nz-dropdown-menu #menu="nzDropdownMenu">
+    <ul nz-menu>
+      <li nz-menu-item *ngFor="let item of analysisMenuList" (click)="item.command($event)">
+        <span *ngIf="item.icon" nz-icon [nzType]="item.icon" nzTheme="outline" style="margin-right: 8px;"></span>
+        {{ item.label }}
+      </li>
+    </ul>
+  </nz-dropdown-menu>
+</div>
+
+<nz-tabset [nzAnimated]="false">
+  <!-- Violations Tab -->
+  <nz-tab nzTitle="Violations">
+    <ng-container *ngIf="analysisComplete">
+      <nz-input-group nzSize="small" [nzSuffix]="vSearchIcon" style="margin-bottom: 8px; max-width: 280px;">
+        <input nz-input placeholder="Global search..." [(ngModel)]="violationsSearch" (keyup.enter)="onViolationsFilterChange()" />
+      </nz-input-group>
+      <ng-template #vSearchIcon>
+        <span nz-icon nzType="search" style="cursor: pointer;" (click)="onViolationsFilterChange()"></span>
+      </ng-template>
+
+      <nz-table #violationsTable [nzData]="violationsData" nzSize="small"
+                [nzFrontPagination]="false"
+                [nzTotal]="violationsTotal"
+                [nzPageIndex]="violationsPage"
+                [nzPageSize]="pageSize"
+                (nzPageIndexChange)="onViolationsPageNav($event)"
+                nzTableLayout="fixed"
+                [nzScroll]="{ y: '50vh' }">
+        <thead>
+          <tr>
+            <th *ngFor="let col of violationsCols">{{ col.header }}</th>
+          </tr>
+          <tr>
+            <th *ngFor="let col of violationsCols" style="padding: 4px;">
+              <input nz-input nzSize="small" placeholder="Filter..."
+                     [(ngModel)]="violationsFilters[col.field]"
+                     (keyup.enter)="onViolationsFilterChange()" />
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of violationsTable.data">
+            <td *ngFor="let col of violationsCols">{{ row[col.field] }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </ng-container>
+    <nz-empty *ngIf="!analysisComplete" nzNotFoundContent="Run analysis to see results"></nz-empty>
+  </nz-tab>
+
+  <!-- Summary Report Tab -->
+  <nz-tab nzTitle="Summary Report">
+    <ng-container *ngIf="analysisComplete">
+      <nz-input-group nzSize="small" [nzSuffix]="sSearchIcon" style="margin-bottom: 8px; max-width: 280px;">
+        <input nz-input placeholder="Global search..." [(ngModel)]="summarySearch" (keyup.enter)="onSummaryFilterChange()" />
+      </nz-input-group>
+      <ng-template #sSearchIcon>
+        <span nz-icon nzType="search" style="cursor: pointer;" (click)="onSummaryFilterChange()"></span>
+      </ng-template>
+
+      <nz-table #summaryTable [nzData]="summaryData" nzSize="small"
+                [nzFrontPagination]="false"
+                [nzTotal]="summaryTotal"
+                [nzPageIndex]="summaryPage"
+                [nzPageSize]="pageSize"
+                (nzPageIndexChange)="onSummaryPageNav($event)"
+                nzTableLayout="fixed"
+                [nzScroll]="{ x: '1600px', y: '50vh' }">
+        <thead>
+          <tr>
+            <th *ngFor="let col of summaryCols" [nzWidth]="col.width || null">{{ col.header }}</th>
+          </tr>
+          <tr>
+            <th *ngFor="let col of summaryCols" style="padding: 4px;">
+              <input nz-input nzSize="small" placeholder="Filter..."
+                     [(ngModel)]="summaryFilters[col.field]"
+                     (keyup.enter)="onSummaryFilterChange()" />
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of summaryTable.data"
+              [class.ant-table-row-selected]="summarySelectedRow === row"
+              style="cursor: pointer;"
+              (click)="selectSummaryRow(row)">
+            <td *ngFor="let col of summaryCols">
+              <ng-container *ngIf="col.field === 'riskName'; else plainCell">
+                <span style="color: #1890ff; cursor: pointer;">{{ row[col.field] }}</span>
+              </ng-container>
+              <ng-template #plainCell>{{ row[col.field] }}</ng-template>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </ng-container>
+    <nz-empty *ngIf="!analysisComplete" nzNotFoundContent="Run analysis to see results"></nz-empty>
+  </nz-tab>
+
+  <!-- Detailed Report Tab -->
+  <nz-tab nzTitle="Detailed Report" *ngIf="showDetailedTab">
+    <ng-container *ngIf="analysisComplete">
+      <nz-input-group nzSize="small" [nzSuffix]="dSearchIcon" style="margin-bottom: 8px; max-width: 280px;">
+        <input nz-input placeholder="Global search..." [(ngModel)]="detailedSearch" (keyup.enter)="onDetailedFilterChange()" />
+      </nz-input-group>
+      <ng-template #dSearchIcon>
+        <span nz-icon nzType="search" style="cursor: pointer;" (click)="onDetailedFilterChange()"></span>
+      </ng-template>
+
+      <nz-table #detailedTable [nzData]="detailedData" nzSize="small"
+                [nzFrontPagination]="false"
+                [nzTotal]="detailedTotal"
+                [nzPageIndex]="detailedPage"
+                [nzPageSize]="pageSize"
+                (nzPageIndexChange)="onDetailedPageNav($event)"
+                nzTableLayout="fixed"
+                [nzScroll]="{ x: '1600px', y: '50vh' }">
+        <thead>
+          <tr>
+            <th *ngFor="let col of detailedCols">{{ col.header }}</th>
+          </tr>
+          <tr>
+            <th *ngFor="let col of detailedCols" style="padding: 4px;">
+              <input nz-input nzSize="small" placeholder="Filter..."
+                     [(ngModel)]="detailedFilters[col.field]"
+                     (keyup.enter)="onDetailedFilterChange()" />
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of detailedTable.data">
+            <td *ngFor="let col of detailedCols">{{ row[col.field] }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </ng-container>
+    <nz-empty *ngIf="!analysisComplete" nzNotFoundContent="Run analysis to see results"></nz-empty>
+  </nz-tab>
+</nz-tabset>

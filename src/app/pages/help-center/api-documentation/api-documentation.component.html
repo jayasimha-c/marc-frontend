@@ -1,0 +1,204 @@
+<div class="w-full std-top-left-spacing">
+    <app-page-panel [title]="'API Documentation'">
+        <section headerSection class="flex items-center gap-4 w-full">
+            <a nz-button nzType="default" [routerLink]="['../']" class="ml-auto">
+                <span nz-icon nzType="arrow-left" nzTheme="outline" class="mr-2"></span>
+                Back to Help Center
+            </a>
+        </section>
+
+        <!-- Main Layout wrapper with NG-ZORRO -->
+        <nz-layout class="api-doc-layout mt-6 bg-transparent" style="background: transparent;">
+
+            <!-- Sidebar -->
+            <nz-sider [nzWidth]="300" nzTheme="light"
+                class="api-doc-sider shadow-sm border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shrink-0">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                    <span class="text-xs font-bold tracking-widest text-secondary uppercase">Endpoints Overview</span>
+                </div>
+                <ul nz-menu nzMode="inline" class="border-r-0 pb-4">
+                    <ng-container *ngFor="let category of categories">
+                        <li nz-menu-group [nzTitle]="categoryGroupTitle">
+                            <ng-template #categoryGroupTitle>
+                                <span
+                                    class="text-xs font-bold tracking-widest text-gray-500 uppercase">{{category.name}}</span>
+                            </ng-template>
+                            <ul>
+                                <li nz-menu-item *ngFor="let endpoint of category.endpoints"
+                                    [nzSelected]="isSelected(endpoint)" (click)="selectEndpoint(endpoint)"
+                                    style="padding-left: 20px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                                    <nz-tag
+                                        [nzColor]="endpoint.method === 'GET' ? 'green' : (endpoint.method === 'POST' ? 'blue' : 'default')"
+                                        class="mr-0 ms-0 rounded text-[10px] font-bold tracking-widest leading-none border-0 px-2 py-0.5"
+                                        style="min-width: 48px; text-align: center;">
+                                        {{endpoint.method}}
+                                    </nz-tag>
+                                    <span class="truncate text-sm font-medium"
+                                        [title]="endpoint.path">{{endpoint.path}}</span>
+                                </li>
+                            </ul>
+                        </li>
+                    </ng-container>
+                </ul>
+            </nz-sider>
+
+            <!-- Content Area -->
+            <nz-content class="api-doc-content pl-6 lg:pl-10" *ngIf="selectedEndpoint"
+                style="padding-left: 2rem; padding-right: 1rem;">
+
+                <div
+                    class="bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg p-8 shadow-sm">
+
+                    <!-- Endpoint Header Path -->
+                    <div class="endpoint-header bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg flex items-center justify-between cursor-pointer border hover:shadow-md transition-all mb-8 group"
+                        (click)="copyToClipboard(baseUrl + selectedEndpoint.path)">
+                        <div class="flex items-center gap-4 flex-1">
+                            <nz-tag
+                                [nzColor]="selectedEndpoint.method === 'GET' ? 'green' : (selectedEndpoint.method === 'POST' ? 'blue' : 'default')"
+                                class="text-sm font-bold tracking-widest px-3 py-1 rounded border-0 shadow-sm">
+                                {{selectedEndpoint.method}}
+                            </nz-tag>
+                            <span
+                                class="text-base font-mono text-gray-700 dark:text-gray-300 break-all">{{baseUrl}}{{selectedEndpoint.path}}</span>
+                        </div>
+                        <div class="flex items-center gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                            <span *ngIf="copied"
+                                class="text-xs font-bold text-green-500 uppercase tracking-wider">Copied</span>
+                            <span nz-icon [nzType]="copied ? 'check-circle' : 'copy'"
+                                [nzTheme]="copied ? 'fill' : 'outline'" [class.text-green-500]="copied"
+                                class="text-gray-400 text-lg"></span>
+                        </div>
+                    </div>
+
+                    <!-- Title & Description -->
+                    <div class="mb-10">
+                        <h2 nz-typography class="text-3xl font-bold mb-3 tracking-tight">{{selectedEndpoint.title}}</h2>
+                        <p nz-typography nzType="secondary" class="text-lg leading-relaxed max-w-4xl">
+                            {{selectedEndpoint.description}}</p>
+                    </div>
+
+                    <!-- Configuration -->
+                    <nz-descriptions nzTitle="Configuration Details" nzBordered class="mb-10"
+                        [nzColumn]="{ xxl: 2, xl: 2, lg: 1, md: 1, sm: 1, xs: 1 }">
+                        <nz-descriptions-item nzTitle="Authentication">
+                            <span
+                                class="font-mono text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-primary">{{selectedEndpoint.authentication}}</span>
+                        </nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Content-Type" *ngIf="selectedEndpoint.contentType">
+                            <div class="flex items-center gap-2 cursor-pointer group"
+                                (click)="copyToClipboard(selectedEndpoint.contentType)">
+                                <span class="font-mono text-sm">{{selectedEndpoint.contentType}}</span>
+                                <span nz-icon nzType="copy" nzTheme="outline"
+                                    class="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                            </div>
+                        </nz-descriptions-item>
+                        <nz-descriptions-item nzTitle="Required Scope" *ngIf="selectedEndpoint.scope">
+                            <div class="flex items-center gap-2 cursor-pointer group"
+                                (click)="copyToClipboard(selectedEndpoint.scope)">
+                                <span
+                                    class="font-mono text-sm bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded">{{selectedEndpoint.scope}}</span>
+                                <span nz-icon nzType="copy" nzTheme="outline"
+                                    class="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                            </div>
+                        </nz-descriptions-item>
+                    </nz-descriptions>
+
+                    <!-- Request Schema Fields -->
+                    <div *ngIf="selectedEndpoint.requestFields && selectedEndpoint.requestFields.length > 0"
+                        class="mb-10">
+                        <h3 nz-typography
+                            class="text-xl font-semibold mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
+                            Request Parameters</h3>
+                        <nz-table #reqTable [nzData]="selectedEndpoint.requestFields" [nzShowPagination]="false"
+                            nzSize="middle" nzBordered>
+                            <thead>
+                                <tr>
+                                    <th nzWidth="25%" class="bg-gray-50 font-semibold tracking-wider text-xs uppercase">
+                                        Field</th>
+                                    <th nzWidth="20%" class="bg-gray-50 font-semibold tracking-wider text-xs uppercase">
+                                        Type</th>
+                                    <th nzWidth="15%" nzAlign="center"
+                                        class="bg-gray-50 font-semibold tracking-wider text-xs uppercase">Required</th>
+                                    <th nzWidth="40%" class="bg-gray-50 font-semibold tracking-wider text-xs uppercase">
+                                        Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let field of reqTable.data">
+                                    <td class="font-mono text-sm text-pink-600 dark:text-pink-400 font-semibold">
+                                        {{field.name}}</td>
+                                    <td class="font-mono text-xs text-gray-500">{{field.type}}</td>
+                                    <td nzAlign="center">
+                                        <nz-tag *ngIf="field.required" nzColor="red"
+                                            class="mr-0 text-[10px] font-bold uppercase tracking-wider border-0 shadow-sm">Yes</nz-tag>
+                                        <span *ngIf="!field.required"
+                                            class="text-gray-400 text-xs italic">Optional</span>
+                                    </td>
+                                    <td class="text-sm">{{field.description}}</td>
+                                </tr>
+                            </tbody>
+                        </nz-table>
+                    </div>
+
+                    <!-- Response Schema Fields -->
+                    <div *ngIf="selectedEndpoint.responseFields && selectedEndpoint.responseFields.length > 0"
+                        class="mb-10">
+                        <h3 nz-typography
+                            class="text-xl font-semibold mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
+                            Response Interface</h3>
+                        <nz-table #resTable [nzData]="selectedEndpoint.responseFields" [nzShowPagination]="false"
+                            nzSize="middle" nzBordered>
+                            <thead>
+                                <tr>
+                                    <th nzWidth="30%" class="bg-gray-50 font-semibold tracking-wider text-xs uppercase">
+                                        Property</th>
+                                    <th nzWidth="25%" class="bg-gray-50 font-semibold tracking-wider text-xs uppercase">
+                                        Data Type</th>
+                                    <th nzWidth="45%" class="bg-gray-50 font-semibold tracking-wider text-xs uppercase">
+                                        Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let field of resTable.data">
+                                    <td class="font-mono text-sm text-blue-600 dark:text-blue-400 font-semibold">
+                                        {{field.name}}</td>
+                                    <td class="font-mono text-xs text-gray-500">{{field.type}}</td>
+                                    <td class="text-sm">{{field.description}}</td>
+                                </tr>
+                            </tbody>
+                        </nz-table>
+                    </div>
+
+                    <!-- cURL Example -->
+                    <div class="mb-12" style="margin-bottom: 3rem;">
+                        <h3 nz-typography class="text-xl font-semibold mb-4 flex items-center justify-between"
+                            style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">
+                            <span>cURL Example</span>
+                        </h3>
+                        <div class="relative group cursor-pointer overflow-hidden rounded border border-gray-700 shadow-sm"
+                            (click)="copyToClipboard(getCurlExample())"
+                            style="position: relative; border-radius: 4px; border: 1px solid #374151; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); background-color: #1e1e1e; overflow: hidden;">
+                            <div class="absolute top-0 right-0 p-3 z-10 transition-opacity opacity-50 group-hover:opacity-100 flex items-center gap-2"
+                                style="position: absolute; top: 0; right: 0; padding: 0.75rem; z-index: 10;">
+                                <span *ngIf="copied" class="text-xs font-bold uppercase tracking-widest"
+                                    style="color: #4ade80; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;">Copied</span>
+                                <span nz-icon [nzType]="copied ? 'check' : 'copy'" nzTheme="outline"
+                                    [class.text-green-400]="copied" style="color: white; font-size: 1.125rem;"></span>
+                            </div>
+                            <div class="absolute top-0 left-0"
+                                style="position: absolute; top: 0; left: 0; padding: 0.375rem 1rem; background-color: #2d2d2d; border-bottom: 1px solid #1a1a1a; border-right: 1px solid #1a1a1a; border-bottom-right-radius: 4px; display: flex; align-items: center; gap: 0.5rem;">
+                                <span nz-icon nzType="code" nzTheme="outline" style="color: white;"></span>
+                                <span
+                                    style="font-size: 0.75rem; font-weight: 700; color: #d1d5db; text-transform: uppercase; letter-spacing: 0.1em;">Bash</span>
+                            </div>
+                            <pre
+                                style="background-color: #1e1e1e; color: #4ade80; padding: 1.5rem; padding-top: 3rem; overflow-x: auto; font-size: 0.875rem; font-family: monospace; margin: 0; white-space: pre-wrap; word-break: break-all; line-height: 1.6;"><code>{{getCurlExample()}}</code></pre>
+                        </div>
+                    </div>
+
+
+                </div>
+            </nz-content>
+        </nz-layout>
+    </app-page-panel>
+</div>

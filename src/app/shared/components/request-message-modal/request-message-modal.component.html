@@ -1,0 +1,14 @@
+<div class="modal-content">
+    <!-- Status Label -->
+    <div class="mb-4">
+        <span nz-typography><strong>Status: </strong></span>
+        <app-status-badge [status]="status"></app-status-badge>
+    </div>
+    <!-- Error Box -->
+    <textarea nz-input rows="5" disabled [value]="message"></textarea>
+</div>
+
+<!-- footer -->
+<div class="modal-footer mt-4 pt-4 border-t flex justify-end">
+    <button nz-button nzType="default" (click)="modal.close()">Close</button>
+</div>

@@ -1,0 +1,62 @@
+<div style="padding: 16px;">
+  <!-- Step Headers -->
+  <nz-steps [nzCurrent]="currentStep" style="margin-bottom: 24px;">
+    <nz-step [nzTitle]="preSelection?.selectedTargetType === 'USER' ? 'Users' : 'Roles'"></nz-step>
+    <nz-step [nzTitle]="preSelection?.selectedAnalysisType === 'RULE' ? 'Rules' : 'Risks'"></nz-step>
+    <nz-step nzTitle="Analyse"></nz-step>
+  </nz-steps>
+
+  <!-- Step 1: Users or Roles -->
+  <div [hidden]="currentStep !== 0">
+    <app-online-users *ngIf="preSelection?.selectedTargetType === 'USER'"
+                      [header]="header" [preSelection]="preSelection">
+    </app-online-users>
+    <app-online-roles *ngIf="preSelection?.selectedTargetType === 'ROLE'"
+                      [header]="header" [preSelection]="preSelection">
+    </app-online-roles>
+
+    <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+      <button nz-button nzType="primary" (click)="currentStep = 1">Next</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Rules or Risks -->
+  <div [hidden]="currentStep !== 1">
+    <app-online-rule-list *ngIf="preSelection?.selectedAnalysisType === 'RULE'"
+                          [header]="header" [preSelection]="preSelection">
+    </app-online-rule-list>
+    <app-online-risk-list *ngIf="preSelection?.selectedAnalysisType === 'RISK'"
+                          [header]="header" [preSelection]="preSelection">
+    </app-online-risk-list>
+
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+      <button nz-button nzType="default" (click)="currentStep = 0">Back</button>
+      <button nz-button nzType="primary" (click)="currentStep = 2">Next</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Analysis Results -->
+  <div [hidden]="currentStep !== 2">
+    <app-analysis-result
+      [analysisMenuList]="analysisMenuList"
+      [analysisComplete]="analysisComplete"
+      [violationsData]="violationsData"
+      [violationsTotal]="violationsTotal"
+      [violationsCols]="violationsCols"
+      [summaryData]="summaryData"
+      [summaryTotal]="summaryTotal"
+      [summaryCols]="summaryCols"
+      [detailedData]="detailedData"
+      [detailedTotal]="detailedTotal"
+      [detailedCols]="detailedCols"
+      [onViolationsPageChange]="onViolationsPageChange"
+      [onSummaryPageChange]="onSummaryPageChange"
+      [onDetailedPageChange]="onDetailedPageChange"
+      [onSummaryRowSelect]="onSummaryRowSelect">
+    </app-analysis-result>
+
+    <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+      <button nz-button nzType="default" (click)="currentStep = 1">Back</button>
+    </div>
+  </div>
+</div>

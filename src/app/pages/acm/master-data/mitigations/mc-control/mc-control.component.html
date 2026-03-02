@@ -1,0 +1,90 @@
+<!-- Main Mitigations Table -->
+<app-advanced-table
+  title="Mitigation"
+  [data]="data"
+  [columns]="columns"
+  [actions]="tableActions"
+  [loading]="loading"
+  [total]="total"
+  [serverSide]="true"
+  [showSearch]="true"
+  [maxVisibleActions]="3"
+  size="small"
+  (queryParamsChange)="onQueryParamsChange($event)"
+  (rowClick)="onRowClick($event)">
+</app-advanced-table>
+
+<!-- Sub-tables: Users / Owners / ICM Controls -->
+<nz-card nzSize="small" style="margin-top: 16px;" *ngIf="selectedMitigation">
+  <nz-tabset [(nzSelectedIndex)]="activeTabIndex" nzSize="small">
+    <!-- Users Tab -->
+    <nz-tab nzTitle="Users">
+      <nz-table #usersTable [nzData]="usersData" nzSize="small" [nzShowPagination]="usersData.length > 10"
+        [nzPageSize]="10" nzTableLayout="fixed" [nzFrontPagination]="true" [nzScroll]="{ y: '250px' }">
+        <thead>
+          <tr>
+            <th nzWidth="120px">User ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th nzWidth="120px">From Date</th>
+            <th nzWidth="120px">To Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of usersTable.data">
+            <td>{{ row.userId }}</td>
+            <td>{{ row.firstName }}</td>
+            <td>{{ row.lastName }}</td>
+            <td>{{ row.startDate }}</td>
+            <td>{{ row.endDate }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+      <nz-empty *ngIf="!usersData.length" nzNotFoundContent="No users assigned" [nzNotFoundImage]="'simple'"></nz-empty>
+    </nz-tab>
+
+    <!-- Owners Tab -->
+    <nz-tab nzTitle="Owners">
+      <nz-table #ownersTable [nzData]="ownersData" nzSize="small" [nzShowPagination]="ownersData.length > 10"
+        [nzPageSize]="10" nzTableLayout="fixed" [nzFrontPagination]="true" [nzScroll]="{ y: '250px' }">
+        <thead>
+          <tr>
+            <th nzWidth="120px">User ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of ownersTable.data">
+            <td>{{ row.username }}</td>
+            <td>{{ row.firstName }}</td>
+            <td>{{ row.lastName }}</td>
+            <td>{{ row.email }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+      <nz-empty *ngIf="!ownersData.length" nzNotFoundContent="No owners assigned" [nzNotFoundImage]="'simple'"></nz-empty>
+    </nz-tab>
+
+    <!-- ICM Controls Tab -->
+    <nz-tab nzTitle="ICM Controls">
+      <nz-table #icmTable [nzData]="icmControlsData" nzSize="small" [nzShowPagination]="icmControlsData.length > 10"
+        [nzPageSize]="10" nzTableLayout="fixed" [nzFrontPagination]="true" [nzScroll]="{ y: '250px' }">
+        <thead>
+          <tr>
+            <th>Control Name</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of icmTable.data">
+            <td>{{ row.controlName }}</td>
+            <td>{{ row.controlDesc }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+      <nz-empty *ngIf="!icmControlsData.length" nzNotFoundContent="No ICM controls linked" [nzNotFoundImage]="'simple'"></nz-empty>
+    </nz-tab>
+  </nz-tabset>
+</nz-card>

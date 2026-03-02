@@ -1,0 +1,106 @@
+<div class="exchange-container">
+  <!-- Available Roles (Left) -->
+  <div class="exchange-panel">
+    <div class="exchange-panel-header">
+      <span>Available Roles</span>
+      <span style="color: #999; font-size: 12px;">{{ availableTotal }} total</span>
+    </div>
+    <nz-table #availableTable
+      [nzData]="availableData"
+      [nzLoading]="availableLoading"
+      nzSize="small"
+      [nzFrontPagination]="false"
+      [nzTotal]="availableTotal"
+      [nzPageIndex]="availablePageIndex"
+      [nzPageSize]="availablePageSize"
+      nzShowSizeChanger
+      [nzPageSizeOptions]="[10, 20, 50]"
+      (nzPageIndexChange)="onAvailablePageChange($event)"
+      [nzScroll]="{ y: '350px' }">
+      <thead>
+        <tr>
+          <th nzWidth="40px" nzAlign="center">
+            <label nz-checkbox [ngModel]="availableAllChecked"
+              [nzIndeterminate]="availableChecked.size > 0 && !availableAllChecked"
+              (ngModelChange)="onAvailableAllChecked($event)"></label>
+          </th>
+          <th>Role Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of availableTable.data">
+          <td nzAlign="center">
+            <label nz-checkbox [ngModel]="availableChecked.has(row.rolename)"
+              (ngModelChange)="onAvailableItemChecked(row.rolename, $event)"></label>
+          </td>
+          <td>{{ row.rolename }}</td>
+          <td>{{ row.description }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+
+  <!-- Action Buttons (Center) -->
+  <div class="exchange-actions">
+    <button nz-button nzSize="small" nzType="primary" [disabled]="availableChecked.size === 0"
+      (click)="addSelected()" nz-tooltip="Add Selected">
+      <span nz-icon nzType="right" nzTheme="outline"></span>
+    </button>
+    <button nz-button nzSize="small" [disabled]="selectedChecked.size === 0"
+      (click)="removeSelected()" nz-tooltip="Remove Selected">
+      <span nz-icon nzType="left" nzTheme="outline"></span>
+    </button>
+    <button nz-button nzSize="small" nzDanger [disabled]="allSelectedRoleNames.length === 0"
+      (click)="removeAll()" nz-tooltip="Remove All">
+      <span nz-icon nzType="double-left" nzTheme="outline"></span>
+    </button>
+  </div>
+
+  <!-- Selected Roles (Right) -->
+  <div class="exchange-panel">
+    <div class="exchange-panel-header">
+      <span>Selected Roles</span>
+      <span style="color: #999; font-size: 12px;">{{ selectedTotal }} total</span>
+    </div>
+    <nz-table #selectedTable
+      [nzData]="selectedData"
+      [nzLoading]="selectedLoading"
+      nzSize="small"
+      [nzFrontPagination]="false"
+      [nzTotal]="selectedTotal"
+      [nzPageIndex]="selectedPageIndex"
+      [nzPageSize]="selectedPageSize"
+      nzShowSizeChanger
+      [nzPageSizeOptions]="[10, 20, 50]"
+      (nzPageIndexChange)="onSelectedPageChange($event)"
+      [nzScroll]="{ y: '350px' }">
+      <thead>
+        <tr>
+          <th nzWidth="40px" nzAlign="center">
+            <label nz-checkbox [ngModel]="selectedAllChecked"
+              [nzIndeterminate]="selectedChecked.size > 0 && !selectedAllChecked"
+              (ngModelChange)="onSelectedAllChecked($event)"></label>
+          </th>
+          <th>Role Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of selectedTable.data">
+          <td nzAlign="center">
+            <label nz-checkbox [ngModel]="selectedChecked.has(row.rolename)"
+              (ngModelChange)="onSelectedItemChecked(row.rolename, $event)"></label>
+          </td>
+          <td>{{ row.rolename }}</td>
+          <td>{{ row.description }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+  <button nz-button nzType="primary" (click)="save()">Save</button>
+</div>

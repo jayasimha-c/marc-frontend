@@ -1,0 +1,213 @@
+<div class="user-search-container">
+    <!-- Header -->
+    <app-page-panel>
+        <div headerSection>
+            <div nz-row nzJustify="space-between" nzAlign="middle">
+                <div nz-col>
+                    <nz-space nzAlign="center">
+                        <button *nzSpaceItem nz-button nzType="text" nzShape="circle" (click)="goBack()">
+                            <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+                        </button>
+                        <div *nzSpaceItem>
+                            <h1 style="margin-bottom: 0;">{{ systemName ? 'Users in ' + systemName : 'User Search' }}
+                            </h1>
+                            <span nz-typography nzType="secondary">{{ systemName ? 'Viewing users in selected system' :
+                                'Find users across all connected SAP systems' }}</span>
+                        </div>
+                    </nz-space>
+                </div>
+                <div nz-col>
+                    <nz-space nzAlign="center" nzSize="middle" nzWrap>
+                        <ng-container *ngIf="selectedUsers.length > 0">
+                            <span *nzSpaceItem nz-typography>{{ selectedUsers.length }} selected</span>
+                            <button *nzSpaceItem nz-button nzType="primary" (click)="compareSelectedUsers()"
+                                [disabled]="selectedUsers.length < 2">
+                                <span nz-icon nzType="swap" nzTheme="outline"></span>
+                                Compare Roles
+                            </button>
+                            <button *nzSpaceItem nz-button nzType="default" (click)="clearUserSelection()">
+                                <span nz-icon nzType="close" nzTheme="outline"></span>
+                                Clear
+                            </button>
+                            <nz-divider *nzSpaceItem nzType="vertical"></nz-divider>
+                        </ng-container>
+                        <ng-container *ngIf="systemName">
+                            <button *nzSpaceItem nz-button nzType="default"
+                                (click)="clearSystemFilter()">
+                                <span nz-icon nzType="close" nzTheme="outline"></span>
+                                Clear Filter
+                            </button>
+                        </ng-container>
+                        <button *nzSpaceItem nz-button nzType="default" (click)="refreshGrid()">
+                            <span nz-icon nzType="reload" nzTheme="outline"></span>
+                            Refresh
+                        </button>
+                    </nz-space>
+                </div>
+            </div>
+        </div>
+    </app-page-panel>
+
+    <!-- Search & Filter Panel -->
+    <app-page-panel *ngIf="!systemName">
+        <nz-space nzAlign="center" nzSize="large" nzWrap style="margin-bottom: 16px; width: 100%;">
+            <!-- Quick Search -->
+            <nz-input-group *nzSpaceItem [nzPrefix]="prefixSearch" [nzSuffix]="quickSearchSuffix" style="width: 400px;">
+                <ng-template #prefixSearch>
+                    <span nz-icon nzType="search" nzTheme="outline"></span>
+                </ng-template>
+                <input nz-input [(ngModel)]="quickSearchTerm" (keyup.enter)="onQuickSearch()"
+                    [disabled]="isScenarioActive" placeholder="Employee ID, Email, SAP Username">
+            </nz-input-group>
+            <ng-template #quickSearchSuffix>
+                <span *ngIf="quickSearchTerm" nz-icon nzType="close-circle" nzTheme="fill" (click)="clearQuickSearch()"
+                    style="cursor: pointer;"></span>
+            </ng-template>
+            <button *nzSpaceItem nz-button nzType="primary" (click)="onQuickSearch()"
+                [disabled]="isScenarioActive || !quickSearchTerm || quickSearchTerm.length < 2">
+                Search
+            </button>
+
+            <!-- Scenario Filter -->
+            <nz-select *nzSpaceItem [(ngModel)]="selectedScenario" (ngModelChange)="onScenarioChange($event)"
+                nzPlaceHolder="Select Scenario" style="width: 250px;">
+                <nz-option nzValue="" nzLabel="All Users"></nz-option>
+                <nz-option *ngFor="let scenario of scenarios" [nzValue]="scenario.value"
+                    [nzLabel]="scenario.label"></nz-option>
+            </nz-select>
+
+            <!-- Clear Buttons -->
+            <ng-container *ngIf="isQuickSearchActive || isScenarioActive">
+                <button *nzSpaceItem nz-button nzType="default"
+                    (click)="isQuickSearchActive ? clearQuickSearch() : clearScenario()">
+                    <span nz-icon nzType="clear" nzTheme="outline"></span>
+                    Clear
+                </button>
+            </ng-container>
+        </nz-space>
+        <!-- Scenario Description -->
+        <div *ngIf="scenarioDescription" style="margin-top: 8px;">
+            <span nz-typography nzType="info">{{ scenarioDescription }}</span>
+        </div>
+    </app-page-panel>
+
+    <!-- System-specific User Grid -->
+    <app-page-panel *ngIf="systemName" [header]="'Users found in ' + systemName + ' (' + totalRecords + ')'">
+        <nz-table #sysUserTable [nzData]="systemUsers" [nzFrontPagination]="true" [nzShowPagination]="true"
+            [nzLoading]="loading" nzSize="small" style="height: calc(100vh - 340px); overflow-y: auto;">
+            <thead>
+                <tr>
+                    <th nzWidth="150px">Username</th>
+                    <th nzWidth="200px">Full Name</th>
+                    <th nzWidth="120px">User Type</th>
+                    <th nzWidth="100px">Locked</th>
+                    <th nzWidth="120px">Last Login</th>
+                    <th nzWidth="100px">Has Roles</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let data of sysUserTable.data">
+                    <td>{{ data.bname }}</td>
+                    <td>{{ data.userName }}</td>
+                    <td>{{ data.userType }}</td>
+                    <td>
+                        <nz-tag [nzColor]="data.locked ? 'red' : 'green'">{{ data.locked ? 'Yes' : 'No' }}</nz-tag>
+                    </td>
+                    <td>{{ data.lastLogin }}</td>
+                    <td>
+                        <nz-tag [nzColor]="data.hasRoles ? 'green' : 'red'">{{ data.hasRoles ? 'Yes' : 'No' }}</nz-tag>
+                    </td>
+                </tr>
+            </tbody>
+        </nz-table>
+    </app-page-panel>
+
+    <!-- Scenario Results Grid -->
+    <app-page-panel *ngIf="!systemName && isScenarioActive"
+        [header]="scenarioUsers.length + ' users matching scenario'">
+        <nz-table #scenarioTable [nzData]="scenarioUsers" [nzFrontPagination]="true" [nzShowPagination]="true"
+            [nzLoading]="loading" nzSize="small" style="height: calc(100vh - 400px); overflow-y: auto;">
+            <thead>
+                <tr>
+                    <th nzWidth="130px">SAP Username</th>
+                    <th nzWidth="180px">Display Name</th>
+                    <th nzWidth="200px">Email</th>
+                    <th nzWidth="120px">Employee ID</th>
+                    <th nzWidth="130px">Department</th>
+                    <th nzWidth="90px">Systems</th>
+                    <th nzWidth="80px">Active</th>
+                    <th nzWidth="80px">Locked</th>
+                    <th nzWidth="90px">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let data of scenarioTable.data" (click)="onScenarioRowClick(data)" class="cursor-pointer">
+                    <td>{{ data.sapBname }}</td>
+                    <td>{{ data.displayName }}</td>
+                    <td>{{ data.primaryEmail }}</td>
+                    <td>{{ data.employeeId }}</td>
+                    <td>{{ data.department }}</td>
+                    <td>{{ data.systemCount }}</td>
+                    <td>{{ data.activeCount }}</td>
+                    <td>{{ data.lockedCount }}</td>
+                    <td>
+                        <button nz-button nzType="text" nzSize="small" class="text-blue-500"
+                            (click)="$event.stopPropagation(); viewUserDetails(data)" title="View Details">
+                            <span nz-icon nzType="eye" nzTheme="outline"></span>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </nz-table>
+    </app-page-panel>
+
+    <!-- All Users Grid -->
+    <app-page-panel *ngIf="!systemName && !isScenarioActive">
+        <nz-table #userTable [nzData]="users" [nzFrontPagination]="false" [nzTotal]="totalRecords"
+            [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzLoading]="loading" [nzShowSizeChanger]="true"
+            (nzQueryParams)="onQueryParamsChange($event)" nzSize="small"
+            style="height: calc(100vh - 340px); overflow-y: auto;"
+            (nzCurrentPageDataChange)="onCurrentPageDataChange($event)">
+            <thead>
+                <tr>
+                    <th nzWidth="40px" [nzChecked]="allChecked" [nzIndeterminate]="indeterminate"
+                        (nzCheckedChange)="onAllChecked($event)"></th>
+                    <th nzColumnKey="sapBname" [nzSortFn]="true">SAP Username</th>
+                    <th nzColumnKey="displayName" [nzSortFn]="true">Display Name</th>
+                    <th nzColumnKey="primaryEmail" [nzSortFn]="true">Email</th>
+                    <th nzColumnKey="department" [nzSortFn]="true">Department</th>
+                    <th nzColumnKey="systemCount" [nzSortFn]="true">Systems</th>
+                    <th nzColumnKey="lockedCount" [nzSortFn]="true">Locked</th>
+                    <th nzColumnKey="totalRoleCount" [nzSortFn]="true">Roles</th>
+                    <th nzColumnKey="active">Active</th>
+                    <th nzWidth="90px">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let data of userTable.data" (click)="onRowClicked(data)" class="cursor-pointer">
+                    <td [nzChecked]="setOfCheckedId.has(data.identityId)"
+                        (nzCheckedChange)="onItemChecked(data.identityId, $event)" (click)="$event.stopPropagation()">
+                    </td>
+                    <td>{{ data.sapBname }}</td>
+                    <td>{{ data.displayName }}</td>
+                    <td>{{ data.primaryEmail }}</td>
+                    <td>{{ data.department }}</td>
+                    <td>{{ data.systemCount }}</td>
+                    <td>{{ data.lockedCount }}</td>
+                    <td>{{ data.totalRoleCount }}</td>
+                    <td>
+                        <nz-tag [nzColor]="data.active ? 'success' : 'default'">
+                            {{ data.active ? 'Active' : 'Inactive' }}
+                        </nz-tag>
+                    </td>
+                    <td>
+                        <button nz-button nzType="text" nzSize="small" class="text-blue-500"
+                            (click)="$event.stopPropagation(); viewUserDetails(data)" title="View Details">
+                            <span nz-icon nzType="eye" nzTheme="outline"></span>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </nz-table>
+    </app-page-panel>
+</div>

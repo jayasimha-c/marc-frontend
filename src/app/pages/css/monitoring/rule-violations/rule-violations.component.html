@@ -1,0 +1,138 @@
+<div style="padding: 16px;">
+  <!-- Stats Cards -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+    <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="4" *ngFor="let card of statsCards" style="margin-bottom: 8px;">
+      <app-statistics-card
+        [title]="card.title"
+        [value]="card.value"
+        [icon]="card.icon"
+        [color]="card.color"
+        [loading]="statsLoading">
+      </app-statistics-card>
+    </div>
+  </div>
+
+  <!-- Main Split Layout -->
+  <div nz-row [nzGutter]="16">
+    <!-- Left Panel -->
+    <div nz-col [nzXs]="24" [nzMd]="leftPanelCollapsed ? 1 : 10" [nzLg]="leftPanelCollapsed ? 1 : 8">
+      <nz-card  [nzBodyStyle]="{ padding: '0' }" *ngIf="!leftPanelCollapsed">
+
+        <!-- Type Filter Tabs -->
+        <div style="border-bottom: 1px solid #f0f0f0; display: flex; overflow-x: auto;">
+          <div *ngFor="let tf of typeFilters"
+               class="vn-type-tab"
+               [class.active]="activeTypeFilter === tf.key"
+               (click)="setTypeFilter(tf.key)">
+            <span *ngIf="tf.icon" nz-icon [nzType]="tf.icon" nzTheme="outline"></span>
+            {{ tf.label }}
+            <nz-badge [nzCount]="getCountForType(tf.key)" [nzOverflowCount]="999"
+                      [nzStyle]="{ backgroundColor: activeTypeFilter === tf.key ? '#1890ff' : '#d9d9d9', fontSize: '10px', lineHeight: '16px', height: '16px', minWidth: '16px', padding: '0 4px' }">
+            </nz-badge>
+          </div>
+        </div>
+
+        <!-- Search + Severity Filters -->
+        <div style="padding: 12px; border-bottom: 1px solid #f0f0f0;">
+          <nz-input-group [nzPrefix]="searchIcon" [nzSuffix]="searchClear" nzSize="small">
+            <input nz-input placeholder="Search rules, systems..." [formControl]="searchText" />
+          </nz-input-group>
+          <ng-template #searchIcon><span nz-icon nzType="search"></span></ng-template>
+          <ng-template #searchClear>
+            <span *ngIf="searchText.value" nz-icon nzType="close-circle" nzTheme="fill"
+                  style="cursor: pointer;" (click)="searchText.setValue('')"></span>
+          </ng-template>
+
+          <div style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+            <nz-tag *ngFor="let sev of ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']"
+                    [nzColor]="isSeverityActive(sev) ? getSeverityColor(sev) : ''"
+                    style="cursor: pointer;"
+                    (click)="toggleSeverityFilter(sev)">
+              {{ sev }}
+            </nz-tag>
+          </div>
+        </div>
+
+        <!-- Group Count -->
+        <div style="padding: 6px 16px; border-bottom: 1px solid #f0f0f0; font-size: 12px; color: rgba(0,0,0,0.45);">
+          {{ ruleGroups.length }} rules found
+        </div>
+
+        <!-- Rule Group List -->
+        <div class="vn-rule-groups">
+          <nz-spin [nzSpinning]="loading">
+            <nz-empty *ngIf="!loading && ruleGroups.length === 0"
+                      nzNotFoundContent="No violations found"
+                      [nzNotFoundImage]="'simple'"
+                      style="padding: 48px 0;"></nz-empty>
+
+            <div *ngFor="let group of pagedRuleGroups"
+                 class="vn-rule-group-item"
+                 [class.selected]="isGroupSelected(group)"
+                 (click)="selectGroup(group)">
+              <div style="flex: 1; min-width: 0;">
+                <div class="vn-rule-name">{{ group.ruleName }}</div>
+                <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                  <nz-tag [nzColor]="getSeverityColor(group.severity)" style="margin: 0; font-size: 10px; line-height: 16px; padding: 0 4px;">
+                    {{ group.severity }}
+                  </nz-tag>
+                  <span style="font-size: 11px; color: rgba(0,0,0,0.45);">
+                    <span nz-icon [nzType]="getTypeIcon(group.type)" nzTheme="outline" style="font-size: 11px;"></span>
+                    {{ getTypeLabel(group.type) }}
+                  </span>
+                </div>
+              </div>
+              <nz-badge [nzCount]="group.violations.length" [nzOverflowCount]="999"
+                        [nzStyle]="{ backgroundColor: getSeverityColor(group.severity) === 'red' ? '#ff4d4f' : getSeverityColor(group.severity) === 'orange' ? '#fa8c16' : getSeverityColor(group.severity) === 'gold' ? '#faad14' : '#52c41a' }">
+              </nz-badge>
+            </div>
+          </nz-spin>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="ruleGroups.length > pageSize"
+             style="padding: 8px 12px; border-top: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: center; gap: 12px;">
+          <button nz-button nzType="text" nzSize="small" [disabled]="currentPage <= 1" (click)="onPageChange(currentPage - 1)">
+            <span nz-icon nzType="left" nzTheme="outline"></span>
+          </button>
+          <span style="font-size: 12px; color: rgba(0,0,0,0.45);">
+            {{ currentPage }} / {{ totalPages }}
+          </span>
+          <button nz-button nzType="text" nzSize="small" [disabled]="currentPage >= totalPages" (click)="onPageChange(currentPage + 1)">
+            <span nz-icon nzType="right" nzTheme="outline"></span>
+          </button>
+        </div>
+      </nz-card>
+
+      <!-- Collapse toggle -->
+      <div style="text-align: center; margin-top: 4px;">
+        <button nz-button nzType="text" nzSize="small" (click)="leftPanelCollapsed = !leftPanelCollapsed">
+          <span nz-icon [nzType]="leftPanelCollapsed ? 'menu-unfold' : 'menu-fold'" nzTheme="outline"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div nz-col [nzXs]="24" [nzMd]="leftPanelCollapsed ? 23 : 14" [nzLg]="leftPanelCollapsed ? 23 : 16">
+      <!-- Empty State -->
+      <nz-card *ngIf="!selectedGroup"  style="text-align: center;">
+        <nz-empty nzNotFoundContent="Select a rule group to view violation details"
+                  [nzNotFoundImage]="'simple'">
+        </nz-empty>
+      </nz-card>
+
+      <!-- Detail Panel -->
+      <app-violation-detail-panel *ngIf="selectedGroup && selectedViolation"
+        [selectedGroup]="selectedGroup"
+        [selectedViolation]="selectedViolation"
+        [violationDetail]="violationDetail"
+        [detailLoading]="detailLoading"
+        (viewFullDetail)="onViewFullDetail()"
+        (createIssue)="onCreateIssue()"
+        (createIssueForViolation)="onCreateIssueForViolation($event)"
+        (bulkCreateIssues)="onBulkCreateIssues()"
+        (violationSelected)="selectViolation($event.violation, $event.group)">
+      </app-violation-detail-panel>
+    </div>
+  </div>
+</div>

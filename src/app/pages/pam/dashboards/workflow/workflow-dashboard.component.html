@@ -1,0 +1,65 @@
+<app-page-panel header="Workflow Dashboard">
+
+    <!-- KPI Cards -->
+    <div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+            <app-statistics-card title="Total Workflows" [value]="workflowStats.totalWorkflows" [loading]="loading"
+                description="Last 30 days" icon="branches" color="#1890ff">
+            </app-statistics-card>
+        </div>
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+            <app-statistics-card title="Pending Approvals" [value]="workflowStats.pendingApprovals" [loading]="loading"
+                description="Awaiting action" icon="clock-circle" color="#faad14">
+            </app-statistics-card>
+        </div>
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+            <app-statistics-card title="Avg. Approval Time" [value]="workflowStats.averageApprovalTime"
+                [loading]="loading" description="Hours" icon="history" color="#52c41a">
+            </app-statistics-card>
+        </div>
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+            <app-statistics-card title="Rejection Rate" [value]="workflowStats.rejectionRate + '%'" [loading]="loading"
+                description="Last 30 days" icon="close-circle" color="#ff4d4f">
+            </app-statistics-card>
+        </div>
+    </div>
+
+    <!-- Charts — 2 per row -->
+    <div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+        <div nz-col [nzXs]="24" [nzMd]="12">
+            <common-apx-chart #approvalTimeChart [loading]="loading" [chartOptions]="approvalTimeChartOptions"
+                size="lg"></common-apx-chart>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+            <common-apx-chart #approvalStatusChart [loading]="loading" [chartOptions]="approvalStatusChartOptions"
+                size="lg"></common-apx-chart>
+        </div>
+    </div>
+
+    <div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+        <div nz-col [nzXs]="24" [nzMd]="12">
+            <common-apx-chart #approvalsByApproverChart [loading]="loading"
+                [chartOptions]="approvalsByApproverChartOptions" size="lg"></common-apx-chart>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+            <common-apx-chart #workflowStatusChart [loading]="loading" [chartOptions]="workflowStatusChartOptions"
+                size="lg"></common-apx-chart>
+        </div>
+    </div>
+
+    <!-- Pending Approvals Table -->
+    <nz-card class="mt-4">
+        <app-advanced-table
+            title="Pending Approvals"
+            [data]="tableData"
+            [columns]="tableColumns"
+            [totalRecords]="totalRecord"
+            [loading]="loading"
+            [showPagination]="true"
+            [showSearch]="true"
+            size="middle"
+            scrollY="40vh"
+        ></app-advanced-table>
+    </nz-card>
+
+</app-page-panel>

@@ -1,0 +1,83 @@
+<app-page-panel [title]="'Help Center'">
+    <ng-container headerSection>
+        <button nz-button nzType="default" [routerLink]="['changelog']">
+            <span nz-icon nzType="history" nzTheme="outline" class="mr-2"></span>
+            Changelog
+        </button>
+    </ng-container>
+
+    <div panel-content>
+        <!-- Welcome Section -->
+        <div class="mb-6">
+            <p class="text-secondary">
+                Visit <a href="https://www.marc4grc.com/support" class="text-primary hover:underline"
+                    target="_blank">www.marc4grc.com/support</a>
+                for application help and how-to videos. For questions beyond the documentation, contact us via the
+                Support page.
+            </p>
+        </div>
+
+        <!-- Quick Access Cards -->
+        <div nz-row [nzGutter]="[16, 16]">
+            <!-- License Card -->
+            <div nz-col nzXs="24" nzSm="12" nzLg="6">
+                <nz-card nzHoverable [routerLink]="['licence']" [nzBordered]="true"
+                    class="rounded p-2 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <span nz-icon nzType="safety-certificate" nzTheme="outline"
+                            class="text-gray-500 text-xl"></span>
+                        <div class="flex-1">
+                            <div class="font-medium text-base">License</div>
+                            <div class="text-secondary text-sm">View license details</div>
+                        </div>
+                        <span nz-icon nzType="right" nzTheme="outline" class="text-gray-400"></span>
+                    </div>
+                </nz-card>
+            </div>
+
+            <!-- About Card -->
+            <div nz-col nzXs="24" nzSm="12" nzLg="6">
+                <nz-card nzHoverable [routerLink]="['about']" [nzBordered]="true" class="rounded p-2 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <span nz-icon nzType="info-circle" nzTheme="outline" class="text-gray-500 text-xl"></span>
+                        <div class="flex-1">
+                            <div class="font-medium text-base">About</div>
+                            <div class="text-secondary text-sm">Application version</div>
+                        </div>
+                        <span nz-icon nzType="right" nzTheme="outline" class="text-gray-400"></span>
+                    </div>
+                </nz-card>
+            </div>
+
+            <!-- Support Card -->
+            <div nz-col nzXs="24" nzSm="12" nzLg="6">
+                <nz-card nzHoverable [routerLink]="['support']" [nzBordered]="true"
+                    class="rounded p-2 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <span nz-icon nzType="customer-service" nzTheme="outline" class="text-gray-500 text-xl"></span>
+                        <div class="flex-1">
+                            <div class="font-medium text-base">Support</div>
+                            <div class="text-secondary text-sm">Contact technical help</div>
+                        </div>
+                        <span nz-icon nzType="right" nzTheme="outline" class="text-gray-400"></span>
+                    </div>
+                </nz-card>
+            </div>
+
+            <!-- API Documentation Card -->
+            <div nz-col nzXs="24" nzSm="12" nzLg="6">
+                <nz-card nzHoverable [routerLink]="['api-documentation']" [nzBordered]="true"
+                    class="rounded p-2 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <span nz-icon nzType="api" nzTheme="outline" class="text-gray-500 text-xl"></span>
+                        <div class="flex-1">
+                            <div class="font-medium text-base">API Documentation</div>
+                            <div class="text-secondary text-sm">Integration API reference</div>
+                        </div>
+                        <span nz-icon nzType="right" nzTheme="outline" class="text-gray-400"></span>
+                    </div>
+                </nz-card>
+            </div>
+        </div>
+    </div>
+</app-page-panel>

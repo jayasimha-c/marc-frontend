@@ -1,0 +1,41 @@
+<nz-spin [nzSpinning]="loading">
+    <nz-table [nzData]="approvals" nzSize="small" [nzShowPagination]="false" nzBordered
+        [nzScroll]="{ y: '400px' }">
+        <thead>
+            <tr>
+                <th nzWidth="60px">ID</th>
+                <th>Approval Candidates</th>
+                <th nzWidth="130px">Approved By</th>
+                <th nzWidth="130px">Approval Date</th>
+                <th nzWidth="100px">Status</th>
+                <th nzWidth="80px">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let a of approvals">
+                <td>{{ a.id }}</td>
+                <td>
+                    <nz-tag *ngFor="let u of (a.users || [])" nzColor="blue">{{ u.name || u.username }}</nz-tag>
+                    <span *ngIf="!a.users?.length">—</span>
+                </td>
+                <td>{{ a.approverName || '—' }}</td>
+                <td>{{ a.approvedDate || '—' }}</td>
+                <td>
+                    <nz-tag [nzColor]="a.status === 'Approved' ? 'green' : a.status === 'Rejected' ? 'red' : a.status === 'Progress' ? 'processing' : 'default'">
+                        {{ a.status }}
+                    </nz-tag>
+                </td>
+                <td>
+                    <button nz-button nzType="link" nzSize="small" *ngIf="a.status === 'Progress'"
+                        (click)="sendEmail(a)" nz-tooltip nzTooltipTitle="Email Approver">
+                        <span nz-icon nzType="mail"></span>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </nz-table>
+</nz-spin>
+
+<div class="modal-footer">
+    <button nz-button (click)="close()">Close</button>
+</div>

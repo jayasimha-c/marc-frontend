@@ -1,0 +1,12 @@
+<app-advanced-table
+  title="User Management"
+  [columns]="columns"
+  [data]="users"
+  [actions]="tableActions"
+  [loading]="loading"
+  [showSearch]="true"
+  [showPagination]="false"
+  size="middle"
+  (refresh)="loadUsers()"
+  (rowClick)="onRowClick($event)"
+></app-advanced-table>

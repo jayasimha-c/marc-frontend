@@ -1,0 +1,82 @@
+<app-page-panel header="FUE Dashboard">
+    <!-- Statistics Cards -->
+    <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+        <div nz-col nzSpan="4" nzXs="12" nzSm="8" nzMd="4" *ngFor="let card of [
+            { title: 'FUEs SAP', value: dashboard.totalFuesSap || 0, icon: 'bar-chart', color: '#f5222d' },
+            { title: 'FUEs MARC', value: dashboard.totalFuesMarc || 0, icon: 'fall', color: '#52c41a' },
+            { title: 'FUE Pool', value: dashboard.fuePool || 0, icon: 'inbox', color: '#1890ff' },
+            { title: 'Total Savings', value: dashboard.totalSavings || 0, icon: 'dollar', color: '#fa8c16' },
+            { title: 'Optimizable', value: dashboard.optimizableUsers || 0, icon: 'sliders', color: '#722ed1' }
+        ]">
+            <app-statistics-card [title]="card.title" [value]="card.value" [icon]="card.icon"
+                [color]="card.color" [loading]="loading"></app-statistics-card>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+        <div nz-col nzSpan="12" nzXs="24">
+            <common-apx-chart [loading]="loading" [chartOptions]="trendChartOptions"></common-apx-chart>
+        </div>
+        <div nz-col nzSpan="12" nzXs="24">
+            <common-apx-chart [loading]="loading" [chartOptions]="tierChartOptions"></common-apx-chart>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+        <div nz-col nzSpan="12" nzXs="24">
+            <common-apx-chart [loading]="loading" [chartOptions]="savingsChartOptions"></common-apx-chart>
+        </div>
+        <div nz-col nzSpan="12" nzXs="24">
+            <nz-card nzTitle="FUE Consumption by System" nzSize="small">
+                <nz-empty *ngIf="systemBreakdown.length === 0 && !loading"
+                    nzNotFoundContent="No system data"></nz-empty>
+                <div *ngFor="let system of systemBreakdown; let i = index"
+                    style="display: flex; align-items: center; justify-content: space-between; padding: 8px 4px;">
+                    <div style="display: flex; align-items: center; gap: 8px; min-width: 120px;">
+                        <span nz-typography nzType="secondary">{{ i + 1 }}</span>
+                        <strong>{{ system.system }}</strong>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex: 1; margin-left: 12px;">
+                        <nz-progress [nzPercent]="getSystemPercentage(system)" [nzShowInfo]="false"
+                            nzSize="small" style="flex: 1;"></nz-progress>
+                        <span style="min-width: 60px; text-align: right; font-weight: 500;">
+                            {{ system.fues | number:'1.1-1' }}
+                        </span>
+                    </div>
+                </div>
+            </nz-card>
+        </div>
+    </div>
+
+    <!-- Utilization -->
+    <div nz-row [nzGutter]="16" style="margin-bottom: 16px;"
+        *ngIf="dashboard.utilizationPercentSap != null">
+        <div nz-col nzSpan="12" nzXs="24">
+            <nz-card nzTitle="SAP Utilization" nzSize="small">
+                <nz-progress [nzPercent]="dashboard.utilizationPercentSap"
+                    nzStrokeColor="#f5222d"></nz-progress>
+            </nz-card>
+        </div>
+        <div nz-col nzSpan="12" nzXs="24">
+            <nz-card nzTitle="MARC Utilization" nzSize="small">
+                <nz-progress [nzPercent]="dashboard.utilizationPercentMarc"
+                    nzStrokeColor="#52c41a"></nz-progress>
+            </nz-card>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <nz-space style="margin-top: 8px;">
+        <button *nzSpaceItem nz-button nzType="primary" (click)="runMeasurement()">
+            <span nz-icon nzType="caret-right"></span> Run Measurement
+        </button>
+        <button *nzSpaceItem nz-button (click)="navigateTo('jobs')">
+            <span nz-icon nzType="unordered-list"></span> View Jobs
+        </button>
+        <button *nzSpaceItem nz-button (click)="navigateTo('fue-types')">
+            <span nz-icon nzType="appstore"></span> FUE Types
+        </button>
+    </nz-space>
+</app-page-panel>

@@ -1,0 +1,234 @@
+<div class="content-import">
+  <nz-card nzSize="small" [nzBordered]="true" nzTitle="Content Import">
+    <div class="ci__grid">
+      <!-- Left: Content Type + File Upload -->
+      <div class="ci__left">
+        <!-- Step 1: Content Type -->
+        <div class="ci__section-title">1. Select Content Type</div>
+
+        <div *ngIf="!loadingTypes && contentTypes.length > 0" class="ci__types">
+          <div *ngFor="let type of contentTypes"
+               class="ci__type-card"
+               [class.ci__type-card--selected]="selectedContentType === type.id"
+               (click)="selectedContentType = type.id">
+            <span nz-icon [nzType]="getContentTypeIcon(type.id)" nzTheme="outline" class="ci__type-icon"></span>
+            <div class="ci__type-info">
+              <div class="ci__type-name">{{ type.name }}</div>
+              <div class="ci__type-desc">{{ type.description }}</div>
+            </div>
+            <span nz-icon nzType="check-circle" nzTheme="fill" class="ci__type-check"
+                  *ngIf="selectedContentType === type.id"></span>
+          </div>
+        </div>
+
+        <div *ngIf="loadingTypes" class="ci__loading">
+          <nz-spin nzSimple nzSize="small"></nz-spin>
+          <span>Loading content types...</span>
+        </div>
+
+        <div *ngIf="!loadingTypes && contentTypesError" class="ci__error-state">
+          <span nz-icon nzType="exclamation-circle" nzTheme="outline"></span>
+          <span>Failed to load content types</span>
+          <button nz-button nzSize="small" nzType="default" (click)="loadContentTypes()">
+            <span nz-icon nzType="reload" nzTheme="outline"></span> Retry
+          </button>
+        </div>
+
+        <!-- Step 2: File Upload -->
+        <div class="ci__section-title" style="margin-top: 16px;">2. Select JSON File</div>
+        <input type="file" #fileInput accept=".json" (change)="onFileSelected($event)" style="display: none;">
+
+        <div class="ci__upload-area" (click)="triggerFileInput()" *ngIf="!selectedFile">
+          <span nz-icon nzType="cloud-upload" nzTheme="outline" class="ci__upload-icon"></span>
+          <div class="ci__upload-text">Click to select JSON file</div>
+          <div class="ci__upload-hint">Supported format: .json</div>
+        </div>
+
+        <div class="ci__file-selected" *ngIf="selectedFile">
+          <span nz-icon nzType="file-text" nzTheme="outline" class="ci__file-icon"></span>
+          <div class="ci__file-info">
+            <div class="ci__file-name">{{ selectedFile.name }}</div>
+            <div class="ci__file-size">{{ (selectedFile.size / 1024).toFixed(2) }} KB</div>
+          </div>
+          <button nz-button nzType="text" nzSize="small" nzShape="circle"
+                  (click)="clearFile(); $event.stopPropagation()">
+            <span nz-icon nzType="close" nzTheme="outline"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Configuration Panel -->
+      <div class="ci__right" *ngIf="selectedFile && selectedContentType">
+        <div class="ci__panel-header">
+          <span class="ci__section-title">Import Configuration</span>
+          <button nz-button nzType="text" nzSize="small" nzShape="circle" (click)="clearFile()">
+            <span nz-icon nzType="close" nzTheme="outline"></span>
+          </button>
+        </div>
+
+        <!-- Selected Info -->
+        <nz-descriptions nzSize="small" [nzColumn]="1" nzBordered class="ci__info">
+          <nz-descriptions-item nzTitle="File">{{ selectedFile.name }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Size">{{ (selectedFile.size / 1024).toFixed(2) }} KB</nz-descriptions-item>
+        </nz-descriptions>
+
+        <!-- Import Mode -->
+        <div class="ci__mode-label">Import Mode</div>
+        <nz-radio-group [(ngModel)]="importMode" class="ci__mode-group">
+          <div *ngFor="let mode of importModes" class="ci__mode-option">
+            <label nz-radio [nzValue]="mode.value">
+              <span class="ci__mode-name">{{ mode.label }}</span>
+              <span class="ci__mode-desc">{{ mode.description }}</span>
+            </label>
+          </div>
+        </nz-radio-group>
+
+        <!-- Preview -->
+        <div *ngIf="showPreview" class="ci__preview">
+          <div class="ci__preview-header">
+            <span>Preview</span>
+            <div>
+              <nz-tag nzColor="blue">Total: {{ totalRecords }}</nz-tag>
+              <nz-tag nzColor="orange">Existing: {{ existingRecords }}</nz-tag>
+            </div>
+          </div>
+          <nz-table #previewTable [nzData]="previewData | slice:0:5" nzSize="small"
+                    [nzShowPagination]="false" nzFrontPagination>
+            <thead>
+              <tr>
+                <th *ngFor="let key of (previewData[0] | keyvalue | slice:0:3)">{{ key.key }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of previewTable.data">
+                <td *ngFor="let key of (row | keyvalue | slice:0:3)">{{ key.value }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </div>
+
+        <!-- Progress -->
+        <div *ngIf="importing" class="ci__progress">
+          <div class="ci__progress-label">Importing... {{ importProgress }}%</div>
+          <nz-progress [nzPercent]="importProgress" nzType="line" [nzShowInfo]="false" nzSize="small"></nz-progress>
+        </div>
+
+        <!-- Actions -->
+        <div class="ci__actions">
+          <button nz-button nzSize="small" nzType="default"
+                  (click)="loadPreview()" [disabled]="importing || loadingPreview">
+            <span nz-icon nzType="eye" nzTheme="outline"></span>
+            {{ loadingPreview ? 'Loading...' : 'Preview' }}
+          </button>
+          <button nz-button nzSize="small" nzType="primary"
+                  (click)="startImport()" [disabled]="importing">
+            <span nz-icon nzType="upload" nzTheme="outline"></span>
+            Import
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="ci__right ci__right--empty" *ngIf="!selectedFile || !selectedContentType">
+        <span nz-icon nzType="select" nzTheme="outline" class="ci__empty-icon"></span>
+        <p>Select content type and JSON file to begin</p>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Import Result -->
+  <nz-card *ngIf="lastImportResult && (importErrors.length > 0 || importWarnings.length > 0)"
+           nzSize="small" [nzBordered]="true" class="ci__result-card">
+    <div class="ci__result-header">
+      <span>
+        <span nz-icon [nzType]="importErrors.length > 0 ? 'warning' : 'info-circle'" nzTheme="outline"
+              [style.color]="importErrors.length > 0 ? '#faad14' : '#1890ff'"></span>
+        Import Result
+      </span>
+      <button *ngIf="importErrors.length > 0" nz-button nzSize="small" nzType="default"
+              (click)="toggleErrorDetails()">
+        <span nz-icon [nzType]="showErrorDetails ? 'up' : 'down'" nzTheme="outline"></span>
+        {{ showErrorDetails ? 'Hide' : 'Show' }} Details ({{ importErrors.length }})
+      </button>
+    </div>
+
+    <!-- Summary -->
+    <div class="ci__result-summary">
+      <nz-tag *ngIf="lastImportResult.recordsImported > 0" nzColor="success">
+        <span nz-icon nzType="check-circle" nzTheme="outline"></span> {{ lastImportResult.recordsImported }} imported
+      </nz-tag>
+      <nz-tag *ngIf="lastImportResult.recordsUpdated > 0" nzColor="processing">
+        <span nz-icon nzType="sync" nzTheme="outline"></span> {{ lastImportResult.recordsUpdated }} updated
+      </nz-tag>
+      <nz-tag *ngIf="lastImportResult.recordsSkipped > 0" nzColor="default">
+        {{ lastImportResult.recordsSkipped }} skipped
+      </nz-tag>
+      <nz-tag *ngIf="lastImportResult.recordsFailed > 0" nzColor="error">
+        <span nz-icon nzType="close-circle" nzTheme="outline"></span> {{ lastImportResult.recordsFailed }} failed
+      </nz-tag>
+    </div>
+
+    <!-- Warnings -->
+    <nz-alert *ngFor="let warning of importWarnings"
+              nzType="warning" [nzMessage]="warning" nzShowIcon
+              class="ci__warning-item">
+    </nz-alert>
+
+    <!-- Error Details -->
+    <div *ngIf="showErrorDetails && importErrors.length > 0" class="ci__errors">
+      <div *ngFor="let error of importErrors" class="ci__error-item">
+        <div class="ci__error-header">
+          <nz-tag [nzColor]="getErrorTagColor(error.errorType)">{{ getErrorTypeLabel(error.errorType) }}</nz-tag>
+          <span class="ci__error-record">
+            Record #{{ error.recordIndex + 1 }}
+            <span *ngIf="error.recordIdentifier">({{ error.recordIdentifier }})</span>
+          </span>
+        </div>
+        <div class="ci__error-message">
+          <span *ngIf="error.field" class="ci__error-field">{{ error.field }}: </span>
+          {{ error.message }}
+        </div>
+      </div>
+    </div>
+
+    <div class="ci__result-actions">
+      <button nz-button nzSize="small" nzType="default" (click)="clearImportResult()">
+        <span nz-icon nzType="close" nzTheme="outline"></span> Dismiss
+      </button>
+    </div>
+  </nz-card>
+
+  <!-- Import History -->
+  <nz-card *ngIf="importHistory.length > 0" nzSize="small" [nzBordered]="true"
+           class="ci__history-card">
+    <div class="ci__history-title">
+      Import History <nz-tag>{{ importHistory.length }}</nz-tag>
+    </div>
+    <nz-list nzSize="small">
+      <nz-list-item *ngFor="let item of importHistory">
+        <nz-list-item-meta
+          [nzAvatar]="historyAvatar"
+          [nzTitle]="historyTitle"
+          [nzDescription]="historyDesc">
+          <ng-template #historyAvatar>
+            <nz-avatar [nzIcon]="item.status === 'Partial' ? 'warning' : 'check-circle'"
+                       [style.backgroundColor]="item.status === 'Partial' ? '#faad14' : '#52c41a'"
+                       nzSize="small">
+            </nz-avatar>
+          </ng-template>
+          <ng-template #historyTitle>
+            {{ item.contentTypeName }} — {{ item.fileName }}
+          </ng-template>
+          <ng-template #historyDesc>
+            <span>{{ item.recordsImported }} imported, {{ item.recordsSkipped }} skipped, {{ item.recordsUpdated }} updated</span>
+            <span *ngIf="item.recordsFailed > 0" style="color: #ff4d4f;"> / {{ item.recordsFailed }} failed</span>
+            &nbsp;&middot;&nbsp;
+            <nz-tag>{{ item.importMode }}</nz-tag>
+            <nz-tag [nzColor]="item.status === 'Partial' ? 'warning' : 'success'">{{ item.status }}</nz-tag>
+            <span style="color: #8c8c8c; font-size: 12px;">{{ item.importedAt | date:'short' }}</span>
+          </ng-template>
+        </nz-list-item-meta>
+      </nz-list-item>
+    </nz-list>
+  </nz-card>
+</div>

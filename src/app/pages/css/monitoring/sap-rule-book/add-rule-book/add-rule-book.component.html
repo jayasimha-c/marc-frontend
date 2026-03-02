@@ -1,0 +1,349 @@
+<div style="padding: 16px;">
+  <!-- Header Card -->
+  <nz-card>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()">
+          <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+        </button>
+        <span style="font-size: 16px; font-weight: 600;">
+          {{ formType === 'edit' ? 'Edit' : 'Add' }} Rule Book
+        </span>
+      </div>
+      <button *ngIf="formType !== 'view'" nz-button nzType="primary" (click)="onSave()">
+        <span nz-icon nzType="save" nzTheme="outline"></span>
+        Save
+      </button>
+    </div>
+
+    <form [formGroup]="form">
+      <div nz-row [nzGutter]="16">
+        <div nz-col nzSpan="6">
+          <nz-form-item>
+            <nz-form-control nzErrorTip="Name is required">
+              <div class="nz-float-label" [class.has-value]="form.get('name')?.value">
+                <input nz-input placeholder=" " formControlName="name" />
+                <label>Name</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col nzSpan="6">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label" [class.has-value]="form.get('description')?.value">
+                <input nz-input placeholder=" " formControlName="description" />
+                <label>Description</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col nzSpan="6">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label" [class.has-value]="form.get('ruleType')?.value">
+                <nz-select formControlName="ruleType" nzPlaceHolder=" ">
+                  <nz-option *ngFor="let entry of ruleTypeOptions" [nzValue]="entry[0]" [nzLabel]="entry[1]"></nz-option>
+                </nz-select>
+                <label>Rule Type</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col nzSpan="6">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label" [class.has-value]="form.get('securityLevel')?.value">
+                <nz-select formControlName="securityLevel" nzPlaceHolder=" ">
+                  <nz-option nzValue="LOW" nzLabel="Low"></nz-option>
+                  <nz-option nzValue="MEDIUM" nzLabel="Medium"></nz-option>
+                  <nz-option nzValue="HIGH" nzLabel="High"></nz-option>
+                </nz-select>
+                <label>Security Level</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <!-- Tabs -->
+  <nz-card style="margin-top: 16px;">
+    <nz-tabset (nzSelectChange)="$event.index === 1 && loadAssignments()">
+
+      <!-- Tab 1: Rules -->
+      <nz-tab nzTitle="Rules">
+        <div nz-row [nzGutter]="16" style="margin-top: 16px;">
+          <!-- Left: Rules Catalogue -->
+          <div nz-col nzSpan="16">
+            <nz-card nzSize="small" [nzTitle]="catalogueTitleTpl">
+              <ng-template #catalogueTitleTpl>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <span>Rules Catalogue <nz-tag>{{ catalogueRules.length }}</nz-tag></span>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <nz-input-group [nzPrefix]="searchIconTpl" nzSize="small" style="width: 200px;">
+                      <input nz-input placeholder="Search..." [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput()" />
+                    </nz-input-group>
+                    <ng-template #searchIconTpl><span nz-icon nzType="search"></span></ng-template>
+                    <button *ngIf="formType !== 'view'" nz-button nzType="primary" nzSize="small"
+                            [disabled]="catalogueChecked.size === 0"
+                            (click)="onAddSelected()">
+                      <span nz-icon nzType="plus"></span>
+                      Add ({{ catalogueChecked.size }})
+                    </button>
+                  </div>
+                </div>
+              </ng-template>
+
+              <nz-spin [nzSpinning]="loading">
+                <nz-table #catalogueTable
+                  [nzData]="catalogueRules"
+                  nzSize="small"
+                  [nzShowPagination]="catalogueRules.length > 10"
+                  [nzPageSize]="10"
+                  nzTableLayout="fixed"
+                  [nzScroll]="{ y: '360px' }">
+                  <thead>
+                    <tr>
+                      <th nzWidth="40px">
+                        <label nz-checkbox [nzChecked]="allCatalogueChecked" [nzIndeterminate]="someCatalogueChecked"
+                               (nzCheckedChange)="onCatalogueCheckAll($event)"></label>
+                      </th>
+                      <th>Rule</th>
+                      <th>Description</th>
+                      <th nzWidth="120px">Category</th>
+                      <th nzWidth="100px">Criticality</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let rule of catalogueTable.data">
+                      <td>
+                        <label nz-checkbox [nzChecked]="catalogueChecked.has(rule.uid)"
+                               (nzCheckedChange)="onCatalogueCheckChange(rule.uid, $event)"></label>
+                      </td>
+                      <td nzEllipsis>{{ rule.name }}</td>
+                      <td nzEllipsis>{{ rule.description }}</td>
+                      <td nzEllipsis>{{ rule.category }}</td>
+                      <td>
+                        <nz-tag [nzColor]="getSeverityColor(rule.criticality)">{{ rule.criticality || '-' }}</nz-tag>
+                      </td>
+                    </tr>
+                  </tbody>
+                </nz-table>
+              </nz-spin>
+            </nz-card>
+          </div>
+
+          <!-- Right: Selected Rules -->
+          <div nz-col nzSpan="8">
+            <nz-card nzSize="small" [nzTitle]="selectedTitleTpl" [nzExtra]="selectedExtraTpl">
+              <ng-template #selectedTitleTpl>
+                <span>Rules Selected</span>
+                <nz-tag *ngIf="selectedRules.length > 0" nzColor="blue" style="margin-left: 8px;">{{ selectedRules.length }}</nz-tag>
+              </ng-template>
+              <ng-template #selectedExtraTpl>
+                <button *ngIf="selectedRules.length > 0 && formType !== 'view'" nz-button nzType="text" nzSize="small" nzDanger
+                        nz-tooltip nzTooltipTitle="Remove selected" (click)="onRemoveSelected()">
+                  <span nz-icon nzType="delete"></span>
+                </button>
+              </ng-template>
+
+              <nz-table *ngIf="selectedRules.length > 0"
+                #selectedTable
+                [nzData]="selectedRules"
+                nzSize="small"
+                [nzShowPagination]="selectedRules.length > 10"
+                [nzPageSize]="10"
+                [nzShowSizeChanger]="false"
+                nzTableLayout="fixed"
+                [nzScroll]="{ y: '360px' }">
+                <thead>
+                  <tr>
+                    <th>Rule Name</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let rule of selectedTable.data"
+                      [class.selected-row]="selectedRowUid === rule.uid"
+                      (click)="onSelectedRowClick(rule)"
+                      style="cursor: pointer;">
+                    <td nzEllipsis>{{ rule.name }}</td>
+                  </tr>
+                </tbody>
+              </nz-table>
+
+              <nz-empty *ngIf="selectedRules.length === 0"
+                        nzNotFoundContent="No rules added yet"
+                        [nzNotFoundImage]="'simple'"
+                        style="padding: 60px 0;"></nz-empty>
+            </nz-card>
+          </div>
+        </div>
+      </nz-tab>
+
+      <!-- Tab 2: Systems & Schedules -->
+      <nz-tab [nzTitle]="systemsTabTitle" [nzDisabled]="!book?.id">
+        <ng-template #systemsTabTitle>Systems & Schedules</ng-template>
+
+        <div style="margin-top: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-weight: 600;">System Assignments</span>
+            <div style="display: flex; gap: 8px;">
+              <button nz-button nzType="primary" nzSize="small" (click)="onAddAssignment()">
+                <span nz-icon nzType="plus"></span> Add System
+              </button>
+              <button nz-button nzSize="small" (click)="onEditAssignment()" [disabled]="!assignmentSelected">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" (click)="onRunAssignmentNow()" [disabled]="!assignmentSelected"
+                      nz-tooltip nzTooltipTitle="Run Now">
+                <span nz-icon nzType="caret-right"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="onDeleteAssignment()" [disabled]="!assignmentSelected">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </div>
+          </div>
+
+          <nz-table *ngIf="assignments.length > 0"
+            #assignmentTable
+            [nzData]="assignments"
+            nzSize="small"
+            [nzShowPagination]="false"
+            nzTableLayout="fixed">
+            <thead>
+              <tr>
+                <th>System</th>
+                <th nzWidth="100px">Status</th>
+                <th nzWidth="100px">Scheduled</th>
+                <th nzWidth="120px">Interval</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of assignmentTable.data"
+                  [class.selected-row]="assignmentSelected?.id === a.id"
+                  (click)="assignmentSelected = a"
+                  style="cursor: pointer;">
+                <td>{{ a.sapSystemName || a.sapSystemId }}</td>
+                <td>
+                  <nz-tag [nzColor]="a.status === 'ACTIVE' ? 'green' : a.status === 'ERROR' ? 'red' : 'default'">
+                    {{ a.status || '-' }}
+                  </nz-tag>
+                </td>
+                <td>{{ a.repeatPeriodically ? 'Yes' : 'No' }}</td>
+                <td>{{ formatInterval(a) }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+
+          <nz-empty *ngIf="assignments.length === 0"
+                    nzNotFoundContent="No systems assigned yet"
+                    [nzNotFoundImage]="'simple'"
+                    style="padding: 40px 0;"></nz-empty>
+        </div>
+      </nz-tab>
+
+    </nz-tabset>
+  </nz-card>
+</div>
+
+<!-- Rule Detail Side Panel -->
+<app-side-panel #detailsPanel title="Rule Details" [loading]="drawerLoading">
+  <div panel-content *ngIf="drawerRule">
+    <nz-divider nzText="Basic Information" nzOrientation="left"></nz-divider>
+    <nz-descriptions [nzColumn]="1" nzSize="small" nzBordered>
+      <nz-descriptions-item nzTitle="Rule ID">{{ drawerRule?.code || drawerRule?.id || '-' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Rule Name">{{ drawerRule?.name || drawerRule?.ruleName || '-' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Severity">
+        <nz-tag [nzColor]="getSeverityColor(drawerRule?.severity || drawerRule?.errorStatus)">
+          {{ drawerRule?.severity || drawerRule?.errorStatus || '-' }}
+        </nz-tag>
+      </nz-descriptions-item>
+      <nz-descriptions-item *ngIf="drawerRule?.tag" nzTitle="Category">{{ drawerRule?.tag }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Parameter Type">{{ getParameterTypeLabel(drawerRule?.parameterType) || '-' }}</nz-descriptions-item>
+      <nz-descriptions-item *ngIf="drawerRule?.parameterSubType" nzTitle="Sub Type">{{ drawerRule?.parameterSubType }}</nz-descriptions-item>
+    </nz-descriptions>
+
+    <!-- Parameter Info -->
+    <ng-container *ngIf="drawerRule?.parameter">
+      <nz-divider nzText="Parameter Information" nzOrientation="left"></nz-divider>
+      <nz-descriptions [nzColumn]="1" nzSize="small" nzBordered>
+        <nz-descriptions-item nzTitle="Parameter Name">{{ drawerRule?.parameter?.parameterName || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item *ngIf="drawerRule?.parameter?.description" nzTitle="Description">{{ drawerRule?.parameter?.description }}</nz-descriptions-item>
+      </nz-descriptions>
+    </ng-container>
+
+    <!-- Conditions -->
+    <ng-container *ngIf="drawerRule?.conditions?.length > 0">
+      <nz-divider nzText="Rule Conditions" nzOrientation="left"></nz-divider>
+      <nz-table [nzData]="drawerRule.conditions" nzSize="small" [nzShowPagination]="false" nzTableLayout="fixed">
+        <thead>
+          <tr>
+            <th nzWidth="40px">#</th>
+            <th>Type</th>
+            <th>Values</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of drawerRule.conditions; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ c.conditionType }}</td>
+            <td nzEllipsis>{{ c.values?.join(', ') || '-' }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </ng-container>
+
+    <!-- Field Conditions -->
+    <ng-container *ngIf="drawerRule?.fieldRuleConditions?.length > 0">
+      <nz-divider nzText="Field Conditions" nzOrientation="left"></nz-divider>
+      <nz-table [nzData]="drawerRule.fieldRuleConditions" nzSize="small" [nzShowPagination]="false" nzTableLayout="fixed">
+        <thead>
+          <tr>
+            <th nzWidth="40px">#</th>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Values</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of drawerRule.fieldRuleConditions; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ c.field }}</td>
+            <td>{{ c.conditionType }}</td>
+            <td nzEllipsis>{{ c.values?.join(', ') || '-' }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </ng-container>
+
+    <!-- Linked Controls -->
+    <nz-divider nzText="Linked Security Controls" nzOrientation="left"></nz-divider>
+    <ng-container *ngIf="drawerRule?.requirementNodes?.length > 0; else noControls">
+      <nz-table [nzData]="drawerRule.requirementNodes" nzSize="small" [nzShowPagination]="false" nzTableLayout="fixed">
+        <thead>
+          <tr>
+            <th nzWidth="120px">Control ID</th>
+            <th>Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ctrl of drawerRule.requirementNodes">
+            <td>{{ ctrl.code || ctrl.nodeId }}</td>
+            <td nzEllipsis>{{ ctrl.name || ctrl.title }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </ng-container>
+    <ng-template #noControls>
+      <nz-empty nzNotFoundContent="No security controls linked" [nzNotFoundImage]="'simple'"></nz-empty>
+    </ng-template>
+
+    <!-- Description -->
+    <ng-container *ngIf="drawerRule?.description">
+      <nz-divider nzText="Description" nzOrientation="left"></nz-divider>
+      <p style="white-space: pre-wrap; font-size: 13px;">{{ drawerRule?.description }}</p>
+    </ng-container>
+  </div>
+</app-side-panel>

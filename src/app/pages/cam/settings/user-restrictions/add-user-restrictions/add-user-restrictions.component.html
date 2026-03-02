@@ -1,0 +1,31 @@
+<form nz-form nzLayout="vertical" [formGroup]="form">
+  <nz-form-item>
+    <nz-form-label nzRequired>SAP System</nz-form-label>
+    <nz-form-control nzErrorTip="Please select a SAP System">
+      <nz-select formControlName="sapSystem" nzPlaceHolder="Select SAP System" nzShowSearch>
+        <nz-option
+          *ngFor="let item of sapSysList"
+          [nzValue]="item?.id"
+          [nzLabel]="item?.description"
+        ></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-label nzRequired>User IDs</nz-form-label>
+    <nz-form-control nzErrorTip="Please enter User IDs" nzExtra="Enter multiple User IDs separated by comma, space, or newline">
+      <textarea
+        nz-input
+        formControlName="userIds"
+        placeholder="Enter or paste User IDs"
+        [nzAutosize]="{ minRows: 5, maxRows: 10 }"
+      ></textarea>
+    </nz-form-control>
+  </nz-form-item>
+</form>
+
+<div nz-row nzJustify="end" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+  <button nz-button nzType="default" (click)="close()" style="margin-right: 8px;">Close</button>
+  <button nz-button nzType="primary" (click)="save()">Save</button>
+</div>

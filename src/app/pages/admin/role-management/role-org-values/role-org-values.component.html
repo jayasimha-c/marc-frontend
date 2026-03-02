@@ -1,0 +1,154 @@
+<div class="rov">
+  <nz-card nzSize="small" nzTitle="Role Org Values" [nzExtra]="cardExtra">
+    <ng-template #cardExtra>
+      <nz-space>
+        <!-- Inline Stats -->
+        <ng-container *nzSpaceItem>
+          <span class="rov__stats" *ngIf="pivotData && !loading && selectedSystemId">
+            <span>{{ pivotData.totalRoles }} roles</span>
+            <nz-divider nzType="vertical"></nz-divider>
+            <span>{{ pivotData.totalOrgValues }} values</span>
+            <nz-divider nzType="vertical"></nz-divider>
+            <span>{{ pivotData.allFields?.length || 0 }} fields</span>
+          </span>
+        </ng-container>
+
+        <!-- SAP System Selector -->
+        <span *nzSpaceItem>
+          <nz-select nzPlaceHolder="Select SAP System" style="width: 220px;" nzSize="small"
+                     [(ngModel)]="selectedSystemId" (ngModelChange)="onSystemChange()"
+                     [nzLoading]="loadingSystems" nzShowSearch>
+            <nz-option *ngFor="let sys of sapSystems" [nzValue]="sys.id"
+                       [nzLabel]="sys.destinationName"></nz-option>
+          </nz-select>
+        </span>
+
+        <!-- Refresh -->
+        <button *nzSpaceItem nz-button nzSize="small" nzType="text" (click)="refresh()"
+                [disabled]="!selectedSystemId || loading" nz-tooltip nzTooltipTitle="Refresh">
+          <span nz-icon nzType="reload" nzTheme="outline"></span>
+        </button>
+      </nz-space>
+    </ng-template>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="rov__split">
+      <div class="rov__left">
+        <div class="rov__empty-state"><nz-spin nzSimple></nz-spin><p>Loading...</p></div>
+      </div>
+      <div class="rov__right">
+        <div class="rov__empty-state"><nz-spin nzSimple></nz-spin><p>Loading org values...</p></div>
+      </div>
+    </div>
+
+    <!-- No System Selected -->
+    <div *ngIf="!selectedSystemId && !loading" class="rov__empty">
+      <nz-empty nzNotFoundContent="Select a SAP system to view role org values"></nz-empty>
+    </div>
+
+    <!-- No Data -->
+    <div *ngIf="selectedSystemId && !loading && pivotData && pivotData.totalOrgValues === 0" class="rov__empty">
+      <nz-empty nzNotFoundContent="No org values synced. Enable 'Sync Organizational Values (AGR_1252)' in Role Sync scheduler."></nz-empty>
+    </div>
+
+    <!-- Main Content -->
+    <div *ngIf="selectedSystemId && !loading && pivotData && pivotData.totalOrgValues > 0" class="rov__split">
+
+      <!-- Left: Role List -->
+      <div class="rov__left">
+        <nz-input-group nzSize="small" [nzPrefix]="searchIcon" [nzSuffix]="searchCountTpl" class="rov__search">
+          <input nz-input nzSize="small" placeholder="Search roles..."
+                 [ngModel]="roleSearch" (ngModelChange)="onSearchChange($event)">
+        </nz-input-group>
+        <ng-template #searchIcon><span nz-icon nzType="search"></span></ng-template>
+        <ng-template #searchCountTpl>
+          <span *ngIf="filteredRoles.length !== pivotData.roles.length" class="rov__search-count">
+            {{ filteredRoles.length }}/{{ pivotData.roles.length }}
+          </span>
+        </ng-template>
+
+        <div class="rov__role-list">
+          <div *ngFor="let role of filteredRoles"
+               class="rov__role-item"
+               [class.rov__role-item--selected]="selectedRole?.roleName === role.roleName"
+               (click)="selectRole(role)">
+            <div class="rov__role-info">
+              <div class="rov__role-name-row">
+                <span class="rov__role-name">{{ role.roleName }}</span>
+                <span *ngIf="role.composite" nz-icon nzType="apartment" nzTheme="outline"
+                      class="rov__composite-icon" nz-tooltip nzTooltipTitle="Composite"></span>
+              </div>
+              <div *ngIf="role.roleDesc" class="rov__role-desc">{{ role.roleDesc }}</div>
+            </div>
+            <span class="rov__role-count">{{ role.orgValueCount }}</span>
+          </div>
+
+          <div *ngIf="filteredRoles.length === 0" class="rov__no-roles">
+            No roles found
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Org Values -->
+      <div class="rov__right">
+        <!-- No Role Selected -->
+        <div *ngIf="!selectedRole" class="rov__empty-state">
+          <span nz-icon nzType="select" nzTheme="outline" style="font-size: 28px; color: #bfbfbf;"></span>
+          <p>Select a role to view org values</p>
+        </div>
+
+        <!-- Role Selected -->
+        <ng-container *ngIf="selectedRole">
+          <!-- Detail Header -->
+          <div class="rov__detail-header">
+            <div class="rov__detail-title">
+              <span class="rov__detail-role">{{ selectedRole.roleName }}</span>
+              <span *ngIf="selectedRole.roleDesc" class="rov__detail-desc">{{ selectedRole.roleDesc }}</span>
+            </div>
+            <nz-input-group nzSize="small" [nzPrefix]="filterIcon" style="width: 180px;">
+              <input nz-input nzSize="small" placeholder="Filter fields..." [(ngModel)]="fieldFilter">
+            </nz-input-group>
+            <ng-template #filterIcon><span nz-icon nzType="filter" nzTheme="outline"></span></ng-template>
+          </div>
+
+          <!-- Loading Role Data -->
+          <div *ngIf="loadingRoleData" class="rov__empty-state">
+            <nz-spin nzSimple></nz-spin><p>Loading...</p>
+          </div>
+
+          <!-- Pivot Table -->
+          <div *ngIf="!loadingRoleData && selectedRolePivot">
+            <nz-table #orgTable [nzData]="getFieldsForDisplay()" nzSize="small"
+                      [nzShowPagination]="false" nzFrontPagination>
+              <thead>
+                <tr>
+                  <th nzWidth="140px">Field</th>
+                  <th nzWidth="200px">Description</th>
+                  <th>Values</th>
+                  <th nzWidth="50px">#</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let field of orgTable.data" style="cursor: pointer;" (click)="openValuesModal(field)">
+                  <td><strong class="rov__field-name">{{ field }}</strong></td>
+                  <td class="rov__field-desc-cell">{{ getFieldDescription(field) }}</td>
+                  <td class="rov__values">
+                    {{ selectedRolePivot.fieldValues[field] }}
+                  </td>
+                  <td>
+                    <nz-tag nzColor="blue">{{ getValueCount(field) }}</nz-tag>
+                  </td>
+                </tr>
+              </tbody>
+            </nz-table>
+
+            <div *ngIf="getFieldsForDisplay().length === 0" class="rov__no-roles" style="margin-top: 16px;">
+              <span *ngIf="fieldFilter">No fields match "{{ fieldFilter }}"</span>
+              <span *ngIf="!fieldFilter">No org values</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </nz-card>
+</div>

@@ -1,0 +1,102 @@
+<!-- Job Summary -->
+<div class="job-logs__summary">
+  <div class="job-logs__summary-grid">
+    <div class="job-logs__summary-item">
+      <span class="job-logs__label">Scheduler:</span>
+      <span class="job-logs__value">{{ job.schedulerName || 'Manual' }}</span>
+    </div>
+    <div class="job-logs__summary-item">
+      <span class="job-logs__label">Sync Type:</span>
+      <span class="job-logs__value">{{ job.syncType }}</span>
+    </div>
+    <div class="job-logs__summary-item">
+      <span class="job-logs__label">Mode:</span>
+      <span class="job-logs__value">{{ job.syncMode }}</span>
+    </div>
+    <div class="job-logs__summary-item">
+      <span class="job-logs__label">Status:</span>
+      <span class="job-logs__value" [ngClass]="getStatusClass(job.status)">{{ job.status }}</span>
+    </div>
+    <div class="job-logs__summary-item">
+      <span class="job-logs__label">SAP System:</span>
+      <span class="job-logs__value">{{ job.sapSystem }}</span>
+    </div>
+    <div class="job-logs__summary-item">
+      <span class="job-logs__label">Started:</span>
+      <span class="job-logs__value">{{ formatDateTime(job.startedOn) }}</span>
+    </div>
+    <div class="job-logs__summary-item">
+      <span class="job-logs__label">Completed:</span>
+      <span class="job-logs__value">{{ formatDateTime(job.completedOn) }}</span>
+    </div>
+    <div class="job-logs__summary-item">
+      <span class="job-logs__label">Duration:</span>
+      <span class="job-logs__value">{{ job.duration || '-' }}</span>
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div class="job-logs__stats">
+    <div class="job-logs__stats-grid">
+      <div class="job-logs__stat">
+        <div class="job-logs__stat-value job-logs__stat-value--blue">{{ job.recordsExtracted }}</div>
+        <div class="job-logs__stat-label">Extracted</div>
+      </div>
+      <div class="job-logs__stat">
+        <div class="job-logs__stat-value job-logs__stat-value--green">{{ job.recordsInserted }}</div>
+        <div class="job-logs__stat-label">Inserted</div>
+      </div>
+      <div class="job-logs__stat">
+        <div class="job-logs__stat-value job-logs__stat-value--orange">{{ job.recordsUpdated }}</div>
+        <div class="job-logs__stat-label">Updated</div>
+      </div>
+      <div class="job-logs__stat">
+        <div class="job-logs__stat-value job-logs__stat-value--red">{{ job.recordsDeleted }}</div>
+        <div class="job-logs__stat-label">Deleted</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="job.errorMessage" class="job-logs__error-banner">
+    <span nz-icon nzType="exclamation-circle" nzTheme="outline" class="job-logs__error-icon"></span>
+    <div class="job-logs__error-text">{{ job.errorMessage }}</div>
+  </div>
+</div>
+
+<!-- Loading Spinner -->
+<div *ngIf="loading" class="job-logs__loading">
+  <nz-spin nzSimple></nz-spin>
+</div>
+
+<!-- Log Entries -->
+<div *ngIf="!loading" class="job-logs__logs">
+  <h4 class="job-logs__logs-title">Execution Log</h4>
+
+  <div *ngIf="logs.length === 0" class="job-logs__no-logs">
+    No log entries found for this job.
+  </div>
+
+  <div *ngIf="logs.length > 0" class="job-logs__log-list">
+    <div *ngFor="let log of logs"
+         class="job-logs__log-entry"
+         [class.job-logs__log-entry--error]="log.isError">
+      <div class="job-logs__log-row">
+        <span *ngIf="log.isError" nz-icon nzType="exclamation-circle" nzTheme="outline" class="job-logs__log-icon job-logs__log-icon--error"></span>
+        <span *ngIf="!log.isError" nz-icon nzType="info-circle" nzTheme="outline" class="job-logs__log-icon job-logs__log-icon--info"></span>
+        <div class="job-logs__log-content">
+          <div class="job-logs__log-meta">
+            <span class="job-logs__log-time">{{ formatDateTime(log.createdOn) }}</span>
+            <span *ngIf="log.tableName" class="job-logs__log-table">{{ log.tableName }}</span>
+          </div>
+          <div class="job-logs__log-message" [class.job-logs__log-message--error]="log.isError">{{ log.message }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="close()">Close</button>
+</div>

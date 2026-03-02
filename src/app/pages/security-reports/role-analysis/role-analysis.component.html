@@ -1,0 +1,128 @@
+<app-page-panel title="Role Analysis" description="Analyze roles with multiple filter criteria"
+    icon="fund-projection-screen">
+
+    <div nz-row [nzGutter]="[24, 24]" class="mt-4">
+
+        <!-- Header Controls -->
+        <div nz-col nzSpan="24" class="flex justify-between items-center bg-white p-3 rounded shadow-sm">
+            <button nz-button nzType="link" (click)="goBack()">
+                <span nz-icon nzType="arrow-left"></span> Back to Dashboard
+            </button>
+        </div>
+
+        <!-- Filter Chips Section -->
+        <div nz-col nzSpan="24" *ngIf="!loadingSystems">
+            <nz-card nzSize="small" nzTitle="Query Filters" [nzExtra]="clearTemplate" class="shadow-sm">
+
+                <ng-template #clearTemplate>
+                    <button nz-button nzType="link" nzDanger (click)="clearFilters()" *ngIf="hasSelectedFilters"
+                        class="text-xs">Clear All</button>
+                </ng-template>
+
+                <!-- Filter Chips & Search Actions Row -->
+                <div class="flex flex-wrap items-center gap-2 mb-3">
+                    <nz-tag *ngFor="let chip of filterChips" nzMode="checkable" [nzChecked]="chip.selected"
+                        (nzCheckedChange)="toggleFilter(chip)" [nzColor]="chip.selected ? 'blue' : 'default'"
+                        class="px-3 py-1 text-sm border cursor-pointer select-none">
+                        <span nz-icon [nzType]="chip.icon" class="mr-1"></span> {{ chip.label }}
+                    </nz-tag>
+
+                    <!-- System Selector & Actions Inline -->
+                    <nz-select [(ngModel)]="selectedSystemId" (ngModelChange)="onSystemChange()"
+                        nzPlaceHolder="SAP System" class="w-48 ml-2" nzAllowClear [nzDisabled]="!hasSelectedFilters">
+                        <nz-option *ngFor="let system of systems" [nzValue]="system.id"
+                            [nzLabel]="system.sid + ' - ' + system.destinationName"></nz-option>
+                    </nz-select>
+                    <button nz-button nzType="primary" (click)="triggerSearch()"
+                        [disabled]="!hasSelectedFilters || !selectedSystemId">
+                        <span nz-icon nzType="search"></span> Retrieve
+                    </button>
+                </div>
+
+                <!-- Custom Parameters Row -->
+                <div *ngIf="showTcodeThreshold || showDaysThreshold || showPatternInput"
+                    class="flex items-center gap-4 pt-3 border-t">
+                    <div *ngIf="showTcodeThreshold">
+                        <label class="text-xs font-bold block mb-1">Tcode Threshold</label>
+                        <nz-input-number [(ngModel)]="tcodeThreshold" [nzMin]="1" [nzMax]="500"
+                            class="w-32"></nz-input-number>
+                    </div>
+                    <div *ngIf="showDaysThreshold">
+                        <label class="text-xs font-bold block mb-1">Days Limit</label>
+                        <nz-input-number [(ngModel)]="daysThreshold" [nzMin]="1" [nzMax]="365"
+                            class="w-32"></nz-input-number>
+                    </div>
+                    <div *ngIf="showPatternInput">
+                        <label class="text-xs font-bold block mb-1">Role Pattern (*)</label>
+                        <input nz-input [(ngModel)]="roleNamePattern" placeholder="Ex: Z_ROLE_*" class="w-48" />
+                    </div>
+                </div>
+
+            </nz-card>
+        </div>
+
+        <!-- Advanced Table Grid -->
+        <div nz-col nzSpan="24" *ngIf="!loadingSystems && selectedSystemId && hasSelectedFilters">
+            <nz-card nzSize="small" class="shadow-sm">
+
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-semibold text-gray-700">
+                        {{ totalRecords }} Roles Matching Criteria
+                    </span>
+                    <span class="text-sm text-gray-500 italic">
+                        <ng-container *ngIf="isNonCompliantNamingSelected; else childRolesHint">
+                            <span nz-icon nzType="info-circle" nzTheme="outline" class="mr-1"></span>
+                            Click on any row to view its explicit naming violations.
+                        </ng-container>
+                        <ng-template #childRolesHint>
+                            <span nz-icon nzType="info-circle" nzTheme="outline" class="mr-1"></span>
+                            Click on 'Children' link values to view composite relationships.
+                        </ng-template>
+                    </span>
+                </div>
+
+                <app-advanced-table [data]="rows" [columns]="tableColumns" [total]="totalRecords" [loading]="loading"
+                    [showPagination]="true" [pageSizeOptions]="[20, 50, 100]" (queryParams)="onTableChange($event)"
+                    (rowClick)="onRowClick($event)">
+                </app-advanced-table>
+            </nz-card>
+        </div>
+
+    </div>
+</app-page-panel>
+
+<!-- Side Panels (Replaced nz-side-panel) -->
+<app-side-panel #childRolesPanel [title]="'Child Roles Container'" [subtitle]="selectedRole?.roleName" width="500px">
+    <div panel-content class="p-4" *ngIf="selectedRole">
+        <app-advanced-table [data]="childRolesTableData" [columns]="childRolesColumns" [showPagination]="true"
+            [loading]="false" [total]="childRolesTableData.length">
+        </app-advanced-table>
+    </div>
+</app-side-panel>
+
+<app-side-panel #violationsPanel [title]="'Naming Policy Violations'" [subtitle]="selectedViolationRole?.roleName"
+    width="650px">
+
+    <div panel-content class="p-4" *ngIf="selectedViolationRole">
+        <div class="mb-6">
+            <div class="mb-4">
+                <p class="mb-2"><strong class="text-sm">Matched Config Template:</strong> <span class="text-gray-600">{{
+                        selectedViolationRole?.matchedTemplateName || 'N/A' }}</span></p>
+                <p><strong class="text-sm">Composite Layout:</strong> <span class="text-gray-600">{{
+                        selectedViolationRole?.isComposite ? 'Yes' : 'No' }}</span></p>
+            </div>
+
+            <h4 class="font-semibold text-[15px] mb-3">Violations Captured</h4>
+
+            <button nz-button nzType="default" nzSize="small" (click)="copyViolationsToClipboard()"
+                class="mb-4 flex items-center">
+                <span nz-icon nzType="copy"></span> Copy
+            </button>
+        </div>
+
+        <app-advanced-table [data]="violationsTableData" [columns]="violationsColumns" [showPagination]="false"
+            [loading]="false" [total]="violationsTableData.length">
+        </app-advanced-table>
+    </div>
+
+</app-side-panel>

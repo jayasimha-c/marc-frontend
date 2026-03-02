@@ -1,0 +1,14 @@
+<app-advanced-table
+  title="Job Schedule"
+  [data]="data"
+  [columns]="columns"
+  [actions]="actions"
+  [loading]="loading"
+  [serverSide]="true"
+  [totalRecords]="totalRecords"
+  [showSelection]="true"
+  [showSearch]="true"
+  scrollY="65vh"
+  (queryParamsChange)="onQueryChange($event)"
+  (selectionChange)="onSelectionChange($event)"
+></app-advanced-table>

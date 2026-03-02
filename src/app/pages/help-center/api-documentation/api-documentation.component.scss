@@ -1,0 +1,91 @@
+/* API Documentation Custom Styles */
+
+:host {
+    display: block;
+}
+
+.api-doc-layout {
+    min-height: calc(100vh - 180px);
+}
+
+.api-doc-sider {
+    background-color: white;
+
+    /* Hide the default trigger if present */
+    ::ng-deep .ant-layout-sider-trigger {
+        display: none !important;
+    }
+}
+
+.dark .api-doc-sider {
+    background-color: #141414;
+}
+
+/* Custom Scrollbars for Terminal views */
+pre {
+    scrollbar-width: thin;
+    scrollbar-color: #4b5563 #1e1e1e;
+}
+
+pre::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+}
+
+pre::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+pre::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+    border-radius: 6px;
+}
+
+pre::-webkit-scrollbar-thumb:hover {
+    background-color: #6b7280;
+}
+
+/* Smooth layout transitions */
+.endpoint-header {
+    transition: all 0.2s ease-in-out;
+}
+
+.endpoint-header:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background-color: #ffffff;
+    border-color: #d9d9d9;
+}
+
+.dark .endpoint-header:hover {
+    background-color: #1f1f1f;
+    border-color: #374151;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Adjust tag sizing */
+::ng-deep .ant-tag {
+    font-weight: 600;
+}
+
+::ng-deep .ant-descriptions-item-label {
+    font-weight: 600 !important;
+    color: #4b5563 !important;
+}
+
+.dark ::ng-deep .ant-descriptions-item-label {
+    color: #9ca3af !important;
+}
+
+::ng-deep .ant-descriptions-item-label,
+::ng-deep .ant-descriptions-item-content {
+    padding: 16px 24px !important;
+}
+
+::ng-deep .ant-table-thead>tr>th,
+::ng-deep .ant-table-tbody>tr>td {
+    padding: 16px 24px !important;
+}
+
+::ng-deep .ant-table-thead>tr>th {
+    font-size: 13px !important;
+}

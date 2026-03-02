@@ -1,0 +1,145 @@
+.role-concept__container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  height: 100%;
+
+  .role-concept__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 4px 0 0;
+      color: rgba(0, 0, 0, 0.45);
+      font-size: 14px;
+    }
+  }
+
+  .role-concept__content {
+    flex: 1 1 auto;
+    padding: 24px;
+    overflow: auto;
+  }
+}
+
+.segments__container {
+  margin-top: 16px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 16px;
+
+  .segments__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+
+    h4 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.85);
+    }
+  }
+
+  .segments__empty {
+    text-align: center;
+    color: rgba(0, 0, 0, 0.45);
+    padding: 24px 0;
+    font-style: italic;
+  }
+}
+
+.segment__item {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #f0f0f0;
+
+  .segment__item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
+    .font-medium {
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.85);
+    }
+
+    .segment__actions {
+      display: flex;
+      gap: 4px;
+    }
+  }
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
+.mt-2 {
+  margin-top: 8px;
+}
+.block {
+  display: block;
+}
+
+// Float label styles if they don't exist globally
+.nz-float-label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  label {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    transition: all 0.2s ease-out;
+    color: rgba(0, 0, 0, 0.45);
+    font-size: 14px;
+    background: transparent;
+    padding: 0 4px;
+    z-index: 1;
+  }
+
+  &.has-value label,
+  &:focus-within label {
+    top: 0;
+    transform: translateY(-50%) scale(0.85);
+    transform-origin: left top;
+    color: #1890ff;
+    background: white;
+  }
+
+  nz-select, input {
+    width: 100%;
+  }
+
+  nz-select {
+    ::ng-deep .ant-select-selector {
+      height: 40px !important;
+      padding-top: 8px !important;
+      align-items: center;
+    }
+  }
+
+  input {
+    height: 40px;
+    padding-top: 12px;
+    padding-bottom: 4px;
+  }
+}

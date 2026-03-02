@@ -1,0 +1,58 @@
+<div style="padding: 0 16px;">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+    <span style="font-weight: 600;">Available Users</span>
+    <nz-button-group>
+      <button nz-button nzSize="small" nzType="primary" [disabled]="selectedItems.length === 0" (click)="saveSelected()">
+        <span nz-icon nzType="check" nzTheme="outline"></span> Add Selected
+      </button>
+      <button nz-button nzSize="small" (click)="saveAll()">
+        <span nz-icon nzType="double-right" nzTheme="outline"></span> Add All
+      </button>
+      <button nz-button nzSize="small" (click)="loadData()">
+        <span nz-icon nzType="reload" nzTheme="outline"></span>
+      </button>
+    </nz-button-group>
+  </div>
+
+  <nz-input-group nzSize="small" [nzSuffix]="userModalSearchIcon" style="margin-bottom: 8px; max-width: 280px;">
+    <input nz-input placeholder="Search users..." [(ngModel)]="searchText" (keyup.enter)="onSearch()" />
+  </nz-input-group>
+  <ng-template #userModalSearchIcon>
+    <span nz-icon nzType="search" style="cursor: pointer;" (click)="onSearch()"></span>
+  </ng-template>
+
+  <nz-table #selectUserTable [nzData]="items" nzSize="small"
+            [nzFrontPagination]="false"
+            [nzTotal]="totalRecords"
+            [nzPageIndex]="currentPage"
+            [nzPageSize]="pageSize"
+            (nzPageIndexChange)="onPageChange($event)"
+            nzTableLayout="fixed"
+            [nzScroll]="{ y: '50vh' }">
+    <thead>
+      <tr>
+        <th nzWidth="40px" [nzChecked]="allChecked" (nzCheckedChange)="onAllChecked($event)"></th>
+        <th>User ID</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Group</th>
+        <th>Lock</th>
+        <th>Valid To</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of selectUserTable.data">
+        <td [nzChecked]="isChecked(row)" (nzCheckedChange)="onItemChecked(row, $event)"></td>
+        <td style="color: #1890ff;">{{ row.bname }}</td>
+        <td>{{ row.userName }}</td>
+        <td>{{ row.ustyp }}</td>
+        <td>{{ row.clas }}</td>
+        <td>{{ row.uflag }}</td>
+        <td>{{ row.gltgbInDateFmt }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</div>
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+</div>

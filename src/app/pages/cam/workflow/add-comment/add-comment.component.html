@@ -1,0 +1,33 @@
+<form nz-form [formGroup]="form" nzLayout="vertical">
+    <nz-form-item>
+        <nz-form-label nzRequired>Comment</nz-form-label>
+        <nz-form-control nzErrorTip="Comment is required">
+            <textarea nz-input formControlName="comment" placeholder="Enter your comment..."
+                [nzAutosize]="{ minRows: 3, maxRows: 6 }"></textarea>
+        </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+        <nz-form-label>Attachment</nz-form-label>
+        <nz-form-control>
+            <div *ngIf="!selectedFile">
+                <input type="file" #fileInput style="display:none" (change)="onFileSelected($event)" />
+                <button nz-button (click)="fileInput.click()">
+                    <span nz-icon nzType="upload"></span> Choose File
+                </button>
+            </div>
+            <div *ngIf="selectedFile" style="display:flex;align-items:center;gap:8px">
+                <span nz-icon nzType="paper-clip"></span>
+                <span>{{ selectedFile.name }}</span>
+                <button nz-button nzType="text" nzSize="small" nzDanger (click)="removeFile()">
+                    <span nz-icon nzType="close"></span>
+                </button>
+            </div>
+        </nz-form-control>
+    </nz-form-item>
+</form>
+
+<div class="modal-footer">
+    <button nz-button (click)="close()">Cancel</button>
+    <button nz-button nzType="primary" (click)="save()" [nzLoading]="loading">Save</button>
+</div>

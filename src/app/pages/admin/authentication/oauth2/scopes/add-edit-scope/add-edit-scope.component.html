@@ -1,0 +1,46 @@
+<form [formGroup]="scopeForm">
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Scope Name is required (alphanumeric, colon, dash, underscore only)">
+      <div class="nz-float-label" [class.has-value]="scopeForm.get('scopeName')?.value">
+        <input nz-input placeholder=" " formControlName="scopeName" />
+        <label>Scope Name</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="scopeForm.get('description')?.value">
+        <textarea nz-input placeholder=" " formControlName="description" [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
+        <label>Description</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="scopeForm.get('resource')?.value">
+        <input nz-input placeholder=" " formControlName="resource" />
+        <label>Resource</label>
+      </div>
+      <span style="font-size: 12px; color: rgba(0,0,0,0.45); margin-top: 4px; display: block;">The resource this scope applies to</span>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="scopeForm.get('permission')?.value">
+        <input nz-input placeholder=" " formControlName="permission" />
+        <label>Permission</label>
+      </div>
+      <span style="font-size: 12px; color: rgba(0,0,0,0.45); margin-top: 4px; display: block;">The permission level (e.g., read, write, delete)</span>
+    </nz-form-control>
+  </nz-form-item>
+</form>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close(false)">Cancel</button>
+  <button nz-button nzType="primary" [nzLoading]="loading" (click)="onSubmit()">
+    {{ mode === 'add' ? 'Create' : 'Update' }}
+  </button>
+</div>

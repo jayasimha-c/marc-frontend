@@ -1,0 +1,114 @@
+<!-- Table 1: ORG Field Catalogue -->
+<app-page-panel [header]="'ORG Field Catalogue'">
+  <ng-container headerSection>
+    <nz-space>
+      <ng-container *ngFor="let action of tableActions">
+        <button *nzSpaceItem nz-button [nzType]="action.type || 'default'" [nzDanger]="action.danger || false" (click)="action.command()">
+          <span nz-icon [nzType]="action.icon!" nzTheme="outline"></span>
+          {{ action.label }}
+        </button>
+      </ng-container>
+    </nz-space>
+  </ng-container>
+
+  <div style="margin-bottom: 12px; max-width: 300px;">
+    <nz-input-group [nzPrefix]="searchIcon">
+      <input nz-input placeholder="Search org fields..." [formControl]="searchText" />
+    </nz-input-group>
+    <ng-template #searchIcon><span nz-icon nzType="search"></span></ng-template>
+  </div>
+
+  <nz-table
+    #table1
+    [nzData]="data"
+    [nzLoading]="loading"
+    nzSize="small"
+    [nzShowPagination]="false"
+    [nzFrontPagination]="false"
+    [nzScroll]="{ y: '300px' }">
+    <thead>
+      <tr>
+        <th *ngFor="let col of columns">{{ col.header }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of table1.data"
+          (click)="onRowClick(row)"
+          [class.selected-row]="selectedRow?.id === row.id"
+          style="cursor: pointer;">
+        <td>{{ row.fieldName }}</td>
+        <td>{{ row.description }}</td>
+        <td>{{ row.sapSystemName }}</td>
+        <td>
+          <nz-tag [nzColor]="row.active ? 'green' : 'default'">{{ row.active ? 'Yes' : 'No' }}</nz-tag>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</app-page-panel>
+
+<!-- Table 2: ORG Field Values -->
+<app-page-panel [header]="'ORG Field Values'" style="margin-top: 16px;">
+  <ng-container headerSection>
+    <nz-space>
+      <button *nzSpaceItem nz-button nzType="primary" (click)="onSaveValues()" [disabled]="!editMode || !selectedRow">
+        <span nz-icon nzType="save" nzTheme="outline"></span> Save
+      </button>
+      <button *nzSpaceItem nz-button (click)="onEditValues()" [disabled]="editMode || !selectedRow">
+        <span nz-icon nzType="edit" nzTheme="outline"></span> Edit
+      </button>
+      <button *nzSpaceItem nz-button (click)="onCancelEdit()" [disabled]="!editMode">
+        <span nz-icon nzType="close-circle" nzTheme="outline"></span> Cancel
+      </button>
+      <button *nzSpaceItem nz-button (click)="onAddRow()" [disabled]="!selectedRow">
+        <span nz-icon nzType="plus-circle" nzTheme="outline"></span> Add Row
+      </button>
+    </nz-space>
+  </ng-container>
+
+  <p *ngIf="!selectedRow" style="color: #999; font-size: 13px; padding: 8px 0;">
+    Please select a row from the above table to view details here.
+  </p>
+
+  <nz-spin [nzSpinning]="fieldValuesLoading">
+    <nz-table
+      *ngIf="selectedRow"
+      #table2
+      [nzData]="fieldValues"
+      nzSize="small"
+      [nzShowPagination]="false"
+      [nzFrontPagination]="false"
+      [nzScroll]="{ y: '300px' }">
+      <thead>
+        <tr>
+          <th>Organization</th>
+          <th>Field Value</th>
+          <th *ngIf="editMode" nzWidth="60px">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of table2.data; let i = index">
+          <td>
+            <ng-container *ngIf="editMode; else orgNameText">
+              <nz-select [(ngModel)]="row.orgName" nzShowSearch nzPlaceHolder="Select org name" style="width: 100%;">
+                <nz-option *ngFor="let name of orgNames" [nzValue]="name" [nzLabel]="name"></nz-option>
+              </nz-select>
+            </ng-container>
+            <ng-template #orgNameText>{{ row.orgName }}</ng-template>
+          </td>
+          <td>
+            <ng-container *ngIf="editMode; else fieldValueText">
+              <input nz-input [(ngModel)]="row.fieldValue" placeholder="Enter value" />
+            </ng-container>
+            <ng-template #fieldValueText>{{ row.fieldValue }}</ng-template>
+          </td>
+          <td *ngIf="editMode">
+            <button nz-button nzType="text" nzDanger nzSize="small" (click)="onDeleteRow(i)" nz-tooltip nzTooltipTitle="Remove row">
+              <span nz-icon nzType="delete" nzTheme="outline"></span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-spin>
+</app-page-panel>

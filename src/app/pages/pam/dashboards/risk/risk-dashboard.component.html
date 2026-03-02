@@ -1,0 +1,79 @@
+<app-page-panel title="Risk Dashboard"
+    description="Monitor Separation of Duties violations and Top Risks across Privilege systems" icon="warning">
+
+    <div nz-row [nzGutter]="[24, 24]" class="mt-4">
+
+        <!-- Top Stats Row -->
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+            <app-statistics-card title="Total Risks" [value]="riskStats.totalRisks" [loading]="loading"
+                trendValue="Identified risks" icon="warning">
+            </app-statistics-card>
+        </div>
+
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+            <app-statistics-card title="Critical Risks" [value]="riskStats.criticalRisks" [loading]="loading"
+                trend="down" trendValue="Require immediate action" icon="fire" iconColor="text-red-500">
+            </app-statistics-card>
+        </div>
+
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+            <app-statistics-card title="High Risks" [value]="riskStats.highRisks" [loading]="loading"
+                trendValue="Require attention" icon="alert" iconColor="text-amber-500">
+            </app-statistics-card>
+        </div>
+
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+            <app-statistics-card title="Compliance Score" [value]="riskStats.complianceScore" [loading]="loading"
+                trend="up" trendValue="Overall compliance" icon="safety-certificate" iconColor="text-green-500">
+            </app-statistics-card>
+        </div>
+
+    </div>
+
+    <!-- Top Visualization Row -->
+    <div nz-row [nzGutter]="[24, 24]" class="mt-6">
+        <!-- Risk Trend Over Time -->
+        <div nz-col [nzXs]="24" [nzLg]="12">
+            <common-apx-chart #riskTrendChart [loading]="loading" [chartOptions]="riskTrendChartOptions">
+            </common-apx-chart>
+        </div>
+
+        <!-- Risk Severity Distribution -->
+        <div nz-col [nzXs]="24" [nzLg]="12">
+            <common-apx-chart #riskDistributionChart [loading]="loading" [chartOptions]="riskDistributionChartOptions">
+            </common-apx-chart>
+        </div>
+    </div>
+
+    <!-- Bottom Visualization Row -->
+    <div nz-row [nzGutter]="[24, 24]" class="mt-6">
+
+        <!-- Risks By System -->
+        <div nz-col [nzXs]="24" [nzLg]="8">
+            <common-apx-chart #riskBySystemChart [loading]="loading" [chartOptions]="riskBySystemChartOptions">
+            </common-apx-chart>
+        </div>
+
+        <!-- Risks By Role -->
+        <div nz-col [nzXs]="24" [nzLg]="8">
+            <common-apx-chart #riskByRoleChart [loading]="loading" [chartOptions]="riskByRoleChartOptions">
+            </common-apx-chart>
+        </div>
+
+        <!-- Compliance Score Radial Axis -->
+        <div nz-col [nzXs]="24" [nzLg]="8">
+            <common-apx-chart #complianceScoreChart [loading]="loading" [chartOptions]="complianceScoreChartOptions">
+            </common-apx-chart>
+        </div>
+    </div>
+
+    <!-- Changes Table -->
+    <div class="mt-6">
+        <nz-card [nzBordered]="false" class="shadow-sm rounded-lg" nzTitle="Top Identified Risks">
+            <app-advanced-table [data]="tableData" [columns]="tableColumns" [total]="totalRecord" [loading]="loading"
+                [showPagination]="false">
+            </app-advanced-table>
+        </nz-card>
+    </div>
+
+</app-page-panel>

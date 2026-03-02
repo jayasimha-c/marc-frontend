@@ -1,0 +1,24 @@
+.explorer {
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__title-icon {
+    font-size: 22px;
+    color: #1890ff;
+  }
+
+  &__subtitle {
+    font-size: 13px;
+    color: #8c8c8c;
+  }
+}

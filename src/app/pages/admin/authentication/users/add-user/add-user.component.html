@@ -1,0 +1,64 @@
+<form [formGroup]="form">
+  <div class="add-user-form">
+    <nz-form-item>
+      <nz-form-control nzErrorTip="User ID is required (min 4 chars)">
+        <div class="nz-float-label" [class.has-value]="form.get('username').value">
+          <input nz-input placeholder=" " formControlName="username" />
+          <label>User ID</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-control nzErrorTip="First Name is required">
+        <div class="nz-float-label" [class.has-value]="form.get('firstName').value">
+          <input nz-input placeholder=" " formControlName="firstName" />
+          <label>First Name</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-control nzErrorTip="Last Name is required">
+        <div class="nz-float-label" [class.has-value]="form.get('lastName').value">
+          <input nz-input placeholder=" " formControlName="lastName" />
+          <label>Last Name</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-control nzErrorTip="Valid email is required">
+        <div class="nz-float-label" [class.has-value]="form.get('email').value">
+          <input nz-input placeholder=" " formControlName="email" />
+          <label>Email</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-control nzErrorTip="Password is required (5-20 chars)">
+        <div class="nz-float-label" [class.has-value]="form.get('password').value">
+          <input nz-input type="password" placeholder=" " formControlName="password" />
+          <label>Password</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-control nzErrorTip="Passwords must match">
+        <div class="nz-float-label" [class.has-value]="form.get('confirmPassword').value">
+          <input nz-input type="password" placeholder=" " formControlName="confirmPassword" />
+          <label>Confirm Password</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+
+  <label nz-checkbox formControlName="enabled">Enabled</label>
+</form>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+  <button nz-button nzType="primary" (click)="user ? updateUser() : createUser()">Save</button>
+</div>

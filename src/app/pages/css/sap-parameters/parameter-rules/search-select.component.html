@@ -1,0 +1,24 @@
+<nz-form-item class="w-full">
+  <nz-form-control>
+    <div class="nz-float-label" [class.has-value]="searchControl.value">
+      <input nz-input placeholder=" "
+        [formControl]="searchControl"
+        [nzAutocomplete]="auto"
+        [disabled]="disabled">
+      <label>{{ placeholder }}</label>
+    </div>
+    <nz-autocomplete #auto [nzDataSource]="[]" (selectionChange)="onOptionSelected($event.nzValue)">
+      <nz-auto-option *ngIf="isLoading" disabled [nzValue]="null" nzLabel="Loading ACM Rules...">
+        <span nz-icon nzType="loading" nzTheme="outline" class="mr-2"></span>
+        Loading ACM Rules...
+      </nz-auto-option>
+      <nz-auto-option *ngFor="let item of items" [nzValue]="item" [nzLabel]="displayFn(item)">
+        {{ displayFn(item) }}
+      </nz-auto-option>
+      <nz-auto-option *ngIf="!isLoading && items.length === 0" disabled [nzValue]="null" nzLabel="No SAP ABAP rules found">
+        <span nz-icon nzType="search" nzTheme="outline" class="mr-2"></span>
+        No SAP ABAP rules found
+      </nz-auto-option>
+    </nz-autocomplete>
+  </nz-form-control>
+</nz-form-item>

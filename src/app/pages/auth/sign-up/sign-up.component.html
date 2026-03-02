@@ -1,0 +1,66 @@
+<div class="auth-container">
+    <nz-card class="auth-card">
+        <div class="auth-header">
+            <h1>Create an Account</h1>
+            <p>Fill the form to create your free account</p>
+        </div>
+
+        <form nz-form [formGroup]="form" (ngSubmit)="submit()" nzLayout="vertical">
+            <nz-form-item>
+                <nz-form-label nzFor="name">Full Name</nz-form-label>
+                <nz-form-control nzErrorTip="Full name is required">
+                    <nz-input-group nzPrefixIcon="idcard" nzSize="large">
+                        <input nz-input formControlName="name" placeholder="Enter full name" />
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+                <nz-form-label nzFor="email">Email</nz-form-label>
+                <nz-form-control nzErrorTip="Please enter a valid email">
+                    <nz-input-group nzPrefixIcon="mail" nzSize="large">
+                        <input nz-input formControlName="email" placeholder="Enter email" />
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+                <nz-form-label nzFor="password">Password</nz-form-label>
+                <nz-form-control nzErrorTip="Password is required">
+                    <nz-input-group nzPrefixIcon="lock" nzSize="large" [nzSuffix]="suffixTemplate">
+                        <input nz-input formControlName="password" [type]="hidePassword ? 'password' : 'text'"
+                            placeholder="Enter password" />
+                    </nz-input-group>
+                    <ng-template #suffixTemplate>
+                        <span nz-icon [nzType]="hidePassword ? 'eye-invisible' : 'eye'"
+                            (click)="hidePassword = !hidePassword" style="cursor: pointer;"></span>
+                    </ng-template>
+                </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+                <nz-form-label nzFor="company">Company</nz-form-label>
+                <nz-form-control>
+                    <nz-input-group nzPrefixIcon="bank" nzSize="large">
+                        <input nz-input formControlName="company" placeholder="Enter company name" />
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+                <nz-form-control>
+                    <label nz-checkbox formControlName="agreements">
+                        <span>I agree to the Terms of Service and Privacy Policy</span>
+                    </label>
+                </nz-form-control>
+            </nz-form-item>
+
+            <button nz-button nzType="primary" nzSize="large" nzBlock [nzLoading]="loading" type="submit">Sign
+                Up</button>
+
+            <div style="text-align: center; margin-top: 16px;">
+                Already have an account? <a routerLink="/sign-in">Sign in</a>
+            </div>
+        </form>
+    </nz-card>
+</div>

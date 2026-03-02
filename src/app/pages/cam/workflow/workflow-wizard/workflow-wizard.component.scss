@@ -1,0 +1,106 @@
+.wf-empty-state {
+  padding: 32px 0;
+  text-align: center;
+}
+
+.wf-flow-list {
+  padding: 8px 0;
+}
+
+.wf-flow-indicator {
+  text-align: center;
+  padding: 4px 0;
+}
+
+.wf-flow-connector {
+  width: 2px;
+  height: 20px;
+  background: #d9d9d9;
+  margin: 0 auto;
+}
+
+.wf-flow-node {
+  cursor: move;
+
+  &.cdk-drag-preview {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+  }
+}
+
+.wf-flow-card {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  padding: 8px 12px;
+  background: #fff;
+  margin: 0 40px;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: #1890ff;
+  }
+
+  &__handle {
+    cursor: grab;
+    color: #bfbfbf;
+    margin-right: 12px;
+    font-size: 16px;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  &__info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__order {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #1890ff;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  &__name {
+    font-weight: 500;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 2px;
+  }
+}
+
+.wf-available-node {
+  padding: 10px 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #e6f7ff;
+    border-color: #91d5ff;
+  }
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+
+.cdk-drag-animating {
+  transition: transform 200ms ease;
+}

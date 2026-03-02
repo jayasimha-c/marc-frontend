@@ -1,0 +1,134 @@
+<app-page-panel header="Unlock / Reset Password">
+
+    <div nz-row [nzGutter]="16">
+
+        <!-- Left: SAP Systems -->
+        <div nz-col [nzXs]="24" [nzLg]="16">
+            <nz-card [nzTitle]="systemsHeader">
+                <ng-template #systemsHeader>
+                    Your SAP Systems
+                    <nz-tag style="margin-left:8px">{{ sapSystems.length }} system(s)</nz-tag>
+                </ng-template>
+
+                <nz-empty *ngIf="!isLoading && sapSystems.length === 0"
+                    nzNotFoundImage="simple"
+                    nzNotFoundContent="Your user account was not found in any SAP system. Please contact your administrator.">
+                </nz-empty>
+
+                <nz-spin [nzSpinning]="isLoading">
+                    <nz-table *ngIf="sapSystems.length > 0"
+                        #sysTable [nzData]="sapSystems" [nzShowPagination]="false"
+                        [nzScroll]="{ y: '460px' }" nzSize="small">
+                        <thead>
+                            <tr>
+                                <th nzWidth="36px"></th>
+                                <th>System</th>
+                                <th nzWidth="120px">User ID</th>
+                                <th nzWidth="160px">User Name</th>
+                                <th nzWidth="100px" nzAlign="center">Status</th>
+                                <th nzWidth="110px">Last Login</th>
+                                <th nzWidth="110px">Valid From</th>
+                                <th nzWidth="110px">Valid To</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let sys of sysTable.data"
+                                style="cursor:pointer"
+                                [style.opacity]="hasValidId(sys) ? 1 : 0.45"
+                                (click)="toggleSystem(sys)">
+                                <td nzAlign="center" (click)="$event.stopPropagation()">
+                                    <label nz-checkbox [ngModel]="sys.selected"
+                                        [nzDisabled]="!hasValidId(sys)"
+                                        (ngModelChange)="toggleSystem(sys)"></label>
+                                </td>
+                                <td><strong>{{ sys.system }}</strong></td>
+                                <td><code>{{ sys.bname }}</code></td>
+                                <td>{{ sys.userName || '-' }}</td>
+                                <td nzAlign="center">
+                                    <nz-tag [nzColor]="sys.locked ? 'red' : 'green'">
+                                        {{ sys.locked ? 'Locked' : 'Active' }}
+                                    </nz-tag>
+                                </td>
+                                <td>{{ formatDate(sys.lastLogin) }}</td>
+                                <td>{{ formatDate(sys.validFrom) }}</td>
+                                <td>{{ formatDate(sys.validTo) }}</td>
+                            </tr>
+                        </tbody>
+                    </nz-table>
+                </nz-spin>
+            </nz-card>
+        </div>
+
+        <!-- Right: Request Summary -->
+        <div nz-col [nzXs]="24" [nzLg]="8">
+            <nz-card nzTitle="Your Request">
+
+                <!-- Action Type -->
+                <nz-form-item>
+                    <nz-form-label>Action Type</nz-form-label>
+                    <nz-form-control>
+                        <nz-radio-group [(ngModel)]="actionType">
+                            <label nz-radio-button nzValue="unlock">
+                                <span nz-icon nzType="unlock"></span> Unlock
+                            </label>
+                            <label nz-radio-button nzValue="reset-password">
+                                <span nz-icon nzType="key"></span> Reset Password
+                            </label>
+                        </nz-radio-group>
+                    </nz-form-control>
+                </nz-form-item>
+
+                <nz-divider></nz-divider>
+
+                <!-- Selected Systems -->
+                <div style="margin-bottom:8px">
+                    <strong>Selected Systems</strong>
+                    <nz-tag style="float:right">{{ selectedSystems.length }} selected</nz-tag>
+                </div>
+
+                <nz-empty *ngIf="selectedSystems.length === 0" nzNotFoundImage="simple"
+                    nzNotFoundContent="Select systems from the left panel">
+                </nz-empty>
+
+                <nz-list *ngIf="selectedSystems.length > 0" nzSize="small" nzBordered
+                    style="max-height:200px;overflow-y:auto;margin-bottom:8px">
+                    <nz-list-item *ngFor="let sys of selectedSystems">
+                        <nz-list-item-meta [nzTitle]="sys.system" [nzDescription]="sys.bname">
+                        </nz-list-item-meta>
+                        <ul nz-list-item-actions>
+                            <nz-list-item-action>
+                                <nz-tag [nzColor]="sys.locked ? 'red' : 'green'">
+                                    {{ sys.locked ? 'Locked' : 'Active' }}
+                                </nz-tag>
+                            </nz-list-item-action>
+                        </ul>
+                    </nz-list-item>
+                </nz-list>
+
+                <nz-divider></nz-divider>
+
+                <nz-descriptions nzSize="small" [nzColumn]="1" nzBordered>
+                    <nz-descriptions-item nzTitle="Systems">{{ selectedSystems.length }}</nz-descriptions-item>
+                    <nz-descriptions-item nzTitle="Action">
+                        {{ actionType === 'unlock' ? 'Unlock Account' : 'Reset Password' }}
+                    </nz-descriptions-item>
+                </nz-descriptions>
+
+                <button nz-button nzType="primary" nzBlock style="margin-top:16px"
+                    [disabled]="!canSubmit()" [nzLoading]="isSubmitting" (click)="submitRequest()">
+                    <span nz-icon nzType="send"></span> Submit Request
+                </button>
+
+                <button nz-button nzBlock style="margin-top:8px" (click)="resetForm()">
+                    <span nz-icon nzType="reload"></span> Reset
+                </button>
+
+                <nz-alert style="margin-top:16px" nzType="info" nzShowIcon
+                    nzMessage="Select your SAP systems and choose an action. Your request will be processed automatically.">
+                </nz-alert>
+
+            </nz-card>
+        </div>
+    </div>
+
+</app-page-panel>

@@ -1,0 +1,41 @@
+<app-page-panel header="Inactive User Jobs">
+    <div nz-row nzJustify="end" style="margin-bottom: 12px;">
+        <nz-space>
+            <button *nzSpaceItem nz-button nzType="primary" (click)="runSimulation()">
+                <span nz-icon nzType="caret-right"></span> Simulation
+            </button>
+            <button *nzSpaceItem nz-button (click)="viewResults()">
+                <span nz-icon nzType="eye"></span> View Results
+            </button>
+            <button *nzSpaceItem nz-button nzDanger (click)="deleteJob()">
+                <span nz-icon nzType="delete"></span> Delete
+            </button>
+        </nz-space>
+    </div>
+
+    <nz-table #jobTable [nzData]="data" nzSize="small" [nzFrontPagination]="false" [nzTotal]="totalRecords"
+        [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzLoading]="loading"
+        (nzQueryParams)="onQueryParamsChange($event)" nzShowSizeChanger>
+        <thead>
+            <tr>
+                <th nzColumnKey="status" [nzSortFn]="true">Status</th>
+                <th nzColumnKey="startedOnStr" [nzSortFn]="true" nzSortOrder="descend">Started On</th>
+                <th nzColumnKey="completedOnStr" [nzSortFn]="true">Completed On</th>
+                <th nzColumnKey="runBy" [nzSortFn]="true">Run By</th>
+                <th nzColumnKey="execMode" [nzSortFn]="true">Executed Mode</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of jobTable.data" (click)="selectedRow = row"
+                [style.background]="selectedRow === row ? '#e6f7ff' : ''">
+                <td>
+                    <nz-tag [nzColor]="getStatusColor(row.status)">{{ row.status }}</nz-tag>
+                </td>
+                <td>{{ row.startedOnStr }}</td>
+                <td>{{ row.completedOnStr }}</td>
+                <td>{{ row.runBy }}</td>
+                <td>{{ row.execMode }}</td>
+            </tr>
+        </tbody>
+    </nz-table>
+</app-page-panel>

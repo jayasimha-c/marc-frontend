@@ -1,0 +1,127 @@
+<div class="te">
+  <nz-card nzSize="small" [nzTitle]="isEdit ? 'Edit Org Template' : 'New Org Template'" [nzExtra]="cardExtra">
+    <ng-template #cardExtra>
+      <nz-space>
+        <button *nzSpaceItem nz-button nzSize="small" nzType="default" (click)="cancel()">
+          <span nz-icon nzType="arrow-left" nzTheme="outline"></span> Back
+        </button>
+        <button *nzSpaceItem nz-button nzSize="small" nzType="primary" (click)="save()" [nzLoading]="saving">
+          <span nz-icon nzType="save" nzTheme="outline"></span> Save
+        </button>
+      </nz-space>
+    </ng-template>
+
+    <nz-spin [nzSpinning]="loading">
+      <!-- Basic Info -->
+      <div class="te__section-title">Basic Information</div>
+      <div class="te__form-grid">
+        <nz-form-item>
+          <nz-form-label nzRequired>Template Name</nz-form-label>
+          <nz-form-control>
+            <input nz-input nzSize="small" [(ngModel)]="name" placeholder="Enter name">
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>Code</nz-form-label>
+          <nz-form-control>
+            <input nz-input nzSize="small" [(ngModel)]="code" placeholder="Optional code">
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>SAP System</nz-form-label>
+          <nz-form-control>
+            <nz-select nzSize="small" [(ngModel)]="sapSystemId" (ngModelChange)="onSystemChange()"
+                       nzPlaceHolder="Select system" nzShowSearch [nzLoading]="loadingSystems"
+                       [nzDisabled]="isEdit">
+              <nz-option *ngFor="let sys of sapSystems" [nzValue]="sys.id"
+                         [nzLabel]="sys.destinationName"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>Description</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input nzSize="small" [(ngModel)]="description" placeholder="Optional description"
+                      [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </nz-spin>
+  </nz-card>
+
+  <!-- Org Field Values -->
+  <nz-card nzSize="small" style="margin-top: 12px;" [nzExtra]="fieldExtra">
+    <ng-template #nzTitle>
+      <span>Org Field Values</span>
+      <nz-tag style="margin-left: 8px;">{{ fieldRows.length }}</nz-tag>
+    </ng-template>
+    <ng-template #fieldExtra>
+      <nz-space>
+        <button *nzSpaceItem nz-button nzSize="small" nzType="default" (click)="addRow()"
+                [disabled]="!sapSystemId">
+          <span nz-icon nzType="plus-circle" nzTheme="outline"></span> Add Row
+        </button>
+        <button *nzSpaceItem nz-button nzSize="small" nzDanger (click)="removeSelectedRows()"
+                [disabled]="fieldRows.length === 0">
+          <span nz-icon nzType="delete" nzTheme="outline"></span> Remove Selected
+        </button>
+      </nz-space>
+    </ng-template>
+
+    <div *ngIf="loadingFields" class="te__loading">
+      <nz-spin nzSimple nzSize="small"></nz-spin>
+    </div>
+
+    <div *ngIf="!loadingFields && fieldRows.length > 0" class="te__fields">
+      <nz-table #fieldTable [nzData]="fieldRows" nzSize="small"
+                [nzShowPagination]="fieldRows.length > 25" [nzPageSize]="25"
+                nzFrontPagination>
+        <thead>
+          <tr>
+            <th nzWidth="40px">
+              <label nz-checkbox [nzChecked]="allSelected" [nzIndeterminate]="indeterminate"
+                     (nzCheckedChange)="toggleSelectAll()"></label>
+            </th>
+            <th nzWidth="220px">Org Field</th>
+            <th>Values (comma or line separated)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of fieldTable.data">
+            <td>
+              <label nz-checkbox [(nzChecked)]="row.selected"
+                     (nzCheckedChange)="onRowSelectChange()"></label>
+            </td>
+            <td>
+              <nz-select nzSize="small" [(ngModel)]="row.fieldName" nzPlaceHolder="Select field"
+                         nzShowSearch nzAllowClear style="width: 100%;">
+                <nz-option *ngFor="let f of getAvailableFieldsForRow(row.fieldName)"
+                           [nzValue]="f" [nzLabel]="f"></nz-option>
+              </nz-select>
+              <div *ngIf="row.fieldName" class="te__field-desc">
+                {{ getFieldDescription(row.fieldName) }}
+              </div>
+            </td>
+            <td>
+              <textarea nz-input nzSize="small" [(ngModel)]="row.values"
+                        placeholder="Enter values separated by comma or newline. Supports paste from Excel."
+                        (paste)="onPasteValues($event, row)"
+                        [nzAutosize]="{ minRows: 1, maxRows: 6 }"></textarea>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+
+    <div *ngIf="!loadingFields && fieldRows.length === 0 && sapSystemId" class="te__no-fields">
+      <nz-empty nzNotFoundContent="No field values. Click 'Add Row' to add org fields."></nz-empty>
+    </div>
+
+    <div *ngIf="!sapSystemId" class="te__no-fields">
+      <nz-empty nzNotFoundContent="Select a SAP system first"></nz-empty>
+    </div>
+  </nz-card>
+</div>

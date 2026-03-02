@@ -1,0 +1,95 @@
+<div style="padding: 16px;">
+  <!-- Header -->
+  <nz-card style="margin-bottom: 16px;">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <div style="flex: 1; min-width: 0;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <button nz-button nzType="text" nzSize="small" (click)="goBack()">
+            <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+          </button>
+          <h3 style="margin: 0; font-size: 18px; font-weight: 600;">{{ controlData?.name }}</h3>
+        </div>
+        <div *ngIf="controlData?.framework" style="margin-bottom: 4px; color: rgba(0,0,0,0.65); font-size: 13px;">
+          <strong>Framework:</strong> {{ controlData.framework }}
+        </div>
+        <p *ngIf="controlData?.description" style="margin: 0; color: rgba(0,0,0,0.45); font-size: 13px;">
+          {{ controlData.description }}
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <nz-select [formControl]="selectedSystem" nzSize="small" style="min-width: 160px;"
+                   nzPlaceHolder="All Systems" (ngModelChange)="onSystemChange()">
+          <nz-option nzValue="ALL" nzLabel="All Systems"></nz-option>
+          <nz-option *ngFor="let s of systems" [nzValue]="s.id" [nzLabel]="s.destinationName"></nz-option>
+        </nz-select>
+        <nz-range-picker nzSize="small" [(ngModel)]="dateRange" (ngModelChange)="onDateRangeChange()"></nz-range-picker>
+        <nz-button-group>
+          <button *ngFor="let p of dateRangePresets" nz-button nzSize="small"
+                  [nzType]="activePreset === p.days ? 'primary' : 'default'"
+                  (click)="setPreset(p.days)">{{ p.label }}</button>
+        </nz-button-group>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Stats Cards -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+    <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6" *ngFor="let card of statsCards" style="margin-bottom: 8px;">
+      <app-statistics-card
+        [title]="card.title"
+        [value]="card.value"
+        [icon]="card.icon"
+        [color]="card.color"
+        [loading]="loading">
+      </app-statistics-card>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+    <div nz-col [nzXs]="24" [nzLg]="12">
+      <common-apx-chart #violationTrendChart
+                        [chartOptions]="violationTrendChartOptions"
+                        [loading]="loading">
+      </common-apx-chart>
+    </div>
+    <div nz-col [nzXs]="24" [nzLg]="12">
+      <common-apx-chart #violationBySystemChart
+                        [chartOptions]="violationBySystemChartOptions"
+                        [loading]="loading">
+      </common-apx-chart>
+    </div>
+  </div>
+
+  <!-- Violated Rules Table -->
+  <nz-card nzTitle="Recently Violated Rules" nzSize="small">
+    <nz-spin [nzSpinning]="loading">
+      <nz-table #rulesTable [nzData]="violatedRulesData" nzSize="small"
+                [nzFrontPagination]="false"
+                [nzTotal]="violatedRulesTotalRecords"
+                [nzPageIndex]="currentPage"
+                [nzPageSize]="pageSize"
+                (nzPageIndexChange)="onPageChange($event)"
+                nzTableLayout="fixed">
+        <thead>
+          <tr>
+            <th>Rule Name</th>
+            <th nzWidth="100px">Severity</th>
+            <th nzWidth="150px">System</th>
+            <th nzWidth="140px">Last Violation</th>
+            <th nzWidth="100px">Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rulesTable.data">
+            <td>{{ row.ruleName }}</td>
+            <td><nz-tag [nzColor]="getSeverityColor(row.severity)">{{ row.severity }}</nz-tag></td>
+            <td>{{ row.sapSystemName }}</td>
+            <td>{{ row.createdDateStr }}</td>
+            <td>{{ row.violationCount }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </nz-spin>
+  </nz-card>
+</div>

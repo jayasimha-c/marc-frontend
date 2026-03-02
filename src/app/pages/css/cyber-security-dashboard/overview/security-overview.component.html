@@ -1,0 +1,208 @@
+<div style="padding: 16px;">
+  <!-- Header -->
+  <nz-card style="margin-bottom: 16px;">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <h3 style="margin: 0 0 4px; font-size: 18px; font-weight: 600;">Security Command Center</h3>
+        <p style="margin: 0; color: rgba(0,0,0,0.45); font-size: 13px;">Real-time security posture and threat monitoring across all SAP systems</p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <nz-select [(ngModel)]="selectedSystemId" nzSize="small" style="min-width: 160px;"
+                   nzPlaceHolder="All Systems" (ngModelChange)="onSystemChange()">
+          <nz-option nzValue="-1" nzLabel="All Systems"></nz-option>
+          <nz-option *ngFor="let s of sapSystems" [nzValue]="s.id + ''" [nzLabel]="s.destinationName"></nz-option>
+        </nz-select>
+        <nz-range-picker nzSize="small" [(ngModel)]="dateRange" (ngModelChange)="onDateRangeChange()"></nz-range-picker>
+        <nz-button-group>
+          <button *ngFor="let p of datePresets" nz-button nzSize="small"
+                  [nzType]="activePreset === p.days ? 'primary' : 'default'"
+                  (click)="setPreset(p.days)">{{ p.label }}</button>
+        </nz-button-group>
+      </div>
+    </div>
+  </nz-card>
+
+  <nz-spin [nzSpinning]="loading">
+    <!-- Stats Cards -->
+    <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6" *ngFor="let card of statsCards" style="margin-bottom: 8px;">
+        <app-statistics-card
+          [title]="card.title"
+          [value]="card.value"
+          [icon]="card.icon"
+          [color]="card.color"
+          [loading]="loading">
+        </app-statistics-card>
+      </div>
+    </div>
+
+    <!-- Severity Distribution Bar -->
+    <nz-card nzSize="small" style="margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span nz-icon nzType="bar-chart" nzTheme="outline" style="color: #1890ff; font-size: 16px;"></span>
+          <span style="font-weight: 600; font-size: 14px;">Severity Distribution</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <span class="sev-legend" (click)="navigateToEventLogs(undefined, 'CRITICAL')">
+            <span class="sev-dot" style="background: #f5222d;"></span>
+            <span class="sev-label">Critical</span>
+            <span class="sev-count">{{ severityBar.critical }}</span>
+          </span>
+          <span class="sev-legend" (click)="navigateToEventLogs(undefined, 'HIGH')">
+            <span class="sev-dot" style="background: #fa8c16;"></span>
+            <span class="sev-label">High</span>
+            <span class="sev-count">{{ severityBar.high }}</span>
+          </span>
+          <span class="sev-legend" (click)="navigateToEventLogs(undefined, 'MEDIUM')">
+            <span class="sev-dot" style="background: #722ed1;"></span>
+            <span class="sev-label">Medium</span>
+            <span class="sev-count">{{ severityBar.medium }}</span>
+          </span>
+          <span class="sev-legend" (click)="navigateToEventLogs(undefined, 'LOW')">
+            <span class="sev-dot" style="background: #52c41a;"></span>
+            <span class="sev-label">Low</span>
+            <span class="sev-count">{{ severityBar.low }}</span>
+          </span>
+        </div>
+      </div>
+      <div class="severity-bar">
+        <div class="severity-bar__segment" style="background: #f5222d;" [style.width.%]="sevPct.critical" *ngIf="sevPct.critical > 0"></div>
+        <div class="severity-bar__segment" style="background: #fa8c16;" [style.width.%]="sevPct.high" *ngIf="sevPct.high > 0"></div>
+        <div class="severity-bar__segment" style="background: #722ed1;" [style.width.%]="sevPct.medium" *ngIf="sevPct.medium > 0"></div>
+        <div class="severity-bar__segment" style="background: #52c41a;" [style.width.%]="sevPct.low" *ngIf="sevPct.low > 0"></div>
+      </div>
+    </nz-card>
+
+    <!-- Event Trends Chart -->
+    <div style="margin-bottom: 16px;">
+      <common-apx-chart #eventTrendsChart
+                        [chartOptions]="timelineChartOptions"
+                        [loading]="loading">
+      </common-apx-chart>
+    </div>
+
+    <!-- 3-Column Widget Row -->
+    <div nz-row [nzGutter]="16">
+      <!-- Severity by System -->
+      <div nz-col [nzXs]="24" [nzLg]="10">
+        <nz-card nzSize="small" style="margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <span nz-icon nzType="cluster" nzTheme="outline" style="color: #1890ff;"></span>
+            <span style="font-weight: 600; font-size: 14px;">Severity by System</span>
+          </div>
+          <nz-table #systemTable [nzData]="systemRows" nzSize="small"
+                    [nzShowPagination]="false" [nzFrontPagination]="false"
+                    nzTableLayout="fixed" [nzScroll]="{ y: '280px' }">
+            <thead>
+              <tr>
+                <th nzWidth="120px">System</th>
+                <th>Distribution</th>
+                <th nzWidth="40px" nzAlign="center" style="color: #f5222d;">C</th>
+                <th nzWidth="40px" nzAlign="center" style="color: #fa8c16;">H</th>
+                <th nzWidth="40px" nzAlign="center" style="color: #722ed1;">M</th>
+                <th nzWidth="40px" nzAlign="center" style="color: #52c41a;">L</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let sys of systemTable.data" style="cursor: pointer;" (click)="navigateToEventLogs(sys.name)">
+                <td nz-tooltip [nzTooltipTitle]="sys.name">
+                  <span style="font-size: 12px; font-family: monospace;">{{ sys.name }}</span>
+                </td>
+                <td>
+                  <div class="severity-bar" style="height: 14px;">
+                    <div class="severity-bar__segment" style="background: #f5222d;" [style.width.%]="sys.criticalPct" *ngIf="sys.critical > 0"></div>
+                    <div class="severity-bar__segment" style="background: #fa8c16;" [style.width.%]="sys.highPct" *ngIf="sys.high > 0"></div>
+                    <div class="severity-bar__segment" style="background: #722ed1;" [style.width.%]="sys.mediumPct" *ngIf="sys.medium > 0"></div>
+                    <div class="severity-bar__segment" style="background: #52c41a;" [style.width.%]="sys.lowPct" *ngIf="sys.low > 0"></div>
+                  </div>
+                </td>
+                <td nzAlign="center" style="font-size: 12px; font-weight: 600; color: #f5222d; font-family: monospace;">{{ sys.critical }}</td>
+                <td nzAlign="center" style="font-size: 12px; font-weight: 600; color: #fa8c16; font-family: monospace;">{{ sys.high }}</td>
+                <td nzAlign="center" style="font-size: 12px; font-weight: 600; color: #722ed1; font-family: monospace;">{{ sys.medium }}</td>
+                <td nzAlign="center" style="font-size: 12px; font-weight: 600; color: #52c41a; font-family: monospace;">{{ sys.low }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+          <nz-empty *ngIf="systemRows.length === 0" nzNotFoundContent="No system data"></nz-empty>
+        </nz-card>
+      </div>
+
+      <!-- Triage Status -->
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
+        <nz-card nzSize="small" style="margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span nz-icon nzType="audit" nzTheme="outline" style="color: #fa8c16;"></span>
+              <span style="font-weight: 600; font-size: 14px;">Triage Status</span>
+            </div>
+            <span style="font-size: 12px; font-weight: 600; font-family: monospace;">{{ triageTotal }} alerts</span>
+          </div>
+
+          <!-- Stacked bar -->
+          <div class="triage-bar" style="margin-bottom: 16px;">
+            <ng-container *ngFor="let entry of triageEntries">
+              <div *ngIf="entry.count > 0" class="triage-bar__segment"
+                   [style.width.%]="getTriageBarPct(entry)"
+                   [style.background]="entry.color">
+                <span class="triage-bar__label">{{ entry.count }}</span>
+              </div>
+            </ng-container>
+          </div>
+
+          <!-- Entries list -->
+          <div *ngFor="let entry of triageEntries" class="triage-item">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="sev-dot" [style.background]="entry.color"></span>
+              <span style="font-size: 12px; color: rgba(0,0,0,0.65);">{{ entry.label }}</span>
+            </div>
+            <span style="font-size: 13px; font-weight: 600; font-family: monospace;"
+                  [style.color]="entry.count > 0 ? 'rgba(0,0,0,0.85)' : 'rgba(0,0,0,0.25)'">
+              {{ entry.count }}
+            </span>
+          </div>
+        </nz-card>
+      </div>
+
+      <!-- Critical Events -->
+      <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8">
+        <nz-card nzSize="small" style="margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span nz-icon nzType="alert" nzTheme="outline" style="color: #f5222d;"></span>
+              <span style="font-weight: 600; font-size: 14px;">Critical Events</span>
+              <nz-tag *ngIf="criticalEvents.length > 0" nzColor="red">{{ criticalEvents.length }}</nz-tag>
+            </div>
+            <a style="font-size: 12px;" (click)="navigateToEventLogs()">View all &rarr;</a>
+          </div>
+
+          <div *ngFor="let event of criticalEvents" class="critical-event-item"
+               (click)="navigateToEventLogs(event.sapSystemName, 'CRITICAL')">
+            <div class="critical-event-item__indicator"></div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                {{ event?.event }}
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                <span style="font-size: 11px; color: rgba(0,0,0,0.45); font-family: monospace;">{{ event?.sapSystemName }}</span>
+                <span style="font-size: 11px; color: rgba(0,0,0,0.25);">&middot;</span>
+                <span style="font-size: 11px; color: rgba(0,0,0,0.45);">{{ event?.createdDate }}</span>
+              </div>
+            </div>
+            <span style="color: rgba(0,0,0,0.25); font-size: 12px;">&rarr;</span>
+          </div>
+
+          <nz-empty *ngIf="criticalEvents.length === 0" nzNotFoundContent="No critical events detected"></nz-empty>
+        </nz-card>
+      </div>
+    </div>
+
+    <!-- View All Events -->
+    <div style="text-align: center; margin-top: 8px;">
+      <button nz-button nzType="default" (click)="navigateToEventLogs()">
+        <span nz-icon nzType="file-text" nzTheme="outline"></span>
+        View All Events
+      </button>
+    </div>
+  </nz-spin>
+</div>

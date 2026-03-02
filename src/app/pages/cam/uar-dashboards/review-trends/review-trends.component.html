@@ -1,0 +1,68 @@
+<!-- Header -->
+<div class="flex items-start justify-between flex-wrap gap-4 mb-4">
+  <h2 class="m-0">Review Trends & Compliance</h2>
+  <nz-form-item class="w-[280px] mb-0">
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="systemControl.value">
+        <nz-select nzPlaceHolder=" " nzShowSearch (ngModelChange)="sapSystemChange()" [formControl]="systemControl">
+          <nz-option *ngFor="let sys of sapSystems" [nzValue]="sys?.id" [nzLabel]="sys?.destinationName || sys?.description || sys?.sapName"></nz-option>
+        </nz-select>
+        <label>SAP System</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+</div>
+
+<!-- KPI Cards -->
+<div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="On-Time Completion" [value]="statistics.onTimeRate + '%'" description="Completion rate" icon="check-circle" color="#52c41a" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Overdue Reviews" [value]="statistics.overdueReviews" description="Past due date" icon="clock-circle" color="#ff4d4f" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Avg. Days to Complete" [value]="statistics.avgDays" description="Average duration" icon="field-time" color="#1890ff" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Compliance Status" [value]="statistics.complianceStatus + '%'" description="Overall compliance" icon="bar-chart" color="#1890ff" [loading]="loading"></app-statistics-card>
+  </div>
+</div>
+
+<!-- Charts — 2 per row (lg grid) -->
+<div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+  <div nz-col [nzXs]="24" [nzMd]="12">
+    <common-apx-chart [loading]="loading" [chartOptions]="complianceTrendChartOptions" size="lg"></common-apx-chart>
+  </div>
+  <div nz-col [nzXs]="24" [nzMd]="12">
+    <common-apx-chart [loading]="loading" [chartOptions]="reviewVolumeChartOptions" size="lg"></common-apx-chart>
+  </div>
+</div>
+
+<!-- Compliance by Department -->
+<nz-card class="mt-4 mb-4">
+  <app-advanced-table
+    title="Compliance by Department"
+    [data]="complianceData"
+    [columns]="complianceColumns"
+    [loading]="loading"
+    [showPagination]="false"
+    [showSearch]="true"
+    size="middle"
+    scrollY="40vh"
+  ></app-advanced-table>
+</nz-card>
+
+<!-- Overdue Reviews -->
+<nz-card class="mt-4">
+  <app-advanced-table
+    title="Overdue Reviews"
+    [data]="overdueData"
+    [columns]="overdueColumns"
+    [loading]="loading"
+    [showPagination]="false"
+    [showSearch]="true"
+    size="middle"
+    scrollY="40vh"
+  ></app-advanced-table>
+</nz-card>

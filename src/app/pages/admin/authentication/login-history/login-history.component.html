@@ -1,0 +1,14 @@
+<app-advanced-table
+  title="Users Login History"
+  [columns]="columns"
+  [data]="data"
+  [loading]="loading"
+  [total]="total"
+  [serverSide]="true"
+  [showSearch]="false"
+  [showPagination]="true"
+  [defaultPageSize]="20"
+  size="middle"
+  (queryParamsChange)="onQueryParamsChange($event)"
+  (refresh)="loadData()">
+</app-advanced-table>

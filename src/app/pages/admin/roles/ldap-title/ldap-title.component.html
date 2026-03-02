@@ -1,0 +1,13 @@
+<app-advanced-table
+  title="LDAP Titles"
+  [columns]="columns"
+  [data]="data"
+  [actions]="tableActions"
+  [loading]="loading"
+  [showSearch]="true"
+  [showPagination]="true"
+  size="middle"
+  rowKey="ldapTitle"
+  (refresh)="loadData()"
+  (rowClick)="onRowClick($event)">
+</app-advanced-table>

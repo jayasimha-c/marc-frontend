@@ -1,0 +1,28 @@
+<form [formGroup]="form" nz-form nzLayout="vertical">
+    <nz-form-item>
+        <nz-form-control nzErrorTip="Start date is required">
+            <div class="nz-float-label" [class.has-value]="form.get('measureFrom')?.value">
+                <nz-date-picker formControlName="measureFrom" nzPlaceHolder=" "
+                    style="width: 100%;"></nz-date-picker>
+                <label>Measure From</label>
+            </div>
+        </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+        <nz-form-control nzErrorTip="End date is required">
+            <div class="nz-float-label" [class.has-value]="form.get('measureTo')?.value">
+                <nz-date-picker formControlName="measureTo" nzPlaceHolder=" "
+                    style="width: 100%;"></nz-date-picker>
+                <label>Measure To</label>
+            </div>
+        </nz-form-control>
+    </nz-form-item>
+</form>
+
+<div class="modal-footer">
+    <button nz-button nzType="default" (click)="modal.close(false)">Cancel</button>
+    <button nz-button nzType="primary" (click)="onSubmit()" [disabled]="form.invalid || loading">
+        {{ loading ? 'Running...' : 'Run' }}
+    </button>
+</div>

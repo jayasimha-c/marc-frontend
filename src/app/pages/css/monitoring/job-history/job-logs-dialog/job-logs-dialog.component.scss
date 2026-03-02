@@ -1,0 +1,51 @@
+.log-list {
+  padding: 0;
+  max-height: 50vh;
+  overflow: auto;
+}
+
+.log-entry {
+  padding: 10px 16px;
+  border-bottom: 1px solid #f0f0f0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.log-error {
+    background: rgba(255, 77, 79, 0.04);
+  }
+
+  &.log-warning {
+    background: rgba(250, 173, 20, 0.04);
+  }
+}
+
+.log-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.log-level-tag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  line-height: 18px;
+}
+
+.log-timestamp {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.45);
+  font-family: monospace;
+}
+
+.log-message {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.85);
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

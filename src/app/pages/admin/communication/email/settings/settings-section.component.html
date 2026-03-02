@@ -1,0 +1,202 @@
+<div class="email-settings">
+  <nz-card>
+    <div class="email-settings__header">Email Settings</div>
+
+    <!-- Connection Status Bar -->
+    <div class="email-settings__status-bar"
+         [class.email-settings__status-bar--connected]="connectionStatus === 'connected'"
+         [class.email-settings__status-bar--disconnected]="connectionStatus === 'disconnected'"
+         [class.email-settings__status-bar--testing]="connectionStatus === 'testing'">
+      <div class="email-settings__status-content">
+        <div class="email-settings__status-indicator">
+          <div class="email-settings__status-dot"></div>
+          <span class="email-settings__status-text">
+            <ng-container *ngIf="connectionStatus === 'connected'">Connected</ng-container>
+            <ng-container *ngIf="connectionStatus === 'disconnected'">Not Connected</ng-container>
+            <ng-container *ngIf="connectionStatus === 'testing'">Testing Connection...</ng-container>
+            <ng-container *ngIf="connectionStatus === 'unknown'">Not Tested</ng-container>
+          </span>
+        </div>
+        <div class="email-settings__last-test" *ngIf="lastTestTime">
+          <span nz-icon nzType="clock-circle" nzTheme="outline"></span>
+          <span>Last tested: {{ lastTestTime | date:'short' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SMTP Configuration Form -->
+    <form [formGroup]="mailSettingForm" class="email-settings__form">
+
+      <!-- Server Configuration -->
+      <div class="email-settings__section">
+        <h3 class="email-settings__section-title">
+          <span nz-icon nzType="cloud-server" nzTheme="outline"></span>
+          Server Configuration
+        </h3>
+        <div class="email-settings__row">
+          <nz-form-item class="email-settings__field email-settings__field--flex2">
+            <nz-form-control nzErrorTip="SMTP host is required">
+              <div class="nz-float-label" [class.has-value]="mailSettingForm.get('host')?.value">
+                <nz-input-group [nzSuffix]="hostSuffix">
+                  <input nz-input placeholder=" " formControlName="host" />
+                </nz-input-group>
+                <label>SMTP Host</label>
+                <ng-template #hostSuffix>
+                  <span nz-icon nzType="global" nzTheme="outline" class="email-settings__field-icon"></span>
+                </ng-template>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item class="email-settings__field email-settings__field--port">
+            <nz-form-control nzErrorTip="Valid port required (1-65535)">
+              <div class="nz-float-label" [class.has-value]="mailSettingForm.get('port')?.value">
+                <nz-input-group [nzSuffix]="portSuffix">
+                  <input nz-input type="number" placeholder=" " formControlName="port" />
+                </nz-input-group>
+                <label>Port</label>
+                <ng-template #portSuffix>
+                  <span nz-icon nzType="api" nzTheme="outline" class="email-settings__field-icon"></span>
+                </ng-template>
+              </div>
+            </nz-form-control>
+            <small class="email-settings__hint">Common: 587 (TLS), 465 (SSL)</small>
+          </nz-form-item>
+
+          <nz-form-item class="email-settings__field email-settings__field--flex2">
+            <nz-form-control nzErrorTip="Authentication type is required">
+              <div class="nz-float-label" [class.has-value]="mailSettingForm.get('authType')?.value">
+                <nz-select formControlName="authType" nzPlaceHolder=" " (ngModelChange)="onAuthTypeChange($event)">
+                  <nz-option *ngFor="let type of authTypeList"
+                             [nzValue]="type"
+                             [nzLabel]="type + ' - ' + getAuthDescription(type)">
+                  </nz-option>
+                </nz-select>
+                <label>Authentication Type</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <!-- Authentication Credentials -->
+      <div class="email-settings__section" *ngIf="showAuthFields">
+        <h3 class="email-settings__section-title">
+          <span nz-icon nzType="lock" nzTheme="outline"></span>
+          Authentication Credentials
+        </h3>
+        <div class="email-settings__row">
+          <nz-form-item class="email-settings__field">
+            <nz-form-control nzErrorTip="Username is required">
+              <div class="nz-float-label" [class.has-value]="mailSettingForm.get('username')?.value">
+                <nz-input-group [nzSuffix]="userSuffix">
+                  <input nz-input placeholder=" " formControlName="username" />
+                </nz-input-group>
+                <label>Username</label>
+                <ng-template #userSuffix>
+                  <span nz-icon nzType="user" nzTheme="outline" class="email-settings__field-icon"></span>
+                </ng-template>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item class="email-settings__field">
+            <nz-form-control nzErrorTip="Password is required">
+              <div class="nz-float-label" [class.has-value]="mailSettingForm.get('password')?.value">
+                <nz-input-group [nzSuffix]="pwSuffix">
+                  <input nz-input [type]="hidePassword ? 'password' : 'text'" placeholder=" " formControlName="password" />
+                </nz-input-group>
+                <label>Password</label>
+                <ng-template #pwSuffix>
+                  <span nz-icon
+                        [nzType]="hidePassword ? 'eye' : 'eye-invisible'"
+                        nzTheme="outline"
+                        (click)="hidePassword = !hidePassword"
+                        style="cursor: pointer;"></span>
+                </ng-template>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <!-- Sender Information -->
+      <div class="email-settings__section">
+        <h3 class="email-settings__section-title">
+          <span nz-icon nzType="mail" nzTheme="outline"></span>
+          Sender Information
+        </h3>
+        <div class="email-settings__row">
+          <nz-form-item class="email-settings__field">
+            <nz-form-control nzErrorTip="Valid email address is required">
+              <div class="nz-float-label" [class.has-value]="mailSettingForm.get('sender')?.value">
+                <nz-input-group [nzSuffix]="senderSuffix">
+                  <input nz-input type="email" placeholder=" " formControlName="sender" />
+                </nz-input-group>
+                <label>From Email Address</label>
+                <ng-template #senderSuffix>
+                  <span nz-icon nzType="mail" nzTheme="outline" class="email-settings__field-icon"></span>
+                </ng-template>
+              </div>
+            </nz-form-control>
+            <small class="email-settings__hint">This email will appear as the sender</small>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="email-settings__actions">
+        <button nz-button nzType="default" type="button"
+                [disabled]="isLoading || !mailSettingForm.valid"
+                (click)="onTest()">
+          <span nz-icon [nzType]="isTestingConnection ? 'loading' : 'wifi'" nzTheme="outline"></span>
+          {{ isTestingConnection ? 'Testing...' : 'Test Connection' }}
+        </button>
+
+        <button nz-button nzType="default" type="button"
+                [disabled]="isLoading || connectionStatus !== 'connected'"
+                (click)="onTestMessage()">
+          <span nz-icon nzType="send" nzTheme="outline"></span>
+          Send Test Email
+        </button>
+
+        <span class="email-settings__actions-spacer"></span>
+
+        <button nz-button nzType="primary" type="button"
+                [disabled]="!mailSettingForm.valid || isLoading"
+                (click)="onSave()">
+          <span nz-icon [nzType]="isSaving ? 'loading' : 'save'" nzTheme="outline"></span>
+          {{ isSaving ? 'Saving...' : 'Save Settings' }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <!-- Test Email Modal -->
+  <nz-modal [(nzVisible)]="showTestEmailModal"
+            nzTitle="Send Test Email"
+            [nzOkLoading]="isSendingTest"
+            [nzOkDisabled]="!testEmailRecipient"
+            nzOkText="Send Test"
+            (nzOnOk)="onSendTestMail()"
+            (nzOnCancel)="showTestEmailModal = false">
+    <ng-container *nzModalContent>
+      <p class="email-settings__dialog-desc">
+        Send a test email to verify your SMTP configuration is working correctly.
+      </p>
+      <nz-form-item>
+        <nz-form-control>
+          <div class="nz-float-label" [class.has-value]="testEmailRecipient">
+            <nz-input-group [nzSuffix]="emailSuffix">
+              <input nz-input type="email" placeholder=" " [(ngModel)]="testEmailRecipient" [ngModelOptions]="{ standalone: true }" />
+            </nz-input-group>
+            <label>Recipient Email Address</label>
+            <ng-template #emailSuffix>
+              <span nz-icon nzType="mail" nzTheme="outline"></span>
+            </ng-template>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+    </ng-container>
+  </nz-modal>
+</div>

@@ -1,0 +1,324 @@
+<div style="padding: 16px;">
+  <!-- Back button -->
+  <div style="margin-bottom: 16px;">
+    <button nz-button nzType="default" (click)="back()">
+      <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+      Back
+    </button>
+  </div>
+
+  <!-- Dashboard Metrics -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+    <div nz-col [nzSpan]="6">
+      <app-statistics-card
+        title="Total Users"
+        [value]="dashboardMetrics.totalUsers"
+        description="Users"
+        icon="team"
+        color="#1890ff"
+        [loading]="loading">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzSpan]="6">
+      <app-statistics-card
+        title="Risk Violations"
+        [value]="dashboardMetrics.riskViolations"
+        description="Violations"
+        icon="warning"
+        color="#ff4d4f"
+        [loading]="loading">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzSpan]="6">
+      <app-statistics-card
+        title="Unique Risk Violations"
+        [value]="dashboardMetrics.uniqueRisks"
+        description="Unique Risks"
+        icon="exclamation-circle"
+        color="#fa8c16"
+        [loading]="loading">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzSpan]="6">
+      <app-statistics-card
+        title="Compliance Rate"
+        [value]="dashboardMetrics.complianceRate + '%'"
+        description="Compliance"
+        icon="check-circle"
+        color="#52c41a"
+        [loading]="loading">
+      </app-statistics-card>
+    </div>
+  </div>
+
+  <!-- Analysis Details Bar -->
+  <nz-card [nzBordered]="true" style="margin-bottom: 16px;" nzSize="small">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <!-- Left: System info -->
+      <div style="display: flex; align-items: center; gap: 24px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span nz-icon nzType="database" nzTheme="outline" style="font-size: 18px; color: #1890ff;"></span>
+          <div>
+            <div style="font-weight: 600; font-size: 13px;">{{ dialogData?.data?.sapSystemName }}</div>
+            <div style="font-size: 11px; color: #8c8c8c;">SAP System</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span nz-icon nzType="calendar" nzTheme="outline" style="font-size: 18px; color: #52c41a;"></span>
+          <div>
+            <div style="font-weight: 600; font-size: 13px;">{{ dialogData?.data?.completedOnStr || 'Running' }}</div>
+            <div style="font-size: 11px; color: #8c8c8c;">{{ dialogData?.data?.completedOnStr ? 'Completed' : 'In Progress' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center: Tags -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <nz-tag *ngIf="analysisFor !== 'NON-ABAP'" nzColor="blue">{{ dialogData?.data?.targetType }}</nz-tag>
+        <nz-tag nzColor="default">{{ dialogData?.data?.type }}</nz-tag>
+        <nz-tag nzColor="purple">{{ dialogData?.data?.analysisType }}</nz-tag>
+      </div>
+
+      <!-- Right: Toggle details -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button nz-button nzType="text" nzShape="circle"
+                nz-tooltip [nzTooltipTitle]="dialogData?.data?.description"
+                nzTooltipPlacement="left">
+          <span nz-icon nzType="info-circle" nzTheme="outline"></span>
+        </button>
+        <button nz-button nzType="text" nzShape="circle"
+                (click)="toggleAnalysisDetails()"
+                nz-tooltip [nzTooltipTitle]="showAnalysisDetails ? 'Hide Details' : 'Show Details'">
+          <span nz-icon [nzType]="showAnalysisDetails ? 'up' : 'down'" nzTheme="outline"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Expanded Details -->
+    <div *ngIf="showAnalysisDetails" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+      <nz-descriptions nzBordered [nzColumn]="3" nzSize="small">
+        <nz-descriptions-item nzTitle="SAP System">{{ dialogData?.data?.sapSystemName }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Completed On">{{ dialogData?.data?.completedOnStr || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Description">{{ dialogData?.data?.description || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Target Type" *ngIf="analysisFor !== 'NON-ABAP'">{{ dialogData?.data?.targetType }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Analysis Type">{{ dialogData?.data?.type }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Analysis Level">{{ dialogData?.data?.analysisType }}</nz-descriptions-item>
+      </nz-descriptions>
+    </div>
+  </nz-card>
+
+  <!-- Tabs -->
+  <nz-tabset [nzAnimated]="false" [(nzSelectedIndex)]="activeTabIndex">
+
+    <!-- Tab 1: Violations -->
+    <nz-tab [nzTitle]="enableRiskViolations ? 'Risk Violations' : 'Rule Violations'">
+      <div style="padding: 12px 0;">
+        <!-- Search + Export -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <nz-input-group nzSize="small" [nzSuffix]="vSearchIcon" style="max-width: 280px;">
+            <input nz-input placeholder="Global search..." [(ngModel)]="violationsSearch"
+                   (keyup.enter)="onViolationsFilterChange()" />
+          </nz-input-group>
+          <ng-template #vSearchIcon>
+            <span nz-icon nzType="search" style="cursor: pointer;" (click)="onViolationsFilterChange()"></span>
+          </ng-template>
+
+          <button nz-button nzType="default" (click)="exportViolations()">
+            <span nz-icon nzType="download" nzTheme="outline"></span>
+            Export
+          </button>
+        </div>
+
+        <!-- Violations table -->
+        <nz-table #violationsTable
+                  [nzData]="violationsData"
+                  nzSize="small"
+                  [nzFrontPagination]="false"
+                  [nzTotal]="violationsTotal"
+                  [nzPageIndex]="violationsPage"
+                  [nzPageSize]="pageSize"
+                  (nzPageIndexChange)="onViolationsPageNav($event)"
+                  nzTableLayout="fixed"
+                  [nzScroll]="{ y: '50vh' }"
+                  [nzLoading]="loading">
+          <thead>
+            <tr>
+              <th *ngFor="let col of violationsCols">{{ col.header }}</th>
+            </tr>
+            <tr>
+              <th *ngFor="let col of violationsCols" style="padding: 4px;">
+                <input nz-input nzSize="small" placeholder="Filter..."
+                       [(ngModel)]="violationsFilters[col.field]"
+                       (keyup.enter)="onViolationsFilterChange()" />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of violationsTable.data">
+              <td *ngFor="let col of violationsCols">{{ row[col.field] }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </nz-tab>
+
+    <!-- Tab 2: Summary Report -->
+    <nz-tab nzTitle="Summary Report">
+      <div style="padding: 12px 0;">
+        <!-- Filters + Actions -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <nz-select [(ngModel)]="riskLevelFilter"
+                       nzPlaceHolder="Filter by Risk Level"
+                       nzAllowClear
+                       style="width: 200px;"
+                       (ngModelChange)="onRiskLevelFilterChange()">
+              <nz-option nzValue="" nzLabel="All Levels"></nz-option>
+              <nz-option nzValue="Low" nzLabel="Low"></nz-option>
+              <nz-option nzValue="Medium" nzLabel="Medium"></nz-option>
+              <nz-option nzValue="High" nzLabel="High"></nz-option>
+              <nz-option nzValue="Critical" nzLabel="Critical"></nz-option>
+            </nz-select>
+
+            <nz-input-group nzSize="small" [nzSuffix]="sSearchIcon" style="max-width: 280px;">
+              <input nz-input placeholder="Global search..." [(ngModel)]="summarySearch"
+                     (keyup.enter)="onSummaryFilterChange()" />
+            </nz-input-group>
+            <ng-template #sSearchIcon>
+              <span nz-icon nzType="search" style="cursor: pointer;" (click)="onSummaryFilterChange()"></span>
+            </ng-template>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button nz-button nzType="default" (click)="onSummaryAction('showChart')">
+              <span nz-icon nzType="bar-chart" nzTheme="outline"></span>
+              Show Chart
+            </button>
+            <button nz-button nzType="default" (click)="onSummaryAction('exportResults')">
+              <span nz-icon nzType="download" nzTheme="outline"></span>
+              Export
+            </button>
+            <button nz-button nzType="default" (click)="onSummaryAction('generateExcelReport')">
+              <span nz-icon nzType="table" nzTheme="outline"></span>
+              Excel Report
+            </button>
+            <button nz-button nzType="primary" (click)="onSummaryAction('assignMitigation')"
+                    *ngIf="dialogData?.data?.from !== 'CAM'">
+              <span nz-icon nzType="safety-certificate" nzTheme="outline"></span>
+              Assign Mitigation
+            </button>
+          </div>
+        </div>
+
+        <!-- Summary table -->
+        <nz-table #summaryTable
+                  [nzData]="summaryData"
+                  nzSize="small"
+                  [nzFrontPagination]="false"
+                  [nzTotal]="summaryTotal"
+                  [nzPageIndex]="summaryPage"
+                  [nzPageSize]="pageSize"
+                  (nzPageIndexChange)="onSummaryPageNav($event)"
+                  nzTableLayout="fixed"
+                  [nzScroll]="{ x: '1800px', y: '50vh' }">
+          <thead>
+            <tr>
+              <th *ngFor="let col of summaryCols" [nzWidth]="col.width || null">{{ col.header }}</th>
+            </tr>
+            <tr>
+              <th *ngFor="let col of summaryCols" style="padding: 4px;">
+                <input nz-input nzSize="small" placeholder="Filter..."
+                       [(ngModel)]="summaryFilters[col.field]"
+                       (keyup.enter)="onSummaryFilterChange()" />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of summaryTable.data"
+                [class.ant-table-row-selected]="summarySelectedRow === row"
+                style="cursor: pointer;"
+                (click)="selectSummaryRow(row)">
+              <td *ngFor="let col of summaryCols">
+                <ng-container [ngSwitch]="col.field">
+                  <ng-container *ngSwitchCase="'riskName'">
+                    <span style="color: #1890ff; cursor: pointer;">{{ row[col.field] }}</span>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'isExecuted'">
+                    <nz-tag *ngIf="row[col.field]" nzColor="orange">Executed</nz-tag>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'ruleExecuted'">
+                    <nz-tag *ngIf="row[col.field]" nzColor="orange">Executed</nz-tag>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'riskLevel'">
+                    <nz-tag [nzColor]="getRiskLevelColor(row[col.field])">{{ row[col.field] }}</nz-tag>
+                  </ng-container>
+                  <ng-container *ngSwitchDefault>
+                    {{ row[col.field] }}
+                  </ng-container>
+                </ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </nz-tab>
+
+    <!-- Tab 3: Detailed Report (hidden for NON-ABAP) -->
+    <nz-tab nzTitle="Detailed Report" *ngIf="analysisFor !== 'NON-ABAP'">
+      <div style="padding: 12px 0;">
+        <!-- Actions -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <nz-input-group nzSize="small" [nzSuffix]="dSearchIcon" style="max-width: 280px;">
+            <input nz-input placeholder="Global search..." [(ngModel)]="detailedSearch"
+                   (keyup.enter)="onDetailedFilterChange()" />
+          </nz-input-group>
+          <ng-template #dSearchIcon>
+            <span nz-icon nzType="search" style="cursor: pointer;" (click)="onDetailedFilterChange()"></span>
+          </ng-template>
+
+          <div style="display: flex; gap: 8px;">
+            <button nz-button nzType="default" (click)="onDetailedAction('exportResults')">
+              <span nz-icon nzType="download" nzTheme="outline"></span>
+              Export
+            </button>
+            <button nz-button nzType="default" (click)="onDetailedAction('generateExcelReport')">
+              <span nz-icon nzType="table" nzTheme="outline"></span>
+              Excel Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Detailed table -->
+        <nz-table #detailedTable
+                  [nzData]="detailedData"
+                  nzSize="small"
+                  [nzFrontPagination]="false"
+                  [nzTotal]="detailedTotal"
+                  [nzPageIndex]="detailedPage"
+                  [nzPageSize]="pageSize"
+                  (nzPageIndexChange)="onDetailedPageNav($event)"
+                  nzTableLayout="fixed"
+                  [nzScroll]="{ x: '1800px', y: '50vh' }">
+          <thead>
+            <tr>
+              <th *ngFor="let col of detailedCols" [nzWidth]="col.width || null">{{ col.header }}</th>
+            </tr>
+            <tr>
+              <th *ngFor="let col of detailedCols" style="padding: 4px;">
+                <input nz-input nzSize="small" placeholder="Filter..."
+                       [(ngModel)]="detailedFilters[col.field]"
+                       (keyup.enter)="onDetailedFilterChange()" />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of detailedTable.data">
+              <td *ngFor="let col of detailedCols">{{ row[col.field] }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </nz-tab>
+
+  </nz-tabset>
+</div>

@@ -1,0 +1,156 @@
+<app-page-panel header="Request Report">
+    <form nz-form [formGroup]="form" (ngSubmit)="search()" nzLayout="vertical">
+        <div nz-row [nzGutter]="24">
+            <div nz-col [nzSpan]="4">
+                <nz-form-item>
+                    <nz-form-control>
+                        <input nz-input formControlName="id" placeholder="Request No" />
+                    </nz-form-control>
+                </nz-form-item>
+            </div>
+
+            <div nz-col [nzSpan]="4">
+                <nz-form-item>
+                    <nz-form-control>
+                        <input nz-input formControlName="privilegeId" placeholder="Privilege ID" />
+                    </nz-form-control>
+                </nz-form-item>
+            </div>
+
+            <div nz-col [nzSpan]="4">
+                <nz-form-item>
+                    <nz-form-control>
+                        <input nz-input formControlName="description" placeholder="Description" />
+                    </nz-form-control>
+                </nz-form-item>
+            </div>
+
+            <div nz-col [nzSpan]="4">
+                <nz-form-item>
+                    <nz-form-control>
+                        <input nz-input formControlName="requesterName" placeholder="Requester" />
+                    </nz-form-control>
+                </nz-form-item>
+            </div>
+
+            <div nz-col [nzSpan]="4">
+                <nz-form-item>
+                    <nz-form-control>
+                        <nz-date-picker formControlName="requestDate" nzPlaceHolder="Request Date"
+                            style="width: 100%"></nz-date-picker>
+                    </nz-form-control>
+                </nz-form-item>
+            </div>
+
+            <div nz-col [nzSpan]="4">
+                <nz-form-item>
+                    <nz-form-control>
+                        <input nz-input formControlName="sapName" placeholder="Sap Name" />
+                    </nz-form-control>
+                </nz-form-item>
+            </div>
+
+            <div nz-col [nzSpan]="4">
+                <nz-form-item>
+                    <nz-form-control>
+                        <nz-date-picker formControlName="from" nzPlaceHolder="Valid From"
+                            style="width: 100%"></nz-date-picker>
+                    </nz-form-control>
+                </nz-form-item>
+            </div>
+
+            <div nz-col [nzSpan]="4">
+                <nz-form-item>
+                    <nz-form-control>
+                        <nz-date-picker formControlName="to" nzPlaceHolder="Valid To"
+                            style="width: 100%"></nz-date-picker>
+                    </nz-form-control>
+                </nz-form-item>
+            </div>
+
+            <div nz-col [nzSpan]="4">
+                <nz-form-item>
+                    <nz-form-control>
+                        <nz-select formControlName="status" nzPlaceHolder="Status" nzAllowClear style="width: 100%">
+                            <nz-option *ngFor="let i of statusList" [nzValue]="i" [nzLabel]="i"></nz-option>
+                        </nz-select>
+                    </nz-form-control>
+                </nz-form-item>
+            </div>
+
+            <div nz-col [nzSpan]="4">
+                <nz-form-item>
+                    <nz-form-control>
+                        <input nz-input formControlName="justification" placeholder="Justification" />
+                    </nz-form-control>
+                </nz-form-item>
+            </div>
+
+            <div nz-col [nzSpan]="4">
+                <nz-form-item>
+                    <nz-form-control>
+                        <input nz-input formControlName="transaction" placeholder="Transaction" />
+                    </nz-form-control>
+                </nz-form-item>
+            </div>
+
+            <!-- Total inputs: 11. Remaining columns: 24 (row 1) + 24 (row 2) + 24 (row 3) = 72 - (11 * 4) = 72 - 44 = 28 open. -->
+            <div nz-col [nzSpan]="24 - 4" class="search-actions">
+                <button nz-button nzType="primary" type="submit" [nzLoading]="loading">Search</button>
+                <button nz-button nzType="default" type="button" (click)="resetForm()">Reset</button>
+                <button nz-button nzType="dashed" type="button" (click)="export()">Export</button>
+            </div>
+        </div>
+    </form>
+
+    <nz-divider class="my-4"></nz-divider>
+
+    <div class="w-full mt-5">
+        <app-advanced-table [columns]="tableColumns" [data]="tableData" [totalRecords]="totalRecords"
+            [serverSide]="true" (pageChange)="getTableData($event)" [loading]="loading">
+
+            <ng-template #statusTemplate let-row="row">
+                <nz-tag
+                    [nzColor]="row.status === 'Approved' ? 'success' : row.status === 'Rejected' ? 'error' : row.status === 'Requested' ? 'processing' : 'default'"
+                    class="cursor-pointer" (click)="showRequestMessage(row)">
+                    {{ row.status }}
+                </nz-tag>
+            </ng-template>
+
+            <ng-template #operationsTemplate let-row="row">
+                <nz-space [nzSize]="'small'">
+                    <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="openDetail('view', row)"
+                        nz-tooltip="View Details">
+                        <span nz-icon nzType="eye" nzTheme="outline"></span>
+                    </button>
+                    <button *nzSpaceItem nz-button nzType="default" nzSize="small" (click)="openDetail('viewTxn', row)"
+                        nz-tooltip="View Txn Logs">
+                        <span nz-icon nzType="file" nzTheme="outline"></span>
+                    </button>
+                    <button *nzSpaceItem nz-button nzType="default" nzSize="small"
+                        (click)="openDetail('viewRequest', row)" nz-tooltip="View Request Logs">
+                        <span nz-icon nzType="clock-circle" nzTheme="outline"></span>
+                    </button>
+
+                    <ng-container *ngIf="row.status === 'Error' || ['InUse', 'Approved'].includes(row.status)">
+                        <nz-divider *nzSpaceItem nzType="vertical"></nz-divider>
+                    </ng-container>
+
+                    <ng-container *ngIf="row.status === 'Error'">
+                        <button *nzSpaceItem nz-button nzType="text" nzSize="small"
+                            (click)="openDetail('reset', row)" nz-tooltip="To Reset" class="text-blue-500">
+                            <span nz-icon nzType="sync" nzTheme="outline"></span>
+                        </button>
+                    </ng-container>
+                    <ng-container *ngIf="['InUse', 'Approved'].includes(row.status)">
+                        <button *nzSpaceItem nz-button nzType="text"
+                            nzSize="small" (click)="openDetail('end', row)" nz-tooltip="End Privilege ID Validity"
+                            class="text-red-500">
+                            <span nz-icon nzType="stop" nzTheme="outline"></span>
+                        </button>
+                    </ng-container>
+                </nz-space>
+            </ng-template>
+        </app-advanced-table>
+    </div>
+</app-page-panel>

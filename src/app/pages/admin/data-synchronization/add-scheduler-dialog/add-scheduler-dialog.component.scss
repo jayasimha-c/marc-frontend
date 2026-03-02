@@ -1,0 +1,193 @@
+:host {
+  display: block;
+}
+
+.sched-dialog {
+  &__loading {
+    display: flex;
+    justify-content: center;
+    padding: 32px 0;
+  }
+
+  &__loading-text {
+    text-align: center;
+    padding: 16px 0;
+    color: rgba(0, 0, 0, 0.45);
+  }
+
+  &__row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 4px;
+
+    &--half {
+      > * {
+        width: 50%;
+      }
+    }
+  }
+
+  &__field {
+    flex: 1;
+
+    &--full {
+      width: 100%;
+    }
+  }
+
+  &__section-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.85);
+    margin-bottom: 12px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  &__checkbox-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  &__checkbox {
+    margin-bottom: 12px;
+  }
+
+  &__hint {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.45);
+    margin-top: 4px;
+    margin-bottom: 8px;
+
+    &--warn {
+      color: #fa8c16;
+    }
+
+    &--indent {
+      margin-left: 32px;
+      margin-bottom: 16px;
+    }
+  }
+
+  &__alert {
+    margin-bottom: 16px;
+  }
+
+  // Concept info panel
+  &__concept-info {
+    background: #fafafa;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+
+  &__concept-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__concept-icon {
+    font-size: 20px;
+    color: #1890ff;
+  }
+
+  &__concept-name {
+    font-weight: 500;
+  }
+
+  &__concept-desc {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.45);
+    margin: 4px 0 0;
+  }
+
+  &__concept-systems {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.45);
+    margin-top: 8px;
+  }
+
+  // Correlation sources
+  &__sources {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 8px;
+    margin-bottom: 16px;
+  }
+
+  &__source {
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  &__source-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  &__source-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.85);
+  }
+
+  &__source-actions {
+    display: flex;
+    gap: 8px;
+
+    button {
+      font-size: 11px;
+      padding: 4px 10px;
+      min-height: 26px;
+      line-height: 1;
+    }
+  }
+
+  &__conn-list {
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 4px 0;
+  }
+
+  &__conn-item {
+    display: block;
+    width: 100%;
+    padding: 8px 14px;
+    transition: background-color 0.15s;
+
+    &:hover {
+      background: #e6f7ff;
+    }
+
+    ::ng-deep .ant-checkbox + span {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      width: 100%;
+    }
+  }
+
+  &__conn-name {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.85);
+  }
+
+  &__conn-desc {
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.45);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

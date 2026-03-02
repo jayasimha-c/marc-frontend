@@ -1,0 +1,31 @@
+<div *ngIf="loading" style="display: flex; justify-content: center; padding: 32px 0;">
+  <nz-spin nzSimple></nz-spin>
+</div>
+
+<div *ngIf="!loading">
+  <p style="color: #666; margin-bottom: 16px;">
+    This will create common S4 HANA org fields for the selected SAP system.
+    Existing org fields will be skipped.
+  </p>
+
+  <form [formGroup]="form">
+    <nz-form-item>
+      <div class="nz-float-label" [class.has-value]="form.get('sapSystem')?.value">
+        <nz-select formControlName="sapSystem" nzPlaceHolder=" " nzShowSearch>
+          <nz-option *ngFor="let sys of sapSystemList" [nzValue]="sys.id" [nzLabel]="sys.destinationName"></nz-option>
+        </nz-select>
+        <label>SAP System</label>
+      </div>
+      <span style="color: #ff4d4f; font-size: 12px;" *ngIf="form.get('sapSystem')?.invalid && form.get('sapSystem')?.touched">
+        SAP System is required
+      </span>
+    </nz-form-item>
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close(null)">Cancel</button>
+  <button nz-button nzType="primary" [disabled]="!form.valid || loading" (click)="onConfirm()">
+    Initialize
+  </button>
+</div>

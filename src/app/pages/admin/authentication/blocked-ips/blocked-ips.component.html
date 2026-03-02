@@ -1,0 +1,12 @@
+<app-advanced-table
+  title="Blocked IPs List"
+  [columns]="columns"
+  [data]="data"
+  [actions]="tableActions"
+  [loading]="loading"
+  [showSearch]="true"
+  [showPagination]="true"
+  size="middle"
+  (refresh)="loadData()"
+  (rowClick)="onRowClick($event)">
+</app-advanced-table>

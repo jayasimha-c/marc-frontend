@@ -1,0 +1,111 @@
+<div class="auth-container">
+  <nz-card class="auth-card">
+    <div class="auth-header">
+      <h1>MARC</h1>
+      <p>Manage Access Risks and Controls</p>
+    </div>
+
+    <div class="text-center my-8" *ngIf="isLoadingLicense">
+      <nz-spin nzSimple nzTip="Checking license..."></nz-spin>
+    </div>
+
+    <!-- License Form -->
+    <ng-container *ngIf="!isLoadingLicense && !isLicenseValid">
+      <nz-alert nzType="error" nzMessage="License Required" [nzDescription]="licenseMessage" nzShowIcon
+        class="mb-6"></nz-alert>
+      <form nz-form [formGroup]="licenseForm" (ngSubmit)="applyLicense()" nzLayout="vertical">
+        <nz-form-item>
+          <nz-form-label nzFor="licenseKey">License Key</nz-form-label>
+          <nz-form-control nzErrorTip="License key is required">
+            <textarea nz-input formControlName="licenseKey" rows="8" placeholder="Paste your license key here..."
+              style="font-family: monospace;"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+        <button nz-button nzType="primary" nzSize="large" nzBlock [nzLoading]="loading" type="submit">
+          Apply License
+        </button>
+      </form>
+    </ng-container>
+
+    <!-- Initial Password Reset Form -->
+    <ng-container *ngIf="!isLoadingLicense && isLicenseValid && showPasswordReset">
+      <nz-alert nzType="info" nzMessage="Password Reset Required"
+        nzDescription="This is your first login or you're using a temporary password. Please create a new password to continue."
+        nzShowIcon class="mb-6"></nz-alert>
+      <form nz-form [formGroup]="passwordResetForm" (ngSubmit)="submitPasswordReset()" nzLayout="vertical">
+        <nz-form-item>
+          <nz-form-label nzFor="newPassword">New Password</nz-form-label>
+          <nz-form-control nzErrorTip="Password is required (min 8 characters)">
+            <nz-input-group nzPrefixIcon="lock" nzSize="large">
+              <input nz-input formControlName="newPassword" type="password" placeholder="Enter new password" />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzFor="confirmPassword">Confirm Password</nz-form-label>
+          <nz-form-control nzErrorTip="Please confirm your password">
+            <nz-input-group nzPrefixIcon="lock" nzSize="large">
+              <input nz-input formControlName="confirmPassword" type="password" placeholder="Confirm new password" />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+
+        <button nz-button nzType="primary" nzSize="large" nzBlock [nzLoading]="loading" type="submit">
+          Reset Password
+        </button>
+      </form>
+    </ng-container>
+
+    <!-- Standard Login Form -->
+    <form nz-form [formGroup]="signInForm" (ngSubmit)="signIn()" nzLayout="vertical"
+      *ngIf="!isLoadingLicense && isLicenseValid && !showPasswordReset">
+      <nz-form-item>
+        <nz-form-label nzFor="username">Username</nz-form-label>
+        <nz-form-control nzErrorTip="Please enter your username">
+          <nz-input-group nzPrefixIcon="user" nzSize="large">
+            <input nz-input formControlName="username" placeholder="Enter username" id="username" />
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="password">Password</nz-form-label>
+        <nz-form-control nzErrorTip="Please enter your password">
+          <nz-input-group nzPrefixIcon="lock" nzSize="large" [nzSuffix]="suffixTemplate">
+            <input nz-input formControlName="password" [type]="passwordVisible ? 'text' : 'password'"
+              placeholder="Enter password" id="password" />
+          </nz-input-group>
+          <ng-template #suffixTemplate>
+            <span nz-icon [nzType]="passwordVisible ? 'eye' : 'eye-invisible'"
+              (click)="passwordVisible = !passwordVisible" style="cursor: pointer;"></span>
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item *ngIf="showReportingUnits">
+        <nz-form-label nzFor="reportingUnit">Reporting Unit</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="reportingUnit" nzPlaceHolder="Select Reporting Unit" nzSize="large" nzShowSearch>
+            <nz-option *ngFor="let ru of reportingUnits" [nzValue]="ru.id" [nzLabel]="ru.name"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-control>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label nz-checkbox formControlName="remember">
+              <span>Remember me</span>
+            </label>
+            <a routerLink="/auth/forgot-password">Forgot Password?</a>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+
+      <button nz-button nzType="primary" nzSize="large" nzBlock [nzLoading]="loading" type="submit">
+        Sign In
+      </button>
+    </form>
+  </nz-card>
+</div>

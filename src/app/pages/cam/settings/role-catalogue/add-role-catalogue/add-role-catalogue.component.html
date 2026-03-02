@@ -1,0 +1,109 @@
+<form [formGroup]="form">
+  <div style="display: flex; gap: 16px;">
+    <nz-form-item style="flex: 1;">
+      <nz-form-control nzErrorTip="Role is required">
+        <div class="nz-float-label" [class.has-value]="form.get('role')!.value">
+          <input nz-input placeholder=" " formControlName="role" />
+          <label>Role</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item style="flex: 1;">
+      <nz-form-control nzErrorTip="Business Process is required">
+        <div class="nz-float-label" [class.has-value]="form.get('businessProcess')!.value">
+          <input nz-input placeholder=" " formControlName="businessProcess" />
+          <label>Business Process</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+
+  <div style="display: flex; gap: 16px;">
+    <nz-form-item style="flex: 1;">
+      <nz-form-control nzErrorTip="Sub Process is required">
+        <div class="nz-float-label" [class.has-value]="form.get('subProcess')!.value">
+          <input nz-input placeholder=" " formControlName="subProcess" />
+          <label>Sub Process</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item style="flex: 1;">
+      <nz-form-control nzErrorTip="Department is required">
+        <div class="nz-float-label" [class.has-value]="form.get('department')!.value">
+          <input nz-input placeholder=" " formControlName="department" />
+          <label>Department</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+
+  <div style="display: flex; gap: 16px;">
+    <nz-form-item style="flex: 1;">
+      <nz-form-control nzErrorTip="Division is required">
+        <div class="nz-float-label" [class.has-value]="form.get('division')!.value">
+          <input nz-input placeholder=" " formControlName="division" />
+          <label>Division</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item style="flex: 1;">
+      <nz-form-control nzErrorTip="Criticality is required">
+        <div class="nz-float-label" [class.has-value]="form.get('criticality')!.value">
+          <input nz-input placeholder=" " formControlName="criticality" />
+          <label>Criticality</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+
+  <div style="display: flex; gap: 16px;">
+    <nz-form-item style="flex: 1;">
+      <nz-form-control nzErrorTip="Certificate Require is required">
+        <div class="nz-float-label" [class.has-value]="form.get('certificateRequire')!.value !== null && form.get('certificateRequire')!.value !== ''">
+          <nz-select formControlName="certificateRequire" nzPlaceHolder=" ">
+            <nz-option [nzValue]="true" nzLabel="Yes"></nz-option>
+            <nz-option [nzValue]="false" nzLabel="No"></nz-option>
+          </nz-select>
+          <label>Certificate Require?</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item style="flex: 1;">
+      <nz-form-control nzErrorTip="Role Mapping is required">
+        <div class="nz-float-label" [class.has-value]="form.get('roleMapping')!.value !== null && form.get('roleMapping')!.value !== ''">
+          <nz-select formControlName="roleMapping" nzPlaceHolder=" ">
+            <nz-option [nzValue]="true" nzLabel="Yes"></nz-option>
+            <nz-option [nzValue]="false" nzLabel="No"></nz-option>
+          </nz-select>
+          <label>Role Mapping?</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+
+  <div style="display: flex; gap: 16px;">
+    <nz-form-item style="flex: 1;">
+      <nz-form-control nzErrorTip="Role Type is required">
+        <div class="nz-float-label" [class.has-value]="form.get('roleType')!.value">
+          <input nz-input placeholder=" " formControlName="roleType" />
+          <label>Role Type</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item style="flex: 1;">
+      <nz-form-control nzErrorTip="System is required">
+        <div class="nz-float-label" [class.has-value]="form.get('system')!.value">
+          <nz-select formControlName="system" nzPlaceHolder=" " nzShowSearch>
+            <nz-option *ngFor="let sys of sapSysList" [nzValue]="sys" [nzLabel]="sys"></nz-option>
+          </nz-select>
+          <label>System</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+</form>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+  <button nz-button nzType="primary" (click)="save()">Save</button>
+</div>

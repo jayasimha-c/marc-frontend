@@ -1,0 +1,19 @@
+<div class="w-full">
+    <app-advanced-table title="Jobs" [columns]="columns" [data]="data" [loading]="loading" [showSearch]="false"
+        [showPagination]="true" [totalRecords]="totalRecords" [pageSize]="pageSize" [pageIndex]="pageIndex"
+        [actions]="tableActions" (pageIndexChange)="onPageIndexChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)">
+    </app-advanced-table>
+</div>
+
+<ng-template #statusTpl let-row="row">
+    <nz-tag [nzColor]="row.status === 'COMPLETED' ? 'success' : (row.status === 'FAILED' ? 'error' : 'processing')">
+        {{ row.status }}
+    </nz-tag>
+</ng-template>
+
+<ng-template #operationsTpl let-row="row">
+    <a (click)="openDetail(row)">
+        <span nz-icon nzType="profile" nzTheme="outline" class="text-blue-500 mr-1"></span> View Logs
+    </a>
+</ng-template>

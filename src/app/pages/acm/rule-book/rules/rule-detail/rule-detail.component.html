@@ -1,0 +1,39 @@
+<nz-spin [nzSpinning]="loading">
+  <div class="rule-detail__header">
+    <div class="rule-detail__field">
+      <span class="rule-detail__label">Name</span>
+      <span class="rule-detail__value">{{ruleName || '—'}}</span>
+    </div>
+    <div class="rule-detail__field">
+      <span class="rule-detail__label">Description</span>
+      <span class="rule-detail__value">{{ruleDescription || '—'}}</span>
+    </div>
+  </div>
+
+  <nz-table #detailTable [nzData]="tableData" [nzSize]="'small'" [nzShowPagination]="false"
+    [nzFrontPagination]="false" nzTableLayout="fixed" [nzScroll]="{ y: '300px' }">
+    <thead>
+      <tr>
+        <th nzWidth="160px">Object</th>
+        <th nzWidth="160px">Field Name</th>
+        <th>Value</th>
+        <th nzWidth="100px">Join By AND</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of detailTable.data">
+        <td>{{row.name}}</td>
+        <td>{{row.fieldName}}</td>
+        <td>{{row.fieldValue}}</td>
+        <td>
+          <span nz-icon [nzType]="row.joinByAnd ? 'check-circle' : 'close-circle'" nzTheme="outline"
+            [style.color]="row.joinByAnd ? '#52c41a' : '#ff4d4f'"></span>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+
+  <nz-empty *ngIf="!loading && !tableData.length"
+    nzNotFoundContent="No rule objects found" [nzNotFoundImage]="'simple'">
+  </nz-empty>
+</nz-spin>

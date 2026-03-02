@@ -1,0 +1,73 @@
+<app-page-panel [title]="'Contact Support'">
+    <ng-container headerSection>
+        <button nz-button nzType="default" [routerLink]="['../']">
+            <span nz-icon nzType="arrow-left" nzTheme="outline" class="mr-2"></span>
+            Back to Help Center
+        </button>
+    </ng-container>
+
+    <div panel-content>
+        <!-- Support Options -->
+        <div class="mb-6">
+            <p class="text-secondary">
+                Need assistance? Choose one of the support options below to get help from our team.
+            </p>
+        </div>
+
+        <div nz-row [nzGutter]="[24, 24]">
+            <!-- Email Support Card -->
+            <div nz-col nzXs="24" nzMd="12">
+                <nz-card [nzBordered]="true" class="rounded shadow-sm h-full">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div
+                            class="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                            <span nz-icon nzType="mail" nzTheme="outline"
+                                class="text-blue-600 dark:text-blue-400 text-xl"></span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold mb-1">Email Support</h3>
+                            <p class="text-secondary text-sm">
+                                Contact support to learn more about our products and get professional help.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-4">
+                        <div class="text-sm text-secondary mb-1">Email Address</div>
+                        <div class="text-primary font-medium">support&#64;marc4grc.com</div>
+                    </div>
+                    <a nz-button nzType="primary" nzBlock href="mailto:support@marc4grc.com">
+                        <span nz-icon nzType="send" nzTheme="outline" class="mr-2"></span>
+                        Send Email
+                    </a>
+                </nz-card>
+            </div>
+
+            <!-- Support Portal Card -->
+            <div nz-col nzXs="24" nzMd="12">
+                <nz-card [nzBordered]="true" class="rounded shadow-sm h-full">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div
+                            class="flex items-center justify-center w-12 h-12 rounded-lg bg-green-50 dark:bg-green-900/20">
+                            <span nz-icon nzType="customer-service" nzTheme="outline"
+                                class="text-green-600 dark:text-green-400 text-xl"></span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold mb-1">Support Portal</h3>
+                            <p class="text-secondary text-sm">
+                                Visit our support portal to log tickets and track your issues.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-4">
+                        <div class="text-sm text-secondary mb-1">Portal URL</div>
+                        <div class="text-primary font-medium">marc4grc.freshdesk.com</div>
+                    </div>
+                    <a nz-button nzType="primary" nzBlock href="https://www.marc4grc.freshdesk.com" target="_blank">
+                        <span nz-icon nzType="link" nzTheme="outline" class="mr-2"></span>
+                        Open Portal
+                    </a>
+                </nz-card>
+            </div>
+        </div>
+    </div>
+</app-page-panel>

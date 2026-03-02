@@ -1,0 +1,42 @@
+<form [formGroup]="form">
+  <nz-form-item>
+    <div class="nz-float-label" [class.has-value]="form.get('sapSystem')?.value">
+      <nz-select formControlName="sapSystem" nzPlaceHolder=" " nzShowSearch>
+        <nz-option *ngFor="let sys of sapSystemList" [nzValue]="sys.id" [nzLabel]="sys.destinationName"></nz-option>
+      </nz-select>
+      <label>SAP System</label>
+    </div>
+    <span style="color: #ff4d4f; font-size: 12px;" *ngIf="form.get('sapSystem')?.invalid && form.get('sapSystem')?.touched">
+      SAP System is required
+    </span>
+  </nz-form-item>
+
+  <nz-form-item>
+    <div class="nz-float-label" [class.has-value]="form.get('name')?.value">
+      <input nz-input placeholder=" " formControlName="name" autocomplete="off" />
+      <label>Name</label>
+    </div>
+    <span style="color: #ff4d4f; font-size: 12px;" *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
+      Name is required
+    </span>
+  </nz-form-item>
+
+  <nz-form-item>
+    <div class="nz-float-label" [class.has-value]="form.get('description')?.value">
+      <input nz-input placeholder=" " formControlName="description" autocomplete="off" />
+      <label>Description</label>
+    </div>
+    <span style="color: #ff4d4f; font-size: 12px;" *ngIf="form.get('description')?.invalid && form.get('description')?.touched">
+      Description is required
+    </span>
+  </nz-form-item>
+
+  <label nz-checkbox formControlName="isActive">Is Active?</label>
+</form>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+  <button nz-button nzType="primary" (click)="save()" [disabled]="isSaving">
+    {{ isSaving ? 'Saving...' : 'Save' }}
+  </button>
+</div>

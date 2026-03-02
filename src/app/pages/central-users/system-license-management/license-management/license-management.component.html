@@ -1,0 +1,53 @@
+<app-page-panel header="License Management">
+    <!-- Summary Table -->
+    <nz-card nzSize="small" style="margin-bottom: 16px;">
+        <nz-table #summaryTable [nzData]="summaryData" nzSize="small" [nzFrontPagination]="false"
+            [nzShowPagination]="false" [nzLoading]="summaryLoading" nzBordered [nzScroll]="{ y: '250px' }">
+            <thead>
+                <tr>
+                    <th>System</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>As Per SAP</th>
+                    <th>Purchased</th>
+                    <th>Cost</th>
+                    <th>As Per MARC</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let row of summaryTable.data" (click)="onSummaryRowClick(row)"
+                    [style.background]="selectedSummary === row ? '#e6f7ff' : ''"
+                    style="cursor: pointer;">
+                    <td>{{ row.system }}</td>
+                    <td>{{ row.licenseType }}</td>
+                    <td>{{ row.description }}</td>
+                    <td>{{ row.usageAsPerSap }}</td>
+                    <td>{{ row.purchased }}</td>
+                    <td>{{ row.cost }}</td>
+                    <td>{{ row.usageAsPerMarc }}</td>
+                </tr>
+            </tbody>
+        </nz-table>
+    </nz-card>
+
+    <!-- Results Table -->
+    <nz-card nzTitle="Results" [nzExtra]="resultSubtitle" nzSize="small">
+        <ng-template #resultSubtitle>
+            <span nz-typography nzType="secondary" *ngIf="!selectedSummary">
+                Select a row from the summary table to view details.
+            </span>
+        </ng-template>
+        <app-advanced-table
+            [columns]="resultColumns"
+            [data]="resultData"
+            [loading]="resultLoading"
+            [serverSide]="true"
+            [totalRecords]="resultTotal"
+            [actions]="resultActions"
+            [showSelection]="true"
+            [scrollX]="'1200px'"
+            (queryParamsChange)="onResultQueryChange($event)"
+            (rowClick)="onResultRowClick($event)">
+        </app-advanced-table>
+    </nz-card>
+</app-page-panel>

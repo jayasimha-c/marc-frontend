@@ -1,0 +1,14 @@
+<app-advanced-table
+  title="Approval Delegation Requests"
+  [data]="data"
+  [columns]="columns"
+  [actions]="actions"
+  [loading]="loading"
+  [serverSide]="true"
+  [total]="totalRecords"
+  [showSearch]="true"
+  [showPagination]="true"
+  size="middle"
+  (queryParamsChange)="onQueryChange($event)"
+  (rowClick)="onRowClick($event)"
+></app-advanced-table>

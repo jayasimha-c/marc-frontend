@@ -1,0 +1,409 @@
+<div class="add-rule-container">
+  <nz-card>
+    <div class="page-header">
+      <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()">
+        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+      </button>
+      <span class="page-title">
+        {{ formType === 'view' ? 'View' : (formType === 'edit' ? 'Edit' : 'Add') }} Logical Rule Name
+      </span>
+      <button *ngIf="isReadonly" nz-button nzType="primary" style="margin-left: 16px;" (click)="enableEdit()">Edit</button>
+    </div>
+
+    <form [formGroup]="form">
+      <nz-steps [nzCurrent]="currentStep" style="margin-bottom: 24px;">
+        <nz-step nzTitle="Step 1"></nz-step>
+        <nz-step nzTitle="Step 2"></nz-step>
+        <nz-step nzTitle="Step 3"></nz-step>
+      </nz-steps>
+
+      <div [ngSwitch]="currentStep">
+        <!-- STEP 1 -->
+        <div *ngSwitchCase="0">
+          <div nz-row [nzGutter]="16" style="margin-top: 8px;">
+            <div nz-col [nzSpan]="12">
+              <nz-form-item>
+                <nz-form-control [nzErrorTip]="'Rule Name is required'">
+                  <div class="nz-float-label" [class.has-value]="form.get('name').value">
+                    <input nz-input placeholder=" " formControlName="name" />
+                    <label>Rule Name</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col [nzSpan]="12">
+              <nz-form-item>
+                <nz-form-control [nzErrorTip]="'Severity is required'">
+                  <div class="nz-float-label" [class.has-value]="form.get('errorStatus').value">
+                    <nz-select formControlName="errorStatus" nzPlaceHolder=" " nzShowSearch
+                      (keydown)="onSeverityKeydown($event)">
+                      <nz-option *ngFor="let entry of errorStatusOptions; index as i"
+                        [nzValue]="entry[0]" [nzLabel]="(i + 1) + ' - ' + entry[1]"></nz-option>
+                    </nz-select>
+                    <label>Severity</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </div>
+
+          <div nz-row [nzGutter]="16">
+            <div nz-col [nzSpan]="12">
+              <nz-form-item>
+                <nz-form-control [nzErrorTip]="'Parameter Type is required'">
+                  <div class="nz-float-label" [class.has-value]="form.get('parameterType').value">
+                    <nz-select formControlName="parameterType" nzPlaceHolder=" " nzShowSearch>
+                      <nz-option *ngFor="let entry of parameterTypeOptions; index as i"
+                        [nzValue]="entry[0]" [nzLabel]="(i + 1) + ' - ' + entry[1]"></nz-option>
+                    </nz-select>
+                    <label>Parameter Type</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col [nzSpan]="12">
+              <nz-form-item>
+                <nz-form-control>
+                  <div class="nz-float-label" [class.has-value]="form.get('tag').value">
+                    <nz-select formControlName="tag" nzPlaceHolder=" " nzShowSearch>
+                      <nz-option *ngFor="let type of tagList; index as i"
+                        [nzValue]="type.id" [nzLabel]="(i + 1) + ' - ' + type.name"></nz-option>
+                    </nz-select>
+                    <label>Tag</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </div>
+
+          <div nz-row [nzGutter]="16">
+            <div nz-col [nzSpan]="12" *ngIf="form.get('parameterType')?.value === 'HANA_DATABASE'">
+              <nz-form-item>
+                <nz-form-control>
+                  <div class="nz-float-label" [class.has-value]="form.get('parameterSubType').value">
+                    <nz-select formControlName="parameterSubType" nzPlaceHolder=" " nzShowSearch>
+                      <nz-option *ngFor="let entry of parameterSubTypeOptions; index as i"
+                        [nzValue]="entry[0]" [nzLabel]="(i + 1) + ' - ' + entry[1]"></nz-option>
+                    </nz-select>
+                    <label>Parameter Sub Type</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </div>
+
+          <div style="margin: 8px 0 12px;">
+            <label nz-checkbox formControlName="caseSensitive">
+              Case sensitive?
+              <p style="color: rgba(0, 0, 0, 0.45); margin: 0;">
+                Whether capitalization is taken into consideration for the value check or not.
+              </p>
+            </label>
+          </div>
+
+          <div nz-row [nzGutter]="16" *ngIf="showDescriptionField(form.get('parameterType')?.value)">
+            <div nz-col [nzSpan]="24">
+              <nz-form-item>
+                <nz-form-control>
+                  <div class="nz-float-label" [class.has-value]="form.get('description').value">
+                    <textarea nz-input placeholder=" " formControlName="description"
+                      [nzAutosize]="{ minRows: 3, maxRows: 5 }"></textarea>
+                    <label>Description</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </div>
+
+          <div class="step-actions">
+            <button nz-button nzType="default" (click)="onBack()">Back</button>
+            <button *ngIf="!isReadonly" nz-button nzType="primary" (click)="currentStep = 1">Next</button>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div *ngSwitchCase="1">
+
+          <!-- Standard Parameters (not BTP, AUDIT_LOG, SAP_ABAP) -->
+          <section *ngIf="
+            form.get('parameterType').value !== SapParameterType.BTP &&
+            form.get('parameterType').value !== SapParameterType.AUDIT_LOG &&
+            form.get('parameterType').value !== SapParameterType.SAP_ABAP">
+
+            <div class="step2-sections">
+              <!-- Parameter Section -->
+              <div class="builder-section">
+                <div class="section-header" (click)="parameterExpanded = !parameterExpanded">
+                  <div class="section-title-row">
+                    <span class="section-title">Parameter</span>
+                    <span class="section-subtitle">Select and view the SAP parameter to validate</span>
+                  </div>
+                  <span nz-icon [nzType]="parameterExpanded ? 'up' : 'down'" nzTheme="outline" class="section-toggle"></span>
+                </div>
+                <div class="section-body" *ngIf="parameterExpanded">
+                  <nz-form-item>
+                    <nz-form-control>
+                      <div class="nz-float-label" [class.has-value]="parameterSearchControl.value">
+                        <input nz-input placeholder=" " [formControl]="parameterSearchControl" [nzAutocomplete]="paramAuto">
+                        <label>Parameter</label>
+                      </div>
+                      <nz-autocomplete #paramAuto [nzDataSource]="[]" (selectionChange)="onParameterSelected($event)">
+                        <nz-auto-option *ngFor="let param of filteredParameters" [nzValue]="param" [nzLabel]="displayParameterFn(param)">
+                          <span style="font-weight: 500;">{{ param.parameterName }}</span>
+                          <span *ngIf="param.description" style="font-size: 12px; margin-left: 8px; color: rgba(0,0,0,0.45);">{{ param.description }}</span>
+                        </nz-auto-option>
+                        <nz-auto-option *ngIf="filteredParameters.length === 0" disabled [nzValue]="null" nzLabel="No parameters found">
+                          <span nz-icon nzType="search" nzTheme="outline" style="margin-right: 8px;"></span> No parameters found
+                        </nz-auto-option>
+                      </nz-autocomplete>
+                    </nz-form-control>
+                  </nz-form-item>
+                </div>
+              </div>
+
+              <!-- Conditions Section -->
+              <div class="builder-section">
+                <div class="section-header" (click)="conditionsSectionExpanded = !conditionsSectionExpanded">
+                  <div class="section-title-row">
+                    <span class="section-title">Conditions</span>
+                    <span class="section-subtitle">Define value type and validation rules</span>
+                  </div>
+                  <span nz-icon [nzType]="conditionsSectionExpanded ? 'up' : 'down'" nzTheme="outline" class="section-toggle"></span>
+                </div>
+                <div class="section-body" *ngIf="conditionsSectionExpanded">
+                  <nz-form-item *ngIf="showParameterField(form.get('parameterType')?.value, form.get('parameterSubType')?.value)">
+                    <nz-form-control>
+                      <div class="nz-float-label" [class.has-value]="form.get('valueType').value">
+                        <nz-select formControlName="valueType" nzPlaceHolder=" ">
+                          <nz-option *ngFor="let entry of valueTypeOptions" [nzValue]="entry[0]" [nzLabel]="entry[1]"></nz-option>
+                        </nz-select>
+                        <label>Value Type</label>
+                      </div>
+                    </nz-form-control>
+                  </nz-form-item>
+
+                  <div *ngIf="showParameterField(form.get('parameterType')?.value, form.get('parameterSubType')?.value)">
+                    <parameter-rule-conditions [valueType]="valueType" [conditions]="conditions"
+                      (conditionChanged)="onConditionsChanged($event)"></parameter-rule-conditions>
+                  </div>
+
+                  <div *ngIf="showFieldFilter(form.get('parameterType')?.value, form.get('parameterSubType')?.value)">
+                    <app-add-parameter-field-filter
+                      [parameterSubType]="selectedParameterSubType"
+                      [parameterType]="selectedParameterType"
+                      (filtersChanged)="onFiltersChanged($event, 'filter')"
+                      [filters]="filters['filter']">
+                    </app-add-parameter-field-filter>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Test Section -->
+              <div class="builder-section">
+                <div class="section-header" (click)="testSectionExpanded = !testSectionExpanded">
+                  <div class="section-title-row">
+                    <span class="section-title">Test</span>
+                    <span class="section-subtitle">Validate rule against a test value</span>
+                  </div>
+                  <span nz-icon [nzType]="testSectionExpanded ? 'up' : 'down'" nzTheme="outline" class="section-toggle"></span>
+                </div>
+                <div class="section-body" *ngIf="testSectionExpanded">
+                  <div nz-row [nzGutter]="16" nzAlign="middle">
+                    <div nz-col nzFlex="auto">
+                      <nz-form-item>
+                        <nz-form-control>
+                          <div class="nz-float-label" [class.has-value]="form.get('testValue').value">
+                            <input nz-input placeholder=" " formControlName="testValue" />
+                            <label>Test Value</label>
+                          </div>
+                        </nz-form-control>
+                      </nz-form-item>
+                    </div>
+                    <div nz-col *ngIf="!isReadonly">
+                      <button nz-button nzType="primary" (click)="testValue()">Test</button>
+                    </div>
+                  </div>
+                  <div [innerHTML]="testResult" class="test-result"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- SAP ABAP Section -->
+          <section *ngIf="form.get('parameterType').value === SapParameterType.SAP_ABAP">
+            <div class="step2-sections">
+              <div class="builder-section">
+                <div class="section-header" (click)="abapRuleExpanded = !abapRuleExpanded">
+                  <div class="section-title-row">
+                    <span class="section-title">ABAP Rule</span>
+                    <span class="section-subtitle">Select the ACM rule to apply</span>
+                  </div>
+                  <span nz-icon [nzType]="abapRuleExpanded ? 'up' : 'down'" nzTheme="outline" class="section-toggle"></span>
+                </div>
+                <div class="section-body" *ngIf="abapRuleExpanded">
+                  <div nz-row>
+                    <div nz-col [nzSpan]="12">
+                      <app-search-select
+                        placeholder="Select ACM Rule"
+                        formControlName="acmRuleId"
+                        [rule]="rule?.ruleVO"
+                        (selectionChange)="onAcmRuleSelected($event)">
+                      </app-search-select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- BTP Section -->
+          <section *ngIf="form.get('parameterType').value === SapParameterType.BTP">
+            <div class="step2-sections">
+              <div class="builder-section">
+                <div class="section-header" (click)="btpRuleDefExpanded = !btpRuleDefExpanded">
+                  <div class="section-title-row">
+                    <span class="section-title">Rule Definition</span>
+                    <span class="section-subtitle">Select a predefined rule template</span>
+                  </div>
+                  <span nz-icon [nzType]="btpRuleDefExpanded ? 'up' : 'down'" nzTheme="outline" class="section-toggle"></span>
+                </div>
+                <div class="section-body" *ngIf="btpRuleDefExpanded">
+                  <div nz-row>
+                    <div nz-col [nzSpan]="12">
+                      <nz-form-item>
+                        <nz-form-control>
+                          <div class="nz-float-label" [class.has-value]="form.get('ruleDefinitionId').value">
+                            <nz-select formControlName="ruleDefinitionId" nzPlaceHolder=" ">
+                              <nz-option *ngFor="let type of ruleDefinitions" [nzValue]="type.id" [nzLabel]="type.name"></nz-option>
+                            </nz-select>
+                            <label>Predefined Rules</label>
+                          </div>
+                        </nz-form-control>
+                      </nz-form-item>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="builder-section">
+                <div class="section-header" (click)="btpExceptionsExpanded = !btpExceptionsExpanded">
+                  <div class="section-title-row">
+                    <span class="section-title">Exceptions</span>
+                    <span class="section-subtitle">Whitelist and blacklist values</span>
+                  </div>
+                  <span nz-icon [nzType]="btpExceptionsExpanded ? 'up' : 'down'" nzTheme="outline" class="section-toggle"></span>
+                </div>
+                <div class="section-body" *ngIf="btpExceptionsExpanded">
+                  <div nz-row>
+                    <div nz-col [nzSpan]="12">
+                      <nz-form-item>
+                        <nz-form-control>
+                          <div class="nz-float-label" [class.has-value]="form.get('whiteList').value">
+                            <input nz-input placeholder=" " formControlName="whiteList" />
+                            <label>Whitelist</label>
+                          </div>
+                          <small style="color: rgba(0,0,0,0.45); font-size: 12px;">Use comma-separated values for multiple entries</small>
+                        </nz-form-control>
+                      </nz-form-item>
+
+                      <nz-form-item style="margin-top: 16px;">
+                        <nz-form-control>
+                          <div class="nz-float-label" [class.has-value]="form.get('blackList').value">
+                            <input nz-input placeholder=" " formControlName="blackList" />
+                            <label>Blacklist</label>
+                          </div>
+                          <small style="color: rgba(0,0,0,0.45); font-size: 12px;">Use comma-separated values for multiple entries</small>
+                        </nz-form-control>
+                      </nz-form-item>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Audit Log Section -->
+          <section *ngIf="form.get('parameterType').value === SapParameterType.AUDIT_LOG" class="audit-log-section">
+            <div class="ai-import-bar">
+              <button nz-button nzType="default" (click)="showAiImport = !showAiImport">
+                <span nz-icon [nzType]="showAiImport ? 'up' : 'robot'" nzTheme="outline"></span>
+                {{ showAiImport ? 'Hide' : 'Import from' }} AI / JSON
+              </button>
+            </div>
+
+            <div *ngIf="showAiImport" class="ai-import-panel">
+              <div class="ai-import-content">
+                <div class="ai-import-left">
+                  <div class="ai-import-header">
+                    <span>Paste JSON</span>
+                    <div class="ai-import-actions">
+                      <button nz-button nzType="text" nzShape="circle" nz-tooltip nzTooltipTitle="Copy AI Prompt" (click)="copyAIPrompt()">
+                        <span nz-icon nzType="copy" nzTheme="outline"></span>
+                      </button>
+                      <button nz-button nzType="text" nzShape="circle" nz-tooltip nzTooltipTitle="Validate" (click)="validateJson()">
+                        <span nz-icon nzType="check" nzTheme="outline"></span>
+                      </button>
+                      <button nz-button nzType="text" nzShape="circle" nz-tooltip nzTooltipTitle="Import"
+                        [disabled]="!validationResult?.valid" (click)="importFromJson()">
+                        <span nz-icon nzType="download" nzTheme="outline"></span>
+                      </button>
+                      <button nz-button nzType="text" nzShape="circle" nz-tooltip nzTooltipTitle="Clear" (click)="clearJsonInput()">
+                        <span nz-icon nzType="close" nzTheme="outline"></span>
+                      </button>
+                    </div>
+                  </div>
+                  <textarea class="ai-json-textarea"
+                    [(ngModel)]="aiJsonInput" [ngModelOptions]="{standalone: true}"
+                    placeholder="Paste AI-generated JSON here..." spellcheck="false"></textarea>
+                  <div *ngIf="validationResult" class="ai-validation-status">
+                    <span *ngIf="validationResult.valid" nz-icon nzType="check-circle" nzTheme="outline" class="status-success"></span>
+                    <span *ngIf="!validationResult.valid" nz-icon nzType="exclamation-circle" nzTheme="outline" class="status-error"></span>
+                    <span>{{ validationResult.valid ? 'Valid JSON - Click import' : validationResult.errors[0] }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <audit-rule-builder
+              [conditions]="builderConditions"
+              [groupedBy]="grouping"
+              [threshhold]="condition.threshhold"
+              [interval]="condition.interval"
+              [events]="events"
+              [clients]="clients"
+              (conditionsChange)="onBuilderConditionsChange($event)"
+              (groupedByChange)="onGroupingChanged($event)"
+              (threshholdChange)="onThreshholdChange($event)"
+              (intervalChange)="onIntervalChange($event)">
+            </audit-rule-builder>
+          </section>
+
+          <div class="step-actions">
+            <button *ngIf="!isReadonly" nz-button nzType="default" (click)="currentStep = 0">Back</button>
+            <button *ngIf="!isReadonly" nz-button nzType="primary" (click)="currentStep = 2">Next</button>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div *ngSwitchCase="2">
+          <nz-tabset>
+            <nz-tab nzTitle="Framework Requirements">
+              <section style="margin-top: 16px;">
+                <app-view-framework-requirements
+                  (frameworkRequirementChanged)="onFrameworkRequirementChanged($event)"
+                  [selectedRequirements]="selectedRequirements"
+                  [ruleContext]="getRuleContext()">
+                </app-view-framework-requirements>
+              </section>
+            </nz-tab>
+          </nz-tabset>
+
+          <div class="step-actions">
+            <button *ngIf="!isReadonly" nz-button nzType="default" (click)="currentStep = 1">Back</button>
+            <button *ngIf="!isReadonly" nz-button nzType="primary" (click)="onSave()">Save</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+</div>

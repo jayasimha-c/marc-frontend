@@ -1,0 +1,41 @@
+<!-- Header -->
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+  <h2 style="margin: 0;">Users Batch</h2>
+  <button nz-button nzType="primary" (click)="back()">
+    <span nz-icon nzType="arrow-left"></span> Back
+  </button>
+</div>
+
+<!-- Stats Cards -->
+<div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="4">
+    <app-statistics-card title="Total Users" [value]="count('totalUsers')" icon="team" color="#1890ff" [loading]="loading" description="Users"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="4">
+    <app-statistics-card title="Hold" [value]="pct('hold')" icon="pause-circle" color="#faad14" [loading]="loading" [description]="count('hold') + ' users'"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="4">
+    <app-statistics-card title="Rejected" [value]="pct('rejected')" icon="close-circle" color="#ff4d4f" [loading]="loading" [description]="count('rejected') + ' users'"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="4">
+    <app-statistics-card title="Approved" [value]="pct('approved')" icon="check-circle" color="#52c41a" [loading]="loading" [description]="count('approved') + ' users'"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="4">
+    <app-statistics-card title="Unreviewed" [value]="pct('unReviewed')" icon="eye-invisible" color="#8c8c8c" [loading]="loading" [description]="count('unReviewed') + ' users'"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="4">
+    <app-statistics-card title="Expired" [value]="pct('expired')" icon="clock-circle" color="#fa8c16" [loading]="loading" [description]="count('expired') + ' users'"></app-statistics-card>
+  </div>
+</div>
+
+<!-- Group Table -->
+<app-advanced-table
+  title="User Status By User Group"
+  [data]="groupData"
+  [columns]="groupColumns"
+  [loading]="loading"
+  [showPagination]="false"
+  [showSearch]="true"
+  size="middle"
+  scrollY="50vh"
+></app-advanced-table>

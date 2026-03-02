@@ -1,0 +1,86 @@
+.settings {
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+
+    h4 {
+      margin: 0;
+    }
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 280px 160px;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &--4col {
+      grid-template-columns: 1fr 280px 100px 160px;
+    }
+  }
+
+  &__label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__name {
+    font-weight: 500;
+    font-size: 13px;
+    word-break: break-word;
+  }
+
+  &__desc {
+    font-size: 12px;
+    color: #8c8c8c;
+  }
+
+  &__input {
+    input, nz-input-group {
+      width: 100%;
+    }
+  }
+
+  &__modified {
+    border-color: #faad14 !important;
+    box-shadow: 0 0 0 2px rgba(250, 173, 20, 0.1);
+  }
+
+  &__module {
+    text-align: center;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  &__date {
+    font-size: 12px;
+    color: #8c8c8c;
+    white-space: nowrap;
+  }
+
+  &__cat-icon {
+    margin-right: 8px;
+  }
+
+  &__cat-desc {
+    margin-left: 8px;
+    font-size: 12px;
+    color: #8c8c8c;
+    font-weight: normal;
+  }
+}

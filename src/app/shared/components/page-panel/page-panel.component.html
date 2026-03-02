@@ -1,0 +1,27 @@
+<div class="page-panel">
+  <div class="page-panel__header" *ngIf="header">
+    <span class="page-panel__title">{{ header }}</span>
+    <div class="page-panel__header-section">
+      <ng-content select="[headerSection]"></ng-content>
+    </div>
+    <ng-container *ngIf="actionBtnList && actionBtnList.length > 0">
+      <div class="page-panel__actions">
+        <ng-content select="[header]"></ng-content>
+        <button nz-button nzType="text" nz-dropdown [nzDropdownMenu]="menu" nzTrigger="click">
+          <span nz-icon nzType="more" nzTheme="outline"></span>
+        </button>
+        <nz-dropdown-menu #menu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item *ngFor="let item of actionBtnList" (click)="item.command && item.command()">
+              <span nz-icon *ngIf="item.icon" [nzType]="item.icon" nzTheme="outline" class="page-panel__menu-icon"></span>
+              {{ item.label }}
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </div>
+    </ng-container>
+  </div>
+  <div class="page-panel__content">
+    <ng-content></ng-content>
+  </div>
+</div>

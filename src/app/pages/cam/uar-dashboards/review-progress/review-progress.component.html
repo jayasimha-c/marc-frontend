@@ -1,0 +1,71 @@
+<!-- Header -->
+<div class="flex items-start justify-between flex-wrap gap-4 mb-4">
+  <h2 class="m-0">Review Progress</h2>
+  <nz-form-item class="w-[280px] mb-0">
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="systemControl.value">
+        <nz-select nzPlaceHolder=" " nzShowSearch (ngModelChange)="sapSystemChange()" [formControl]="systemControl">
+          <nz-option *ngFor="let sys of sapSystems" [nzValue]="sys?.id" [nzLabel]="sys?.destinationName || sys?.description || sys?.sapName"></nz-option>
+        </nz-select>
+        <label>SAP System</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+</div>
+
+<!-- KPI Cards — 4 per row (sm grid) -->
+<div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Total Users" [value]="statistics.totalUsers" description="In review" icon="team" color="#1890ff" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Reviewed" [value]="statistics.reviewedUsers" description="Completed" icon="check-circle" color="#52c41a" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Pending" [value]="statistics.pendingReviews" description="Awaiting review" icon="clock-circle" color="#faad14" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Rejected" [value]="statistics.rejectedUsers" description="Access denied" icon="close-circle" color="#ff4d4f" [loading]="loading"></app-statistics-card>
+  </div>
+</div>
+
+<!-- Charts — 3 per row (md grid) -->
+<div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8">
+    <common-apx-chart [loading]="loading" [chartOptions]="completionChartOptions" size="md"></common-apx-chart>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8">
+    <common-apx-chart [loading]="loading" [chartOptions]="statusChartOptions" size="md"></common-apx-chart>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="24" [nzMd]="8">
+    <common-apx-chart [loading]="loading" [chartOptions]="trendChartOptions" size="md"></common-apx-chart>
+  </div>
+</div>
+
+<!-- Reviews by Department -->
+<nz-card class="mt-4 mb-4">
+  <app-advanced-table
+    title="Reviews by Department"
+    [data]="departmentData"
+    [columns]="departmentColumns"
+    [loading]="loading"
+    [showPagination]="false"
+    [showSearch]="true"
+    size="middle"
+    scrollY="40vh"
+  ></app-advanced-table>
+</nz-card>
+
+<!-- Recent Reviews -->
+<nz-card class="mt-4">
+  <app-advanced-table
+    title="Recent Reviews"
+    [data]="recentData"
+    [columns]="recentColumns"
+    [loading]="loading"
+    [showPagination]="false"
+    [showSearch]="true"
+    size="middle"
+    scrollY="40vh"
+  ></app-advanced-table>
+</nz-card>

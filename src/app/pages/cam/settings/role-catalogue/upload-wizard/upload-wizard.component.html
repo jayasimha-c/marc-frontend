@@ -1,0 +1,207 @@
+<app-page-panel [header]="'Role Catalogue Upload Wizard'">
+  <ng-container headerSection>
+    <button nz-button nzType="text" (click)="cancel()">
+      <span nz-icon nzType="arrow-left" nzTheme="outline"></span> Back
+    </button>
+  </ng-container>
+
+  <form [formGroup]="form">
+    <nz-steps [nzCurrent]="currentStep" style="margin-bottom: 24px;">
+      <nz-step nzTitle="Configure"></nz-step>
+      <nz-step nzTitle="Upload"></nz-step>
+      <nz-step nzTitle="Preview"></nz-step>
+      <nz-step nzTitle="Result"></nz-step>
+    </nz-steps>
+
+    <div [ngSwitch]="currentStep">
+      <!-- Step 0: Configure -->
+      <div *ngSwitchCase="0">
+        <div style="display: flex; gap: 16px;">
+          <nz-form-item style="flex: 1;">
+            <nz-form-control nzErrorTip="SAP System is required">
+              <div class="nz-float-label" [class.has-value]="form.get('sapSystemId')!.value">
+                <nz-select formControlName="sapSystemId" nzPlaceHolder=" " nzShowSearch>
+                  <nz-option *ngFor="let sys of sapSysList" [nzValue]="sys.id"
+                    [nzLabel]="sys.destinationName"></nz-option>
+                </nz-select>
+                <label>SAP System</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item style="flex: 1;">
+            <nz-form-control nzErrorTip="Upload Mode is required">
+              <div class="nz-float-label" [class.has-value]="form.get('uploadMode')!.value">
+                <nz-select formControlName="uploadMode" nzPlaceHolder=" ">
+                  <nz-option nzValue="APPEND" nzLabel="Append"></nz-option>
+                  <nz-option nzValue="OVERWRITE" nzLabel="Overwrite"></nz-option>
+                </nz-select>
+                <label>Upload Mode</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div style="display: flex; gap: 16px; align-items: flex-end;">
+          <nz-form-item style="flex: 1;">
+            <nz-form-control nzErrorTip="Upload Type is required">
+              <div class="nz-float-label" [class.has-value]="form.get('uploadType')!.value">
+                <nz-select formControlName="uploadType" nzPlaceHolder=" ">
+                  <nz-option nzValue="ATTRIBUTES" nzLabel="Catalogue Attributes"></nz-option>
+                  <nz-option nzValue="ROLE_MAPPINGS" nzLabel="Role Mappings"></nz-option>
+                </nz-select>
+                <label>Upload Type</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+          <div style="flex: 1; padding-bottom: 24px;">
+            <button nz-button nzType="primary" (click)="downloadTemplate()">
+              <span nz-icon nzType="download" nzTheme="outline"></span> Download Template
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1: Upload -->
+      <div *ngSwitchCase="1">
+        <p style="color: #8c8c8c; margin-bottom: 16px;">
+          <strong>Configuration:</strong> {{ getSapSystemName() }} | {{ getUploadModeLabel() }} | {{
+          getUploadTypeLabel() }}
+        </p>
+        <button nz-button nzType="primary" [disabled]="isUploading" (click)="fileInput.click()">
+          <span nz-icon nzType="upload" nzTheme="outline"></span>
+          {{ isUploading ? 'Uploading...' : 'Select File to Upload' }}
+        </button>
+        <input type="file" #fileInput (change)="uploadFile($event)" style="display: none;" accept=".xls,.xlsx" />
+
+        <div *ngIf="isUploading" style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+          <span nz-icon nzType="loading" nzTheme="outline" style="color: #1890ff;"></span>
+          <span style="color: #8c8c8c;">Uploading and validating file...</span>
+        </div>
+        <div *ngIf="uploadedFileName && !isUploading" style="margin-top: 12px;">
+          <p>
+            <span nz-icon nzType="check-circle" nzTheme="fill" style="color: #52c41a; font-size: 18px;"></span>
+            <strong>File:</strong> {{ uploadedFileName }}
+          </p>
+          <p *ngIf="session?.status === 'VALIDATED'" style="color: #52c41a; margin-top: 4px;">
+            Total: {{ session.totalRecords }} | Valid: {{ session.validRecords }} | Errors: {{ session.errorRecords }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 2: Preview -->
+      <div *ngSwitchCase="2">
+        <div class="wizard-summary" *ngIf="session">
+          <div class="wizard-summary-card">
+            <div class="wizard-summary-label">Total Records</div>
+            <div class="wizard-summary-value">{{ session.totalRecords || 0 }}</div>
+          </div>
+          <div class="wizard-summary-card wizard-summary-card--green">
+            <div class="wizard-summary-label" style="color: #52c41a;">Valid Records</div>
+            <div class="wizard-summary-value wizard-summary-value--green">{{ session.validRecords || 0 }}</div>
+          </div>
+          <div class="wizard-summary-card wizard-summary-card--red">
+            <div class="wizard-summary-label" style="color: #ff4d4f;">Error Records</div>
+            <div class="wizard-summary-value wizard-summary-value--red">{{ session.errorRecords || 0 }}</div>
+          </div>
+          <div class="wizard-summary-card wizard-summary-card--blue">
+            <div class="wizard-summary-label" style="color: #1890ff;">Status</div>
+            <div class="wizard-summary-value wizard-summary-value--blue">{{ session.status }}</div>
+          </div>
+        </div>
+        <nz-table #stagingTable [nzData]="stagingData" nzSize="small" [nzFrontPagination]="false"
+          [nzTotal]="stagingTotal" [nzPageIndex]="stagingPageIndex" [nzPageSize]="stagingPageSize"
+          (nzPageIndexChange)="onStagingPageChange($event)" [nzScroll]="{ x: '900px' }">
+          <thead>
+            <tr>
+              <th *ngFor="let col of stagingColumns">{{ col.header }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of stagingTable.data">
+              <td *ngFor="let col of stagingColumns">
+                <nz-tag *ngIf="col.field === 'status'" [nzColor]="row[col.field] === 'VALID' ? 'green' : 'red'">{{
+                  row[col.field] }}</nz-tag>
+                <span *ngIf="col.field !== 'status'">{{ row[col.field] }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+
+      <!-- Step 3: Result -->
+      <div *ngSwitchCase="3">
+        <div *ngIf="session?.status === 'COMPLETED'" class="wizard-result">
+          <span nz-icon nzType="check-circle" nzTheme="fill" class="wizard-result-icon" style="color: #52c41a;"></span>
+          <div class="wizard-result-title" style="color: #52c41a;">Upload Completed Successfully!</div>
+          <div class="wizard-summary" style="max-width: 500px; margin: 24px auto 0;">
+            <div class="wizard-summary-card wizard-summary-card--green">
+              <div class="wizard-summary-label" style="color: #52c41a;">Inserted</div>
+              <div class="wizard-summary-value wizard-summary-value--green">{{ session.insertedRecords || 0 }}</div>
+            </div>
+            <div class="wizard-summary-card wizard-summary-card--blue">
+              <div class="wizard-summary-label" style="color: #1890ff;">Updated</div>
+              <div class="wizard-summary-value wizard-summary-value--blue">{{ session.updatedRecords || 0 }}</div>
+            </div>
+            <div class="wizard-summary-card">
+              <div class="wizard-summary-label">Skipped</div>
+              <div class="wizard-summary-value">{{ session.skippedRecords || 0 }}</div>
+            </div>
+          </div>
+          <table *ngIf="getFieldChangeEntries().length" class="field-summary-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let f of getFieldChangeEntries()">
+                <td>{{ formatFieldName(f.key) }}</td>
+                <td>{{ f.value }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div *ngIf="session?.status === 'FAILED'" class="wizard-result">
+          <span nz-icon nzType="exclamation-circle" nzTheme="fill" class="wizard-result-icon"
+            style="color: #ff4d4f;"></span>
+          <div class="wizard-result-title" style="color: #ff4d4f;">Upload Failed</div>
+          <p style="color: #8c8c8c; margin-top: 8px;">{{ session.errorMessage }}</p>
+        </div>
+
+        <div *ngIf="isProcessing" class="wizard-result">
+          <nz-spin nzSimple></nz-spin>
+          <p style="color: #8c8c8c; margin-top: 16px;">Processing upload...</p>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- Navigation -->
+  <div class="wizard-nav">
+    <button nz-button (click)="cancel()">Cancel</button>
+    <ng-container [ngSwitch]="currentStep">
+      <button *ngSwitchCase="0" nz-button nzType="primary" (click)="createSessionAndNext()">
+        Next <span nz-icon nzType="right" nzTheme="outline"></span>
+      </button>
+      <ng-container *ngSwitchCase="1">
+        <button nz-button (click)="previousStep()"><span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+          Back</button>
+        <button nz-button nzType="primary" [disabled]="session?.status !== 'VALIDATED'" (click)="goToPreview()">
+          Next <span nz-icon nzType="right" nzTheme="outline"></span>
+        </button>
+      </ng-container>
+      <ng-container *ngSwitchCase="2">
+        <button nz-button (click)="previousStep()"><span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+          Back</button>
+        <button nz-button nzType="primary" [disabled]="isProcessing || session?.validRecords === 0"
+          (click)="processUpload()">
+          {{ isProcessing ? 'Processing...' : 'Process' }}
+        </button>
+      </ng-container>
+      <button *ngSwitchCase="3" nz-button nzType="primary" (click)="finish()">
+        <span nz-icon nzType="check" nzTheme="outline"></span> Finish
+      </button>
+    </ng-container>
+  </div>
+</app-page-panel>

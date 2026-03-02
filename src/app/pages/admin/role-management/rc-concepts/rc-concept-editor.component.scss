@@ -1,0 +1,78 @@
+.rce {
+  &__form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 16px;
+    max-width: 800px;
+    margin-bottom: 16px;
+  }
+
+  &__full-width {
+    grid-column: 1 / -1;
+  }
+
+  &__tab-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  &__pattern-value {
+    font-family: monospace;
+    font-size: 12px;
+    color: #595959;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__md-desc {
+    font-size: 12px;
+    color: #8c8c8c;
+  }
+
+  &__dialog-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  &__section-title {
+    font-weight: 600;
+    font-size: 12px;
+    margin: 8px 0;
+    color: #262626;
+  }
+
+  // Test dialog
+  &__test {
+    padding: 0;
+  }
+
+  &__test-result {
+    margin-top: 8px;
+  }
+
+  &__test-messages {
+    margin-top: 8px;
+  }
+
+  &__test-msg {
+    font-size: 12px;
+    color: #595959;
+    padding: 4px 0;
+    border-bottom: 1px solid #f5f5f5;
+  }
+
+  &__test-matches {
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .rce__form-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,157 @@
+<!-- Header Card -->
+<nz-card  style="margin-bottom: 16px;">
+  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+    <nz-tag [nzColor]="getSeverityColor(selectedViolation.severity)">{{ selectedViolation.severity }}</nz-tag>
+    <nz-tag>
+      <span nz-icon [nzType]="getTypeIcon(selectedViolation.type)" nzTheme="outline" style="margin-right: 4px;"></span>
+      {{ getTypeLabel(selectedViolation.type) }}
+    </nz-tag>
+  </div>
+
+  <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">{{ selectedGroup.ruleName }}</h3>
+  <p *ngIf="selectedGroup.ruleDescription" style="margin: 0; color: rgba(0,0,0,0.45); font-size: 13px;">
+    {{ selectedGroup.ruleDescription }}
+  </p>
+
+  <div style="margin-top: 12px; display: flex; gap: 8px;">
+    <button nz-button nzType="default" nzSize="small" (click)="viewFullDetail.emit()">
+      <span nz-icon nzType="eye" nzTheme="outline"></span> View Rule
+    </button>
+    <button nz-button nzType="primary" nzSize="small" (click)="createIssue.emit()">
+      <span nz-icon nzType="plus-circle" nzTheme="outline"></span> Create Issue
+    </button>
+  </div>
+</nz-card>
+
+<!-- Loading -->
+<nz-card *ngIf="detailLoading"  style="margin-bottom: 16px; text-align: center;">
+  <nz-spin nzSimple></nz-spin>
+  <p style="color: rgba(0,0,0,0.45); margin-top: 12px;">Loading details...</p>
+</nz-card>
+
+<!-- No detail -->
+<nz-card *ngIf="!detailLoading && !violationDetail"  style="margin-bottom: 16px;">
+  <nz-empty nzNotFoundContent="No detailed information available" [nzNotFoundImage]="'simple'"></nz-empty>
+</nz-card>
+
+<ng-container *ngIf="violationDetail && !detailLoading">
+
+  <!-- Value Comparison (SAP_PARAMETER) -->
+  <nz-card *ngIf="selectedViolation.type === 'SAP_PARAMETER' && violationDetail.sapValue !== undefined"
+           nzTitle="Value Comparison" [nzExtra]="systemRef"  nzSize="small" style="margin-bottom: 16px;">
+    <ng-template #systemRef>
+      <code style="font-size: 11px;">{{ selectedViolation.sapSystemName }}</code>
+    </ng-template>
+    <div nz-row [nzGutter]="16" nzAlign="middle">
+      <div nz-col [nzSpan]="10">
+        <div class="vdp-value-box vdp-actual">
+          <div class="vdp-value-label">Actual Value</div>
+          <div class="vdp-value-number">{{ violationDetail.sapValue || 'N/A' }}</div>
+          <div class="vdp-value-sub">Current system setting</div>
+        </div>
+      </div>
+      <div nz-col [nzSpan]="4" style="text-align: center;">
+        <span nz-icon nzType="arrow-right" nzTheme="outline" style="font-size: 24px; color: rgba(0,0,0,0.25);"></span>
+        <div style="font-size: 10px; font-weight: 600; color: #f5222d; margin-top: 2px;">VIOLATION</div>
+      </div>
+      <div nz-col [nzSpan]="10">
+        <div class="vdp-value-box vdp-expected">
+          <div class="vdp-value-label">Expected Value</div>
+          <div class="vdp-value-number" *ngIf="violationDetail.rule?.conditions?.length">
+            {{ violationDetail.rule.conditions[0].values?.join(', ') }}
+          </div>
+          <div *ngIf="violationDetail.rule?.conditions?.length" style="margin-top: 4px;">
+            <nz-tag nzColor="purple">{{ violationDetail.rule.conditions[0].conditionType }}</nz-tag>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Audit Rule Details -->
+  <nz-card *ngIf="selectedViolation.type === 'AUDIT_LOG' && violationDetail.rule"
+           nzTitle="Audit Rule Details"  nzSize="small" style="margin-bottom: 16px;">
+    <nz-descriptions [nzColumn]="2" nzSize="small" nzBordered>
+      <nz-descriptions-item nzTitle="Reason">
+        {{ violationDetail.reason === 'BLACKLIST' ? 'Blacklisted Event' : 'Threshold Exceeded' }}
+      </nz-descriptions-item>
+      <nz-descriptions-item *ngIf="violationDetail.rule?.threshhold" nzTitle="Threshold">
+        <code>{{ violationDetail.rule.threshhold }}</code>
+      </nz-descriptions-item>
+    </nz-descriptions>
+    <div *ngIf="violationDetail.rule?.events?.length" style="margin-top: 12px;">
+      <nz-table #eventsTable [nzData]="violationDetail.rule.events" nzSize="small"
+                [nzShowPagination]="false" nzTableLayout="fixed">
+        <thead><tr>
+          <th nzWidth="100px">Key</th>
+          <th>Event</th>
+        </tr></thead>
+        <tbody>
+          <tr *ngFor="let event of eventsTable.data">
+            <td><code style="color: #1890ff;">{{ event.key }}</code></td>
+            <td>{{ event.eventText }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+  </nz-card>
+
+  <!-- BTP / HANA Results -->
+  <nz-card *ngIf="(selectedViolation.type === 'BTP' || selectedViolation.type === 'HANA_DATABASE') && violationDetail.resultJson"
+           nzTitle="Check Results"  nzSize="small" style="margin-bottom: 16px;">
+    <pre class="vdp-json-block">{{ violationDetail.resultJson | json }}</pre>
+  </nz-card>
+
+  <!-- Violations Timeline Chart -->
+  <nz-card *ngIf="selectedGroup.violations.length > 0"
+            nzSize="small" style="margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+      <span nz-icon nzType="line-chart" nzTheme="outline" style="color: #1890ff;"></span>
+      <strong style="font-size: 13px;">Violations Timeline</strong>
+      <nz-tag nzColor="red">{{ selectedGroup.violations.length }}</nz-tag>
+      <span style="flex: 1;"></span>
+      <span style="font-size: 11px; color: rgba(0,0,0,0.45);">{{ systemsWithIssues }} Tracked</span>
+      <span style="font-size: 11px; color: rgba(0,0,0,0.45);">{{ systemsWithoutIssues }} Pending</span>
+      <button nz-button nzType="dashed" nzSize="small" (click)="bulkCreateIssues.emit()">
+        <span nz-icon nzType="plus-circle" nzTheme="outline"></span> Bulk Create
+      </button>
+    </div>
+    <common-apx-chart *ngIf="systemsChartOptions"
+                      [chartOptions]="systemsChartOptions"
+                      customClass="no-card-border"
+                      size="sm">
+    </common-apx-chart>
+  </nz-card>
+
+  <!-- Rule Details / Metadata -->
+  <nz-card nzTitle="Rule Details"  nzSize="small" style="margin-bottom: 16px;">
+    <nz-descriptions [nzColumn]="2" nzSize="small" nzBordered>
+      <nz-descriptions-item nzTitle="System">{{ selectedViolation.sapSystemName || 'N/A' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Scheduler">{{ selectedViolation.schedulerName || 'N/A' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Detected">{{ selectedViolation.createdDate | date:'medium' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Issue">
+        <a *ngIf="selectedViolation.issueName" [href]="selectedViolation.issueUrl" target="_blank">
+          {{ selectedViolation.issueName }}
+        </a>
+        <span *ngIf="!selectedViolation.issueName" style="color: rgba(0,0,0,0.25); font-style: italic;">Not created</span>
+      </nz-descriptions-item>
+      <nz-descriptions-item *ngIf="violationDetail.rule?.parameterName" nzTitle="Parameter">
+        <code>{{ violationDetail.rule.parameterName }}</code>
+      </nz-descriptions-item>
+      <nz-descriptions-item *ngIf="violationDetail.rule?.profileName" nzTitle="Profile">
+        <code>{{ violationDetail.rule.profileName }}</code>
+      </nz-descriptions-item>
+    </nz-descriptions>
+  </nz-card>
+
+  <!-- Framework Controls -->
+  <nz-card *ngIf="violationDetail.frameworkControls?.length"
+           nzTitle="Linked Framework Controls"  nzSize="small" style="margin-bottom: 16px;">
+    <ng-container *ngFor="let fc of violationDetail.frameworkControls">
+      <nz-tag *ngIf="fc.controlKey || fc.functionKey" nzColor="cyan" style="margin-bottom: 4px;">
+        {{ fc.controlKey || fc.functionKey }}
+      </nz-tag>
+    </ng-container>
+  </nz-card>
+
+</ng-container>

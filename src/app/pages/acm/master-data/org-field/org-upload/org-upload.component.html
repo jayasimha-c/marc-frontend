@@ -1,0 +1,131 @@
+<app-page-panel>
+  <ng-container header>Organization Fields Upload</ng-container>
+
+  <!-- Step 1: Guidelines -->
+  <nz-card style="margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; margin-bottom: 12px;">
+      <span class="step-number">1</span>
+      <span nz-icon nzType="info-circle" nzTheme="outline"></span>
+      Important Guidelines
+    </div>
+    <nz-row [nzGutter]="16">
+      <nz-col [nzSpan]="12">
+        <h4 style="font-weight: 600; margin-bottom: 8px;">Before You Start:</h4>
+        <ul style="list-style: none; padding: 0; margin: 0; font-size: 13px; color: #666;">
+          <li style="display: flex; align-items: flex-start; gap: 6px; margin-bottom: 4px;">
+            <span nz-icon nzType="check-circle" nzTheme="outline" style="color: #1890ff; margin-top: 3px;"></span>
+            Review instructions before starting the upload process
+          </li>
+          <li style="display: flex; align-items: flex-start; gap: 6px; margin-bottom: 4px;">
+            <span nz-icon nzType="check-circle" nzTheme="outline" style="color: #1890ff; margin-top: 3px;"></span>
+            Be cautious while selecting files
+          </li>
+          <li style="display: flex; align-items: flex-start; gap: 6px; margin-bottom: 4px;">
+            <span nz-icon nzType="check-circle" nzTheme="outline" style="color: #1890ff; margin-top: 3px;"></span>
+            Ensure there are no duplicate records
+          </li>
+          <li style="display: flex; align-items: flex-start; gap: 6px;">
+            <span nz-icon nzType="check-circle" nzTheme="outline" style="color: #1890ff; margin-top: 3px;"></span>
+            Upload process may take time, please be patient
+          </li>
+        </ul>
+      </nz-col>
+      <nz-col [nzSpan]="12">
+        <nz-alert nzType="warning" nzShowIcon [nzMessage]="warningTitle" [nzDescription]="warningDesc"></nz-alert>
+        <ng-template #warningTitle>Important Notes</ng-template>
+        <ng-template #warningDesc>
+          <ul style="margin: 0; padding-left: 16px; font-size: 13px;">
+            <li>SAP system selection is required before upload</li>
+            <li>Data will be imported to the selected system</li>
+            <li>Backup existing data before importing</li>
+          </ul>
+        </ng-template>
+      </nz-col>
+    </nz-row>
+  </nz-card>
+
+  <!-- Step 2: System Selection & Template -->
+  <nz-card style="margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; margin-bottom: 12px;">
+      <span class="step-number">2</span>
+      <span nz-icon nzType="setting" nzTheme="outline"></span>
+      System Selection & Template Download
+    </div>
+    <nz-row [nzGutter]="24">
+      <nz-col [nzSpan]="12">
+        <h4 style="font-weight: 600; margin-bottom: 12px;">Select Target System</h4>
+        <nz-form-item style="max-width: 320px;">
+          <div class="nz-float-label" [class.has-value]="selectedSapSystem">
+            <nz-select [(ngModel)]="selectedSapSystem" nzPlaceHolder=" " nzShowSearch>
+              <nz-option *ngFor="let sys of sapSystemList" [nzValue]="sys.id" [nzLabel]="sys.destinationName"></nz-option>
+            </nz-select>
+            <label>SAP System</label>
+          </div>
+        </nz-form-item>
+        <p *ngIf="!selectedSapSystem" style="color: #fa8c16; font-size: 13px; display: flex; align-items: center; gap: 4px; margin-top: 4px;">
+          <span nz-icon nzType="info-circle" nzTheme="outline"></span>
+          System selection is required before uploading files
+        </p>
+      </nz-col>
+      <nz-col [nzSpan]="12">
+        <h4 style="font-weight: 600; margin-bottom: 12px;">Download Template</h4>
+        <div class="template-card">
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <span nz-icon nzType="file-excel" nzTheme="outline" style="font-size: 24px; color: #52c41a; margin-top: 2px;"></span>
+            <div style="flex: 1;">
+              <h4 style="font-weight: 600; margin: 0 0 4px;">Organization Fields Template</h4>
+              <p style="font-size: 13px; color: #666; margin-bottom: 12px;">Excel template with required fields and format</p>
+              <button nz-button nzType="default" (click)="downloadTemplate()" style="width: 100%;">
+                <span nz-icon nzType="download" nzTheme="outline"></span> Download Template
+              </button>
+            </div>
+          </div>
+        </div>
+      </nz-col>
+    </nz-row>
+  </nz-card>
+
+  <!-- Step 3: Upload File -->
+  <nz-card>
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; margin-bottom: 12px;">
+      <span class="step-number">3</span>
+      <span nz-icon nzType="upload" nzTheme="outline"></span>
+      Upload Your File
+    </div>
+    <p style="color: #666; margin-bottom: 16px;">Select and upload your completed Excel file</p>
+
+    <div class="upload-card" [class.uploading]="uploadProgress" [class.success]="uploadSuccess">
+      <div class="upload-content">
+        <span nz-icon [nzType]="uploadSuccess ? 'check-circle' : 'cloud-upload'" nzTheme="outline" class="upload-icon" [class.success-icon]="uploadSuccess"></span>
+        <h4 style="font-weight: 600; margin-bottom: 8px;">Organization Fields</h4>
+        <p style="font-size: 13px; color: #666; margin-bottom: 16px;">Upload organization field data to the selected SAP system</p>
+
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx,.xls" style="display: none;">
+
+        <button nz-button nzType="primary" [disabled]="!selectedSapSystem || uploadProgress" (click)="fileInput.click()">
+          <span *ngIf="!uploadProgress" nz-icon nzType="upload" nzTheme="outline"></span>
+          <span *ngIf="uploadProgress" nz-icon nzType="loading" nzTheme="outline"></span>
+          {{ uploadProgress ? 'Uploading...' : 'Choose File' }}
+        </button>
+
+        <p *ngIf="selectedFile" style="font-size: 13px; color: #666; margin-top: 8px;">{{ selectedFile.name }}</p>
+        <p *ngIf="uploadSuccess" style="font-size: 13px; color: #52c41a; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+          <span nz-icon nzType="check-circle" nzTheme="outline"></span> Upload successful!
+        </p>
+      </div>
+    </div>
+
+    <!-- File format info -->
+    <nz-alert nzType="info" nzShowIcon [nzMessage]="fileReqTitle" [nzDescription]="fileReqDesc" style="margin-top: 24px;"></nz-alert>
+    <ng-template #fileReqTitle>File Requirements</ng-template>
+    <ng-template #fileReqDesc>
+      <ul style="margin: 0; padding-left: 16px; font-size: 13px;">
+        <li>Supported formats: Excel files (.xlsx, .xls)</li>
+        <li>Maximum file size: 10MB</li>
+        <li>Follow the exact template format</li>
+        <li>Remove any empty rows before uploading</li>
+        <li>Ensure all required fields are filled</li>
+      </ul>
+    </ng-template>
+  </nz-card>
+</app-page-panel>

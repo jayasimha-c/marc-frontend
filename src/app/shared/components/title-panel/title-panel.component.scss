@@ -1,0 +1,267 @@
+:host {
+  display: block;
+}
+
+.tp {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  padding: 16px 24px 10px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  &__title-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: rgba(0, 0, 0, 0.85);
+  }
+
+  &__subtitle {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.45);
+  }
+
+  &__back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.65);
+    transition: background 0.15s;
+    flex-shrink: 0;
+
+    &:hover { background: rgba(0, 0, 0, 0.04); }
+
+    [nz-icon] { font-size: 20px; }
+  }
+
+  // Actions
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  // Date range
+  &__date-field {
+    width: 220px;
+  }
+
+  // Presets
+  &__presets {
+    display: flex;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  &__preset-btn {
+    font-size: 12px;
+    padding: 5px 12px;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.45);
+    transition: all 0.15s;
+    white-space: nowrap;
+
+    &:hover:not(.active) {
+      background: rgba(0, 0, 0, 0.03);
+      color: rgba(0, 0, 0, 0.85);
+    }
+
+    &.active {
+      background: #1890ff;
+      color: #fff;
+    }
+  }
+
+  // Filter button
+  &__filter-wrapper { position: relative; }
+
+  &__filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.45);
+    transition: all 0.15s;
+    white-space: nowrap;
+
+    &:hover, &.active {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+  }
+
+  &__filter-badge {
+    background: #1890ff;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+  }
+
+  // Backdrop
+  &__backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 99;
+  }
+
+  // Filter panel
+  &__filter-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 100;
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    padding: 16px;
+    min-width: 280px;
+    max-width: 320px;
+  }
+
+  &__filter-item {
+    margin-bottom: 12px;
+    &:last-of-type { margin-bottom: 0; }
+  }
+
+  &__filter-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+    opacity: 0.5;
+  }
+
+  &__filter-field { width: 100%; }
+
+  &__filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  &__clear-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.45);
+    transition: opacity 0.15s;
+    &:hover { color: rgba(0, 0, 0, 0.85); }
+  }
+
+  &__apply-btn {
+    font-size: 12px;
+    padding: 6px 20px;
+    border: none;
+    border-radius: 4px;
+    background: #1890ff;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.15s;
+    &:hover { opacity: 0.9; }
+  }
+
+  // Filter chips
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px 3px 8px;
+    font-size: 11px;
+    border-radius: 4px;
+    background: rgba(24, 144, 255, 0.08);
+    color: rgba(0, 0, 0, 0.85);
+  }
+
+  &__chip-label { font-weight: 500; opacity: 0.5; }
+  &__chip-value { font-weight: 600; }
+  &__chip-remove {
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0.4;
+    margin-left: 2px;
+    &:hover { opacity: 1; }
+  }
+
+  &__clear-all {
+    font-size: 11px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.45);
+    padding: 0;
+    &:hover { text-decoration: underline; color: rgba(0, 0, 0, 0.85); }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .tp {
+    &__header { flex-direction: column; align-items: stretch; }
+    &__actions { flex-wrap: wrap; }
+    &__date-field { width: 100%; }
+  }
+}

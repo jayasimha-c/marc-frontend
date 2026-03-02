@@ -1,0 +1,10 @@
+<div class="mb-4">
+    <app-advanced-table title="Logs" [columns]="columns" [data]="data" [loading]="loading" [showSearch]="false"
+        [showPagination]="true" [totalRecords]="totalRecords" [pageSize]="pageSize" [pageIndex]="pageIndex"
+        (pageIndexChange)="onPageIndexChange($event)" (pageSizeChange)="onPageSizeChange($event)">
+    </app-advanced-table>
+</div>
+
+<div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+    <button nz-button nzType="default" (click)="modal.close()">Close</button>
+</div>

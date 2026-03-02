@@ -1,0 +1,21 @@
+<app-page-panel title="Master Data" description="View and analyze all compiled privilege master records"
+    icon="database">
+
+    <div class="mt-4">
+        <nz-card [nzBordered]="false" class="shadow-sm rounded-lg" [nzExtra]="extraTemplate">
+
+            <ng-template #extraTemplate>
+                <button nz-button nzType="text" nzShape="circle" (click)="refreshData()" nz-tooltip
+                    nzTooltipTitle="Refresh Data">
+                    <span nz-icon nzType="reload"></span>
+                </button>
+            </ng-template>
+
+            <app-advanced-table [data]="tableData" [columns]="tableColumns" [total]="totalRecord" [loading]="loading"
+                [showPagination]="true" [pageSizeOptions]="[10, 25, 50, 100]" (queryParams)="onTableChange($event)">
+            </app-advanced-table>
+
+        </nz-card>
+    </div>
+
+</app-page-panel>

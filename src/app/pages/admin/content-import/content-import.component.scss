@@ -1,0 +1,325 @@
+.content-import {
+  .ci__grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 16px;
+  }
+
+  .ci__section-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 10px;
+    color: #262626;
+  }
+
+  // Content type cards
+  .ci__types {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .ci__type-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: #91caff;
+      background: #f0f7ff;
+    }
+
+    &--selected {
+      border-color: #1890ff;
+      background: #e6f4ff;
+    }
+  }
+
+  .ci__type-icon {
+    font-size: 20px;
+    color: #1890ff;
+  }
+
+  .ci__type-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .ci__type-name {
+    font-weight: 500;
+    font-size: 13px;
+  }
+
+  .ci__type-desc {
+    font-size: 11px;
+    color: #8c8c8c;
+  }
+
+  .ci__type-check {
+    color: #1890ff;
+    font-size: 16px;
+  }
+
+  // Loading / Error states
+  .ci__loading, .ci__error-state {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    color: #8c8c8c;
+    font-size: 13px;
+  }
+
+  .ci__error-state {
+    color: #ff4d4f;
+  }
+
+  // File upload
+  .ci__upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 24px;
+    border: 1px dashed #d9d9d9;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    text-align: center;
+
+    &:hover {
+      border-color: #1890ff;
+    }
+  }
+
+  .ci__upload-icon {
+    font-size: 28px;
+    color: #1890ff;
+  }
+
+  .ci__upload-text {
+    font-size: 13px;
+    color: #595959;
+  }
+
+  .ci__upload-hint {
+    font-size: 11px;
+    color: #bfbfbf;
+  }
+
+  .ci__file-selected {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #91caff;
+    border-radius: 4px;
+    background: #e6f4ff;
+  }
+
+  .ci__file-icon {
+    font-size: 20px;
+    color: #1890ff;
+  }
+
+  .ci__file-info {
+    flex: 1;
+  }
+
+  .ci__file-name {
+    font-weight: 500;
+    font-size: 13px;
+  }
+
+  .ci__file-size {
+    font-size: 11px;
+    color: #8c8c8c;
+  }
+
+  // Right panel
+  .ci__right {
+    border-left: 1px solid #f0f0f0;
+    padding-left: 16px;
+
+    &--empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #bfbfbf;
+      text-align: center;
+    }
+  }
+
+  .ci__empty-icon {
+    font-size: 36px;
+    margin-bottom: 8px;
+  }
+
+  .ci__panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .ci__info {
+    margin-bottom: 12px;
+  }
+
+  // Import mode
+  .ci__mode-label {
+    font-weight: 500;
+    font-size: 12px;
+    margin-bottom: 6px;
+    color: #595959;
+  }
+
+  .ci__mode-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .ci__mode-option {
+    label {
+      display: flex;
+      align-items: baseline;
+    }
+  }
+
+  .ci__mode-name {
+    font-weight: 500;
+    font-size: 13px;
+    margin-right: 6px;
+  }
+
+  .ci__mode-desc {
+    font-size: 11px;
+    color: #8c8c8c;
+  }
+
+  // Preview
+  .ci__preview {
+    margin-bottom: 12px;
+  }
+
+  .ci__preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-weight: 500;
+    font-size: 13px;
+  }
+
+  // Progress
+  .ci__progress {
+    margin-bottom: 12px;
+  }
+
+  .ci__progress-label {
+    font-size: 12px;
+    color: #595959;
+    margin-bottom: 4px;
+  }
+
+  // Actions
+  .ci__actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  // Result card
+  .ci__result-card {
+    margin-top: 12px;
+  }
+
+  .ci__result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-weight: 500;
+    font-size: 13px;
+  }
+
+  .ci__result-summary {
+    margin-bottom: 8px;
+  }
+
+  .ci__warning-item {
+    margin-bottom: 6px;
+  }
+
+  .ci__errors {
+    margin-top: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .ci__error-item {
+    padding: 8px;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+
+  .ci__error-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .ci__error-record {
+    font-size: 12px;
+    color: #8c8c8c;
+  }
+
+  .ci__error-message {
+    color: #595959;
+  }
+
+  .ci__error-field {
+    font-weight: 500;
+    color: #262626;
+  }
+
+  .ci__result-actions {
+    margin-top: 10px;
+    text-align: right;
+  }
+
+  // History card
+  .ci__history-card {
+    margin-top: 12px;
+  }
+
+  .ci__history-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-import .ci__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .content-import .ci__right {
+    border-left: none;
+    border-top: 1px solid #f0f0f0;
+    padding-left: 0;
+    padding-top: 16px;
+  }
+}

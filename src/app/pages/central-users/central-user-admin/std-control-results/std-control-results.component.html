@@ -1,0 +1,28 @@
+<div *ngIf="loading" style="display: flex; justify-content: center; padding: 32px;">
+    <nz-spin nzSimple></nz-spin>
+</div>
+
+<nz-table *ngIf="!loading" #resultTable [nzData]="data" [nzFrontPagination]="true"
+    [nzShowPagination]="data.length > 20" [nzPageSize]="20" nzSize="small"
+    [nzScroll]="{ x: (columns.length * 150) + 'px' }">
+    <thead>
+        <tr>
+            <th *ngFor="let col of columns" nzWidth="150px">{{ col.header }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let row of resultTable.data">
+            <td *ngFor="let col of columns">{{ row[col.field] }}</td>
+        </tr>
+    </tbody>
+</nz-table>
+
+<nz-empty *ngIf="!loading && data.length === 0" nzNotFoundContent="No control results found"></nz-empty>
+
+<div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+    <button nz-button nzType="default" (click)="copyToClipboard()" *ngIf="data.length > 0">
+        <span nz-icon nzType="copy" nzTheme="outline"></span>
+        Copy
+    </button>
+    <button nz-button nzType="default" (click)="modal.close()">Close</button>
+</div>

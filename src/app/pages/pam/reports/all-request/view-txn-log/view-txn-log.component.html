@@ -1,0 +1,33 @@
+<div *ngIf="reviewTableData?.length === 1" class="mb-5">
+    <nz-descriptions nzBordered nzSize="small" nzLayout="vertical">
+        <nz-descriptions-item nzTitle="Requested By">{{ reviewTableData[0]?.requesterName }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Justification">{{ reviewTableData[0]?.justification }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Approved By">{{ reviewTableData[0]?.approverName }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Comments">{{ reviewTableData[0]?.comments }}</nz-descriptions-item>
+    </nz-descriptions>
+</div>
+
+<app-advanced-table *ngIf="reviewTableData?.length > 1" [columns]="reviewTableColumns" [data]="reviewTableData"
+    [actions]="actionBtnList" [serverSide]="false" [scrollY]="'200px'">
+</app-advanced-table>
+
+<nz-tabset class="mt-5">
+    <nz-tab nzTitle="Transactions">
+        <app-advanced-table [columns]="transactionTableColumns" [data]="transactionTableData" [serverSide]="false"
+            [scrollY]="'350px'">
+        </app-advanced-table>
+    </nz-tab>
+    <nz-tab nzTitle="Show Risks">
+        <app-advanced-table [columns]="riskTableColumns" [data]="riskTableData" [serverSide]="false" [scrollY]="'350px'">
+        </app-advanced-table>
+    </nz-tab>
+</nz-tabset>
+
+<!-- Action buttons shown below Descriptions when length === 1 -->
+<div *ngIf="reviewTableData?.length === 1 && actionBtnList.length" class="mt-4 flex justify-end">
+    <nz-space [nzSize]="'small'">
+        <button *ngFor="let act of actionBtnList" nzSpaceItem nz-button nzType="default" (click)="act.command()">
+            {{ act.label }}
+        </button>
+    </nz-space>
+</div>

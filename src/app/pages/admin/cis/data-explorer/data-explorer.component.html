@@ -1,0 +1,131 @@
+<div class="cis-explorer">
+  <!-- Header -->
+  <nz-card class="cis-explorer__header" nzSize="small" [nzBordered]="true">
+    <div class="cis-explorer__header-content">
+      <div class="cis-explorer__title-block">
+        <span nz-icon nzType="cloud" nzTheme="outline" class="cis-explorer__title-icon"></span>
+        <div>
+          <div class="cis-explorer__title">SAP Cloud Identity Data Explorer</div>
+          <div class="cis-explorer__subtitle">Select a system to explore synced users and groups</div>
+        </div>
+      </div>
+      <div class="cis-explorer__system-select">
+        <nz-select [(ngModel)]="selectedSystemId"
+                   nzPlaceHolder="Select System"
+                   nzShowSearch nzSize="small"
+                   style="width: 240px;"
+                   (ngModelChange)="onSystemChange()">
+          <nz-option *ngFor="let system of systems"
+                     [nzValue]="system.id"
+                     [nzLabel]="system.destinationName">
+          </nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Loading -->
+  <div *ngIf="loading && !selectedSystemId" class="cis-explorer__loading">
+    <nz-spin nzSimple></nz-spin>
+  </div>
+
+  <!-- Empty State -->
+  <nz-card *ngIf="!loading && systems.length === 0" nzSize="small" [nzBordered]="true">
+    <nz-empty
+      nzNotFoundImage="simple"
+      [nzNotFoundContent]="'No SAP Cloud Identity Systems Found'"
+      [nzNotFoundFooter]="emptyFooter">
+    </nz-empty>
+    <ng-template #emptyFooter>
+      <span class="cis-explorer__empty-hint">Add a SAP Cloud Identity system in Administration &gt; Systems first.</span>
+    </ng-template>
+  </nz-card>
+
+  <!-- Data Tabs -->
+  <nz-card *ngIf="selectedSystemId" nzSize="small" [nzBordered]="true" class="cis-explorer__data">
+    <nz-tabset nzSize="small" [nzAnimated]="false"
+               [nzSelectedIndex]="activeTab"
+               (nzSelectChange)="onTabChange($event.index)">
+
+      <!-- Users Tab -->
+      <nz-tab nzTitle="Users">
+        <app-advanced-table
+          [data]="usersData"
+          [columns]="usersColumns"
+          [loading]="false"
+          [total]="usersTotal"
+          [showSearch]="true"
+          [serverSide]="true"
+          size="small"
+          (queryParamsChange)="loadUsers($event)">
+        </app-advanced-table>
+      </nz-tab>
+
+      <!-- Groups Tab -->
+      <nz-tab nzTitle="Groups">
+        <app-advanced-table
+          [data]="groupsData"
+          [columns]="groupsColumns"
+          [loading]="false"
+          [total]="groupsTotal"
+          [showSearch]="true"
+          [serverSide]="true"
+          size="small"
+          (queryParamsChange)="loadGroups($event)"
+          (rowClick)="onGroupClick($event)">
+        </app-advanced-table>
+      </nz-tab>
+
+    </nz-tabset>
+  </nz-card>
+
+  <!-- Group Members Drawer -->
+  <nz-drawer
+    [nzVisible]="!!selectedGroup"
+    [nzTitle]="'Members - ' + (selectedGroup?.displayName || '')"
+    [nzWidth]="520"
+    nzPlacement="right"
+    (nzOnClose)="closeMembersPanel()">
+    <ng-container *nzDrawerContent>
+      <nz-spin [nzSpinning]="loadingMembers">
+        <div class="cis-explorer__members-info" *ngIf="selectedGroup">
+          <nz-descriptions nzSize="small" [nzColumn]="1" nzBordered>
+            <nz-descriptions-item nzTitle="Group">{{ selectedGroup.displayName }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Type">{{ selectedGroup.groupType || '-' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Members">{{ selectedGroup.memberCount || 0 }}</nz-descriptions-item>
+          </nz-descriptions>
+        </div>
+        <nz-divider nzText="Members" nzOrientation="left"></nz-divider>
+        <nz-table #membersTable
+                  [nzData]="groupMembers"
+                  nzSize="small"
+                  [nzShowPagination]="groupMembers.length > 10"
+                  [nzPageSize]="10"
+                  nzFrontPagination>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Display Name</th>
+              <th>Email</th>
+              <th nzWidth="90px">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of membersTable.data">
+              <td>{{ m.userName }}</td>
+              <td>{{ m.displayName }}</td>
+              <td>{{ m.email }}</td>
+              <td>
+                <nz-tag [nzColor]="m.active === 'Active' ? 'success' : 'default'">{{ m.active }}</nz-tag>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+        <nz-empty *ngIf="!loadingMembers && groupMembers.length === 0"
+                  nzNotFoundImage="simple"
+                  [nzNotFoundContent]="'No members found'">
+        </nz-empty>
+      </nz-spin>
+    </ng-container>
+  </nz-drawer>
+</div>

@@ -1,0 +1,252 @@
+<!-- Statistics Cards -->
+<div nz-row [nzGutter]="[16, 16]">
+    <div nz-col nzXs="12" nzSm="8" nzLg="4">
+        <app-statistics-card title="Systems" [value]="stats.totalSystems" description="Connected"
+            [loading]="loading" icon="cloud-server" color="#1890ff" [clickable]="true"
+            (click)="navigateTo('systems')">
+        </app-statistics-card>
+    </div>
+    <div nz-col nzXs="12" nzSm="8" nzLg="4">
+        <app-statistics-card title="Unique Users" [value]="stats.uniqueUsers" description="Identities"
+            [loading]="loading" icon="team" color="#722ed1" [clickable]="true"
+            (click)="navigateTo('users')">
+        </app-statistics-card>
+    </div>
+    <div nz-col nzXs="12" nzSm="8" nzLg="4">
+        <app-statistics-card title="Total Accounts" [value]="stats.totalAccounts" description="Across systems"
+            [loading]="loading" icon="idcard" color="#13c2c2" [clickable]="true"
+            (click)="navigateTo('users')">
+        </app-statistics-card>
+    </div>
+    <div nz-col nzXs="12" nzSm="8" nzLg="4">
+        <app-statistics-card title="Role Assignments" [value]="stats.roleAssignments" description="Active"
+            [loading]="loading" icon="solution" color="#722ed1">
+        </app-statistics-card>
+    </div>
+    <div nz-col nzXs="12" nzSm="8" nzLg="4">
+        <app-statistics-card title="Locked Accounts" [value]="stats.lockedAccounts"
+            [description]="lockedPercentage + '% of total'" [loading]="loading" icon="lock" color="#faad14"
+            [clickable]="true" (click)="navigateToScenario('LOCKED_EVERYWHERE')">
+        </app-statistics-card>
+    </div>
+    <div nz-col nzXs="12" nzSm="8" nzLg="4">
+        <app-statistics-card title="Failed Operations" [value]="operationStats.failed" description="Needs review"
+            [loading]="loading" icon="exclamation-circle"
+            [color]="operationStats.failed > 0 ? '#ff4d4f' : '#8c8c8c'"
+            [clickable]="true" (click)="navigateTo('operations-console')">
+        </app-statistics-card>
+    </div>
+</div>
+
+<!-- Main Content: Top Systems + Needs Attention -->
+<div nz-row [nzGutter]="16" style="margin-top: 16px;">
+    <!-- Users by System -->
+    <div nz-col nzXs="24" nzLg="12">
+        <nz-card nzTitle="Users by System" [nzExtra]="systemsExtra" [nzLoading]="loadingSystems">
+            <ng-template #systemsExtra>
+                <a (click)="navigateTo('systems')">View All <span nz-icon nzType="right"></span></a>
+            </ng-template>
+            <div *ngIf="topSystemsByUsers.length > 0">
+                <div *ngFor="let system of topSystemsByUsers; let i = index"
+                     style="display: flex; align-items: center; padding: 8px 0; cursor: pointer;"
+                     (click)="navigateToSystem(system)">
+                    <span nz-typography nzType="secondary" style="width: 20px; font-size: 12px;">{{ i + 1 }}</span>
+                    <span style="font-weight: 500; font-family: monospace; width: 80px;">{{ system.sid }}</span>
+                    <nz-tag [nzColor]="system.active !== false ? 'green' : 'default'" style="margin: 0 8px;">
+                        {{ system.active !== false ? 'Online' : 'Offline' }}
+                    </nz-tag>
+                    <nz-progress [nzPercent]="getSystemUserPercentage(system)" [nzShowInfo]="false"
+                        nzSize="small" style="flex: 1; margin: 0 12px;"></nz-progress>
+                    <span style="font-family: monospace; font-weight: 600; min-width: 48px; text-align: right;">
+                        {{ system.userCount | number }}
+                    </span>
+                </div>
+            </div>
+            <nz-empty *ngIf="topSystemsByUsers.length === 0" nzNotFoundContent="No systems available"></nz-empty>
+        </nz-card>
+    </div>
+
+    <!-- Needs Attention -->
+    <div nz-col nzXs="24" nzLg="12">
+        <nz-card [nzTitle]="attentionTitle">
+            <ng-template #attentionTitle>
+                <span>Needs Attention</span>
+                <nz-badge *ngIf="totalAttentionItems > 0" [nzCount]="totalAttentionItems"
+                    style="margin-left: 8px;" nzOverflowCount="999"></nz-badge>
+            </ng-template>
+            <nz-list nzSize="small">
+                <!-- Locked Accounts -->
+                <nz-list-item [nzExtra]="lockedCountTpl" (click)="navigateToScenario('LOCKED_EVERYWHERE')"
+                    style="cursor: pointer;">
+                    <nz-list-item-meta nzAvatar="" [nzTitle]="'Locked Accounts'"
+                        [nzDescription]="lockedPercentage + '% of total'">
+                        <ng-template #nzAvatar>
+                            <nz-avatar nzIcon="lock" [nzStyle]="{ backgroundColor: '#faad14' }" nzSize="small"></nz-avatar>
+                        </ng-template>
+                    </nz-list-item-meta>
+                </nz-list-item>
+                <ng-template #lockedCountTpl>
+                    <span style="font-family: monospace; font-weight: 600; font-size: 18px;">{{ stats.lockedAccounts }}</span>
+                </ng-template>
+
+                <!-- Dormant Users -->
+                <nz-list-item [nzExtra]="dormantCountTpl" (click)="navigateToScenario('DORMANT_90_DAYS')"
+                    style="cursor: pointer;">
+                    <nz-list-item-meta [nzTitle]="'Dormant Users'" [nzDescription]="'No login 90+ days'">
+                        <ng-template #nzAvatar>
+                            <nz-avatar nzIcon="clock-circle" [nzStyle]="{ backgroundColor: '#8c8c8c' }" nzSize="small"></nz-avatar>
+                        </ng-template>
+                    </nz-list-item-meta>
+                </nz-list-item>
+                <ng-template #dormantCountTpl>
+                    <span style="font-family: monospace; font-weight: 600; font-size: 18px;">{{ attentionMetrics.dormantUsers }}</span>
+                </ng-template>
+
+                <!-- Orphan SAP Users -->
+                <nz-list-item [nzExtra]="orphanCountTpl" (click)="navigateToScenario('ORPHAN_SAP_USERS')"
+                    style="cursor: pointer;">
+                    <nz-list-item-meta [nzTitle]="'Orphan SAP Users'" [nzDescription]="'Inactive identity, active accounts'">
+                        <ng-template #nzAvatar>
+                            <nz-avatar nzIcon="user-delete" [nzStyle]="{ backgroundColor: '#ff4d4f' }" nzSize="small"></nz-avatar>
+                        </ng-template>
+                    </nz-list-item-meta>
+                </nz-list-item>
+                <ng-template #orphanCountTpl>
+                    <span style="font-family: monospace; font-weight: 600; font-size: 18px;">{{ attentionMetrics.orphanAccounts }}</span>
+                </ng-template>
+
+                <!-- Never Logged In -->
+                <nz-list-item [nzExtra]="neverLoggedCountTpl" (click)="navigateToScenario('NEVER_LOGGED_IN')"
+                    style="cursor: pointer;">
+                    <nz-list-item-meta [nzTitle]="'Never Logged In'" [nzDescription]="'Account created but never used'">
+                        <ng-template #nzAvatar>
+                            <nz-avatar nzIcon="stop" [nzStyle]="{ backgroundColor: '#faad14' }" nzSize="small"></nz-avatar>
+                        </ng-template>
+                    </nz-list-item-meta>
+                </nz-list-item>
+                <ng-template #neverLoggedCountTpl>
+                    <span style="font-family: monospace; font-weight: 600; font-size: 18px;">{{ attentionMetrics.neverLoggedIn }}</span>
+                </ng-template>
+
+                <!-- Cross-Env Access -->
+                <nz-list-item [nzExtra]="crossEnvCountTpl" (click)="navigateToScenario('CROSS_ENV_ACCESS')"
+                    style="cursor: pointer;">
+                    <nz-list-item-meta [nzTitle]="'Cross-Env Access'" [nzDescription]="'Production + Non-Production'">
+                        <ng-template #nzAvatar>
+                            <nz-avatar nzIcon="safety-certificate" [nzStyle]="{ backgroundColor: '#ff4d4f' }" nzSize="small"></nz-avatar>
+                        </ng-template>
+                    </nz-list-item-meta>
+                </nz-list-item>
+                <ng-template #crossEnvCountTpl>
+                    <span style="font-family: monospace; font-weight: 600; font-size: 18px;">{{ attentionMetrics.crossEnvAccess }}</span>
+                </ng-template>
+            </nz-list>
+        </nz-card>
+    </div>
+</div>
+
+<!-- Recent Activity + Quick Actions -->
+<div nz-row [nzGutter]="16" style="margin-top: 16px;">
+    <!-- Recent Activity -->
+    <div nz-col nzXs="24" nzLg="16">
+        <nz-card nzTitle="Recent Activity" [nzExtra]="activityExtra" [nzLoading]="loadingOperations">
+            <ng-template #activityExtra>
+                <a (click)="navigateTo('operations-console')">View All <span nz-icon nzType="right"></span></a>
+            </ng-template>
+            <nz-table #opTable [nzData]="recentOperations" [nzShowPagination]="false"
+                [nzFrontPagination]="false" nzSize="small" [nzNoResult]="noActivity">
+                <ng-template #noActivity>
+                    <nz-empty nzNotFoundContent="No recent activity"></nz-empty>
+                </ng-template>
+                <thead>
+                    <tr>
+                        <th nzWidth="140px">Operation</th>
+                        <th nzWidth="120px">User</th>
+                        <th nzWidth="100px">System</th>
+                        <th>By</th>
+                        <th nzWidth="100px">When</th>
+                        <th nzWidth="100px">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let op of opTable.data">
+                        <td>
+                            <span nz-icon [nzType]="getOperationIcon(op.operationType)" nzTheme="outline"
+                                style="margin-right: 4px;"></span>
+                            {{ op.operationType }}
+                        </td>
+                        <td><span style="font-family: monospace;">{{ op.targetUserId || '-' }}</span></td>
+                        <td><span style="font-family: monospace;">{{ op.targetSystem || '-' }}</span></td>
+                        <td>{{ op.executedBy || 'System' }}</td>
+                        <td>{{ formatOperationTime(op.executedAt) }}</td>
+                        <td>
+                            <nz-tag [nzColor]="getStatusColor(op.status)">{{ op.status }}</nz-tag>
+                        </td>
+                    </tr>
+                </tbody>
+            </nz-table>
+        </nz-card>
+    </div>
+
+    <!-- Quick Actions -->
+    <div nz-col nzXs="24" nzLg="8">
+        <nz-card nzTitle="Quick Actions">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button nz-button nzType="primary" nzBlock (click)="navigateTo('users')">
+                    <span nz-icon nzType="search" nzTheme="outline"></span>
+                    Find User
+                </button>
+                <button nz-button nzType="default" nzBlock (click)="navigateTo('systems')">
+                    <span nz-icon nzType="cloud-server" nzTheme="outline"></span>
+                    System Landscape
+                </button>
+                <button nz-button nzType="default" nzBlock (click)="navigateTo('operations-console')">
+                    <span nz-icon nzType="thunderbolt" nzTheme="outline"></span>
+                    Operations Console
+                </button>
+                <button nz-button nzType="default" nzBlock (click)="navigateTo('operations-console')">
+                    <span nz-icon nzType="ordered-list" nzTheme="outline"></span>
+                    Bulk Operations
+                </button>
+            </div>
+        </nz-card>
+
+        <!-- Operations Summary -->
+        <nz-card nzTitle="Operations Summary" style="margin-top: 16px;">
+            <div nz-row [nzGutter]="[8, 8]">
+                <div nz-col nzSpan="12" style="text-align: center; cursor: pointer;"
+                     (click)="navigateTo('operations-console')">
+                    <nz-statistic [nzValue]="operationStats.running" nzTitle="Running"
+                        [nzPrefix]="runningIcon"></nz-statistic>
+                    <ng-template #runningIcon>
+                        <span nz-icon nzType="sync" nzTheme="outline" style="color: #1890ff;"></span>
+                    </ng-template>
+                </div>
+                <div nz-col nzSpan="12" style="text-align: center;">
+                    <nz-statistic [nzValue]="operationStats.scheduled" nzTitle="Scheduled"
+                        [nzPrefix]="scheduledIcon"></nz-statistic>
+                    <ng-template #scheduledIcon>
+                        <span nz-icon nzType="clock-circle" nzTheme="outline" style="color: #8c8c8c;"></span>
+                    </ng-template>
+                </div>
+                <div nz-col nzSpan="12" style="text-align: center; cursor: pointer;"
+                     (click)="navigateTo('operations-console')">
+                    <nz-statistic [nzValue]="operationStats.failed" nzTitle="Failed"
+                        [nzPrefix]="failedIcon"
+                        [nzValueStyle]="operationStats.failed > 0 ? { color: '#ff4d4f' } : {}"></nz-statistic>
+                    <ng-template #failedIcon>
+                        <span nz-icon nzType="exclamation-circle" nzTheme="outline" style="color: #ff4d4f;"></span>
+                    </ng-template>
+                </div>
+                <div nz-col nzSpan="12" style="text-align: center;">
+                    <nz-statistic [nzValue]="operationStats.completedToday" nzTitle="Completed"
+                        [nzPrefix]="completedIcon"
+                        [nzValueStyle]="{ color: '#52c41a' }"></nz-statistic>
+                    <ng-template #completedIcon>
+                        <span nz-icon nzType="check-circle" nzTheme="outline" style="color: #52c41a;"></span>
+                    </ng-template>
+                </div>
+            </div>
+        </nz-card>
+    </div>
+</div>

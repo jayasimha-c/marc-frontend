@@ -1,0 +1,69 @@
+<nz-spin [nzSpinning]="loading">
+
+    <!-- Analysis Loading -->
+    <nz-alert *ngIf="analysisLoading" nzType="info" nzShowIcon
+        nzMessage="Running risk analysis..." class="mb-3"></nz-alert>
+
+    <!-- Simulation Complete -->
+    <nz-alert *ngIf="simulationComplete" nzType="success" nzShowIcon
+        nzMessage="Simulation completed successfully" class="mb-3"
+        [nzAction]="viewResultsTpl">
+        <ng-template #viewResultsTpl>
+            <button nz-button nzType="primary" nzSize="small" (click)="viewResults()">
+                View Results
+            </button>
+        </ng-template>
+    </nz-alert>
+
+    <!-- Roles Table -->
+    <nz-table [nzData]="roles" nzSize="small" [nzShowPagination]="false" nzBordered
+        [nzScroll]="{ y: '400px' }">
+        <thead>
+            <tr>
+                <th>Role Name</th>
+                <th>Description</th>
+                <th nzWidth="110px">Valid From</th>
+                <th nzWidth="110px">Valid To</th>
+                <th nzWidth="120px">Approvers</th>
+                <th nzWidth="120px" *ngIf="roleOwnerInProgress">Status</th>
+                <th nzWidth="120px">Approved By</th>
+                <th nzWidth="80px">Owners</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let r of roles">
+                <td>{{ r.rolename || r.roleName }}</td>
+                <td>{{ r.description || '—' }}</td>
+                <td>{{ r.validFrom || '—' }}</td>
+                <td>{{ r.validTo || '—' }}</td>
+                <td>{{ r.approver || '—' }}</td>
+                <td *ngIf="roleOwnerInProgress">
+                    <nz-select [(ngModel)]="r.status" nzSize="small" style="width:100%"
+                        (ngModelChange)="onStatusChange(r)">
+                        <nz-option nzValue="Approved" nzLabel="Approved"></nz-option>
+                        <nz-option nzValue="Rejected" nzLabel="Rejected"></nz-option>
+                    </nz-select>
+                </td>
+                <td>{{ r.approvedBy || '—' }}</td>
+                <td>
+                    <button nz-button nzType="link" nzSize="small" (click)="viewRoleOwners(r)">
+                        <span nz-icon nzType="team"></span>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </nz-table>
+
+</nz-spin>
+
+<div class="modal-footer">
+    <button nz-button (click)="close()">Close</button>
+    <button nz-button nzType="default" *ngIf="roleOwnerInProgress" (click)="runSimulation()"
+        [nzLoading]="analysisLoading">
+        <span nz-icon nzType="experiment"></span> Run Simulation
+    </button>
+    <button nz-button nzType="primary" *ngIf="roleOwnerInProgress" (click)="approveRoles()"
+        [nzLoading]="loading">
+        <span nz-icon nzType="check"></span> Save Approvals
+    </button>
+</div>

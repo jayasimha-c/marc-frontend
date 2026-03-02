@@ -1,0 +1,264 @@
+<div class="rce">
+  <nz-card nzSize="small" [nzTitle]="isNew ? 'New RC Concept' : 'Edit: ' + concept.name" [nzExtra]="cardExtra">
+    <ng-template #cardExtra>
+      <nz-space>
+        <button *nzSpaceItem nz-button nzSize="small" nzType="default" (click)="goBack()">
+          <span nz-icon nzType="arrow-left" nzTheme="outline"></span> Back
+        </button>
+        <button *nzSpaceItem nz-button nzSize="small" nzType="default" (click)="openTestDialog()"
+                [disabled]="isNew">
+          <span nz-icon nzType="experiment" nzTheme="outline"></span> Test
+        </button>
+        <button *nzSpaceItem nz-button nzSize="small" nzType="default" (click)="openSimulator()"
+                [disabled]="isNew">
+          <span nz-icon nzType="thunderbolt" nzTheme="outline"></span> Simulate
+        </button>
+        <button *nzSpaceItem nz-button nzSize="small" nzType="primary" (click)="save()" [nzLoading]="saving">
+          <span nz-icon nzType="save" nzTheme="outline"></span> Save
+        </button>
+      </nz-space>
+    </ng-template>
+
+    <nz-spin [nzSpinning]="loading">
+      <!-- Basic Info -->
+      <div class="rce__form-grid">
+        <nz-form-item>
+          <nz-form-label nzRequired>Name</nz-form-label>
+          <nz-form-control>
+            <input nz-input nzSize="small" [(ngModel)]="concept.name" placeholder="Concept name">
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>Status</nz-form-label>
+          <nz-form-control>
+            <nz-select nzSize="small" [(ngModel)]="concept.isActive">
+              <nz-option [nzValue]="true" nzLabel="Active"></nz-option>
+              <nz-option [nzValue]="false" nzLabel="Inactive"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item class="rce__full-width">
+          <nz-form-label>Description</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input nzSize="small" [(ngModel)]="concept.description" placeholder="Description"
+                      [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <!-- Tabs -->
+      <nz-tabset nzSize="small" [(nzSelectedIndex)]="activeTab">
+        <!-- Patterns Tab -->
+        <nz-tab nzTitle="Patterns">
+          <div class="rce__tab-actions">
+            <button nz-button nzSize="small" nzType="primary" (click)="addPattern()">
+              <span nz-icon nzType="plus" nzTheme="outline"></span> Add Pattern
+            </button>
+            <button nz-button nzSize="small" nzType="default" nz-dropdown [nzDropdownMenu]="importMenu">
+              <span nz-icon nzType="more" nzTheme="outline"></span>
+            </button>
+            <nz-dropdown-menu #importMenu>
+              <ul nz-menu>
+                <li nz-menu-item (click)="triggerImport()">
+                  <span nz-icon nzType="upload" nzTheme="outline"></span> Import Excel
+                </li>
+                <li nz-menu-item (click)="exportExcel()">
+                  <span nz-icon nzType="download" nzTheme="outline"></span> Export Excel
+                </li>
+              </ul>
+            </nz-dropdown-menu>
+          </div>
+
+          <input type="file" #importFileInput accept=".xlsx,.xls" (change)="onImportFile($event)" style="display: none;">
+
+          <nz-table #patternTable [nzData]="patterns" nzSize="small"
+                    [nzShowPagination]="false" nzFrontPagination>
+            <thead>
+              <tr>
+                <th nzWidth="40px">#</th>
+                <th>Pattern</th>
+                <th>Type</th>
+                <th>Business Process</th>
+                <th nzWidth="60px">Active</th>
+                <th nzWidth="100px">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of patternTable.data; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td><strong>{{ p.pattern }}</strong></td>
+                <td><nz-tag>{{ p.patternType }}</nz-tag></td>
+                <td class="rce__pattern-value">{{ p.businessProcess || '-' }}</td>
+                <td>
+                  <nz-tag [nzColor]="p.isActive ? 'success' : 'default'">
+                    {{ p.isActive ? 'Yes' : 'No' }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <button nz-button nzType="link" nzSize="small" (click)="editPattern(p)">
+                    <span nz-icon nzType="edit" nzTheme="outline"></span>
+                  </button>
+                  <button nz-button nzType="link" nzSize="small" nzDanger (click)="deletePattern(p, i)">
+                    <span nz-icon nzType="delete" nzTheme="outline"></span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </nz-table>
+
+          <nz-empty *ngIf="patterns.length === 0" nzNotFoundContent="No patterns defined"></nz-empty>
+        </nz-tab>
+
+        <!-- Master Data Tab -->
+        <nz-tab nzTitle="Master Data">
+          <div class="rce__tab-actions">
+            <nz-select nzSize="small" [(ngModel)]="selectedCategory" nzPlaceHolder="All categories"
+                       nzAllowClear style="width: 180px;">
+              <nz-option *ngFor="let cat of masterDataCategories" [nzValue]="cat" [nzLabel]="cat"></nz-option>
+            </nz-select>
+            <button nz-button nzSize="small" nzType="primary" (click)="addMasterData()">
+              <span nz-icon nzType="plus" nzTheme="outline"></span> Add
+            </button>
+          </div>
+
+          <nz-table #mdTable [nzData]="filteredMasterData" nzSize="small"
+                    [nzShowPagination]="filteredMasterData.length > 20" [nzPageSize]="20"
+                    nzFrontPagination>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Parent Code</th>
+                <th nzWidth="100px">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of mdTable.data; let i = index">
+                <td><nz-tag>{{ m.category }}</nz-tag></td>
+                <td><strong>{{ m.code }}</strong></td>
+                <td>{{ m.name }}</td>
+                <td class="rce__md-desc">{{ m.parentCode || '-' }}</td>
+                <td>
+                  <button nz-button nzType="link" nzSize="small" (click)="editMasterData(m)">
+                    <span nz-icon nzType="edit" nzTheme="outline"></span>
+                  </button>
+                  <button nz-button nzType="link" nzSize="small" nzDanger (click)="deleteMasterData(m, i)">
+                    <span nz-icon nzType="delete" nzTheme="outline"></span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </nz-table>
+
+          <nz-empty *ngIf="filteredMasterData.length === 0" nzNotFoundContent="No master data"></nz-empty>
+        </nz-tab>
+      </nz-tabset>
+    </nz-spin>
+  </nz-card>
+
+  <!-- Pattern Dialog -->
+  <nz-modal [(nzVisible)]="patternDialogVisible"
+            [nzTitle]="editingPattern?.id ? 'Edit Pattern' : 'Add Pattern'"
+            (nzOnOk)="savePattern()" (nzOnCancel)="cancelPatternDialog()" nzWidth="500">
+    <ng-container *nzModalContent>
+      <div *ngIf="editingPattern" class="rce__dialog-form">
+        <nz-form-item>
+          <nz-form-label nzRequired>Pattern</nz-form-label>
+          <nz-form-control>
+            <input nz-input nzSize="small" [(ngModel)]="editingPattern.pattern" placeholder="Pattern expression">
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>Type</nz-form-label>
+          <nz-form-control>
+            <nz-select nzSize="small" [(ngModel)]="editingPattern.patternType">
+              <nz-option *ngFor="let t of patternTypes" [nzValue]="t" [nzLabel]="t"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>Business Process</nz-form-label>
+          <nz-form-control>
+            <input nz-input nzSize="small" [(ngModel)]="editingPattern.businessProcess">
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>Priority</nz-form-label>
+          <nz-form-control>
+            <nz-input-number nzSize="small" [(ngModel)]="editingPattern.priority" [nzMin]="1"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+        <label nz-checkbox [(ngModel)]="editingPattern.isActive">Active</label>
+      </div>
+    </ng-container>
+  </nz-modal>
+
+  <!-- Master Data Dialog -->
+  <nz-modal [(nzVisible)]="masterDataDialogVisible"
+            [nzTitle]="editingMasterData?.id ? 'Edit Master Data' : 'Add Master Data'"
+            (nzOnOk)="saveMasterData()" (nzOnCancel)="cancelMasterDataDialog()" nzWidth="500">
+    <ng-container *nzModalContent>
+      <div *ngIf="editingMasterData" class="rce__dialog-form">
+        <nz-form-item>
+          <nz-form-label nzRequired>Category</nz-form-label>
+          <nz-form-control>
+            <nz-select nzSize="small" [(ngModel)]="editingMasterData.category">
+              <nz-option *ngFor="let cat of masterDataCategories" [nzValue]="cat" [nzLabel]="cat"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>Code</nz-form-label>
+          <nz-form-control>
+            <input nz-input nzSize="small" [(ngModel)]="editingMasterData.code">
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label nzRequired>Name</nz-form-label>
+          <nz-form-control>
+            <input nz-input nzSize="small" [(ngModel)]="editingMasterData.name">
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label>Parent Code</nz-form-label>
+          <nz-form-control>
+            <input nz-input nzSize="small" [(ngModel)]="editingMasterData.parentCode" placeholder="Parent code (optional)">
+          </nz-form-control>
+        </nz-form-item>
+        <label nz-checkbox [(ngModel)]="editingMasterData.isActive">Active</label>
+      </div>
+    </ng-container>
+  </nz-modal>
+
+  <!-- Pattern Test Dialog -->
+  <nz-modal [(nzVisible)]="testDialogVisible" nzTitle="Test Pattern"
+            (nzOnCancel)="closeTestDialog()" [nzFooter]="null" nzWidth="500">
+    <ng-container *nzModalContent>
+      <div class="rce__test">
+        <nz-input-group nzSize="small" [nzAddOnAfter]="testButton" style="margin-bottom: 12px;">
+          <input nz-input nzSize="small" [(ngModel)]="testRoleName" placeholder="Enter role name to test"
+                 (keydown.enter)="runPatternTest()">
+        </nz-input-group>
+        <ng-template #testButton>
+          <button nz-button nzSize="small" nzType="primary" (click)="runPatternTest()" [disabled]="!testRoleName">
+            Test
+          </button>
+        </ng-template>
+
+        <div *ngIf="testResult" class="rce__test-result">
+          <nz-tag [nzColor]="testResult.valid ? 'success' : 'error'">
+            {{ testResult.valid ? 'Valid' : 'Invalid' }}
+          </nz-tag>
+          <div *ngIf="testResult.messages?.length" class="rce__test-messages">
+            <div *ngFor="let msg of testResult.messages" class="rce__test-msg">{{ msg }}</div>
+          </div>
+          <div *ngIf="testResult.matchedPatterns?.length" class="rce__test-matches">
+            <div class="rce__section-title">Matched Patterns</div>
+            <nz-tag *ngFor="let p of testResult.matchedPatterns" nzColor="blue">{{ p }}</nz-tag>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </nz-modal>
+</div>

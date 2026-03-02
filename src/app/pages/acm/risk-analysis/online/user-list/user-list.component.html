@@ -1,0 +1,49 @@
+<nz-card [nzTitle]="header" nzSize="small" [nzExtra]="userActions">
+  <ng-template #userActions>
+    <nz-button-group>
+      <button nz-button nzSize="small" nz-tooltip nzTooltipTitle="Remove Selected" [disabled]="selectedItems.length === 0" (click)="remove()">
+        <span nz-icon nzType="delete" nzTheme="outline"></span>
+      </button>
+      <button nz-button nzSize="small" nz-tooltip nzTooltipTitle="Remove All" (click)="removeAll()">
+        <span nz-icon nzType="close-circle" nzTheme="outline"></span>
+      </button>
+      <button nz-button nzSize="small" nzType="primary" nz-tooltip nzTooltipTitle="Select Users" (click)="openUserSelectDialog()">
+        <span nz-icon nzType="plus" nzTheme="outline"></span> Select
+      </button>
+    </nz-button-group>
+  </ng-template>
+
+  <nz-input-group nzSize="small" [nzSuffix]="userSearchIcon" style="margin-bottom: 8px; max-width: 280px;">
+    <input nz-input placeholder="Search users..." [(ngModel)]="searchText" (keyup.enter)="onSearch()" />
+  </nz-input-group>
+  <ng-template #userSearchIcon>
+    <span nz-icon nzType="search" style="cursor: pointer;" (click)="onSearch()"></span>
+  </ng-template>
+
+  <nz-table #userTable [nzData]="items" nzSize="small"
+            [nzFrontPagination]="false"
+            [nzTotal]="totalRecords"
+            [nzPageIndex]="currentPage"
+            [nzPageSize]="pageSize"
+            (nzPageIndexChange)="onPageChange($event)"
+            nzTableLayout="fixed"
+            [nzScroll]="{ y: '50vh' }">
+    <thead>
+      <tr>
+        <th nzWidth="40px" [nzChecked]="allChecked" (nzCheckedChange)="onAllChecked($event)"></th>
+        <th *ngFor="let col of cols">{{ col.header }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of userTable.data">
+        <td [nzChecked]="isChecked(row)" (nzCheckedChange)="onItemChecked(row, $event)"></td>
+        <td style="color: #1890ff; cursor: pointer;">{{ row.bname }}</td>
+        <td>{{ row.userName }}</td>
+        <td>{{ row.ustyp }}</td>
+        <td>{{ row.clas }}</td>
+        <td>{{ row.uflag }}</td>
+        <td>{{ row.gltgbInDateFmt }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>

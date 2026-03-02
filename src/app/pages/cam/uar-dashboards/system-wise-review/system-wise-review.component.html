@@ -1,0 +1,73 @@
+<!-- Header -->
+<div class="mb-4">
+  <h2 class="m-0">System-wise Review</h2>
+</div>
+
+<!-- KPI Cards -->
+<div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Total Systems" [value]="statistics.totalSystems" description="SAP systems" icon="cluster" color="#1890ff" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Total Users" [value]="statistics.totalUsers" description="Across all systems" icon="team" color="#722ed1" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Completed Reviews" [value]="statistics.completedReviews" description="Reviews done" icon="check-circle" color="#52c41a" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Pending Reviews" [value]="statistics.pendingReviews" description="Awaiting review" icon="clock-circle" color="#faad14" [loading]="loading"></app-statistics-card>
+  </div>
+</div>
+
+<!-- Charts — 2 per row (lg grid) -->
+<div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+  <div nz-col [nzXs]="24" [nzMd]="12">
+    <common-apx-chart [loading]="loading" [chartOptions]="distributionChartOptions" size="lg"></common-apx-chart>
+  </div>
+  <div nz-col [nzXs]="24" [nzMd]="12">
+    <common-apx-chart [loading]="loading" [chartOptions]="completionChartOptions" size="lg"></common-apx-chart>
+  </div>
+</div>
+
+<!-- Overall Completion Rate -->
+<nz-card class="mt-4 mb-4">
+  <div class="flex flex-col items-center py-4">
+    <span class="text-sm text-gray-500 mb-2">Overall Completion Rate</span>
+    <span class="text-5xl font-bold" [style.color]="getCompletionColor()">{{ overallCompletionRate }}%</span>
+    <div class="w-full max-w-md mt-4">
+      <nz-progress
+        [nzPercent]="overallCompletionRate"
+        [nzStrokeColor]="getCompletionColor()"
+        [nzShowInfo]="false"
+      ></nz-progress>
+    </div>
+  </div>
+</nz-card>
+
+<!-- System Statistics -->
+<nz-card class="mt-4 mb-4">
+  <app-advanced-table
+    title="System Statistics"
+    [data]="systemData"
+    [columns]="systemColumns"
+    [loading]="loading"
+    [showPagination]="false"
+    [showSearch]="true"
+    size="middle"
+    scrollY="40vh"
+  ></app-advanced-table>
+</nz-card>
+
+<!-- Critical Systems Status -->
+<nz-card class="mt-4">
+  <app-advanced-table
+    title="Critical Systems Status"
+    [data]="criticalData"
+    [columns]="criticalColumns"
+    [loading]="loading"
+    [showPagination]="false"
+    [showSearch]="true"
+    size="middle"
+    scrollY="40vh"
+  ></app-advanced-table>
+</nz-card>

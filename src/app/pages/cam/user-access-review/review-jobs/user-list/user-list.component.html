@@ -1,0 +1,101 @@
+<section style="max-height: 80vh; overflow: auto;">
+  <!-- Users Table -->
+  <app-advanced-table
+    title="Users"
+    [data]="userData"
+    [columns]="userColumns"
+    [actions]="userActions"
+    [loading]="userLoading"
+    [serverSide]="true"
+    [totalRecords]="userTotal"
+    [showSearch]="true"
+    [showSelection]="true"
+    [showPagination]="true"
+    rowKey="id"
+    size="small"
+    scrollY="35vh"
+    (queryParamsChange)="onUserQueryChange($event)"
+    (selectionChange)="onUserSelectionChange($event)"
+    (rowClick)="onUserRowClick($event)"
+  ></app-advanced-table>
+
+  <!-- Detail Tabs -->
+  <nz-tabset style="margin-top: 8px;">
+    <!-- Roles Tab -->
+    <nz-tab nzTitle="Roles">
+      <app-advanced-table
+        [data]="rolesData"
+        [columns]="rolesColumns"
+        [showPagination]="false"
+        [showSearch]="false"
+        [showRefresh]="false"
+        size="small"
+        scrollY="30vh"
+      ></app-advanced-table>
+    </nz-tab>
+
+    <!-- Transactions Tab -->
+    <nz-tab nzTitle="Transactions">
+      <app-advanced-table
+        [data]="transData"
+        [columns]="transColumns"
+        [showPagination]="false"
+        [showSearch]="false"
+        [showRefresh]="false"
+        size="small"
+        scrollY="30vh"
+      ></app-advanced-table>
+    </nz-tab>
+
+    <!-- Risk Violations Tab -->
+    <nz-tab nzTitle="Risk Violations">
+      <app-advanced-table
+        [data]="riskData"
+        [columns]="riskColumns"
+        [showPagination]="false"
+        [showSearch]="false"
+        [showRefresh]="false"
+        size="small"
+        scrollY="30vh"
+        scrollX="1200px"
+      ></app-advanced-table>
+    </nz-tab>
+
+    <!-- Comments Tab -->
+    <nz-tab nzTitle="Comments">
+      <div style="padding: 12px;">
+        <nz-form-item>
+          <nz-form-label>Enter Comments</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input [nzAutosize]="{ minRows: 5, maxRows: 10 }" [(ngModel)]="comment" style="width: 100%;"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+        <div style="text-align: right; margin-top: 8px;">
+          <button nz-button nzType="primary" (click)="saveComments()">Save</button>
+        </div>
+      </div>
+    </nz-tab>
+
+    <!-- Attachments Tab -->
+    <nz-tab nzTitle="Attachments">
+      <app-advanced-table
+        [data]="attachData"
+        [columns]="attachColumns"
+        [actions]="attachActions"
+        [showPagination]="false"
+        [showSearch]="false"
+        [showRefresh]="false"
+        size="small"
+        scrollY="30vh"
+      ></app-advanced-table>
+    </nz-tab>
+  </nz-tabset>
+
+  <!-- Hidden file inputs -->
+  <input type="file" #fileInput style="display: none;" (change)="onFileSelected($event)" />
+  <input type="file" #fileAttachments style="display: none;" (change)="onTaskAttachmentSelected($event)" />
+</section>
+
+<div style="display: flex; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+  <button nz-button nzType="default" (click)="modalRef.close()">Close</button>
+</div>

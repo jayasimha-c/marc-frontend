@@ -1,0 +1,87 @@
+<div class="role-concept__container">
+    <!-- Header -->
+    <div class="role-concept__header">
+        <div>
+            <h2>Role Concept Templates</h2>
+            <p>Manage reusable naming convention templates</p>
+        </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="role-concept__content">
+        <app-advanced-table #agTable [columns]="columns" [actions]="tableActions" [total]="totalRecords"
+            [loading]="loading" [data]="templates" [serverSide]="true" (queryParamsChange)="loadTemplates($event)"
+            (rowClick)="onRowClick($event)">
+        </app-advanced-table>
+    </div>
+</div>
+
+<!-- Duplicate Dialog -->
+<nz-modal [(nzVisible)]="showDuplicateDialog" nzTitle="Duplicate Template" (nzOnCancel)="closeDuplicateDialog()"
+    (nzOnOk)="confirmDuplicate()">
+    <ng-container *nzModalContent>
+        <p>Enter a name for the duplicated template:</p>
+        <div class="nz-float-label has-value mt-2">
+            <input nz-input [(ngModel)]="duplicateName">
+            <label>Template Name</label>
+        </div>
+    </ng-container>
+</nz-modal>
+
+<!-- Assign Systems Dialog -->
+<nz-modal [(nzVisible)]="showAssignDialog" nzTitle="Assign to SAP Systems" (nzOnCancel)="closeAssignDialog()"
+    [nzFooter]="assignFooter" [nzWidth]="520">
+    <ng-container *nzModalContent>
+        <div style="margin-bottom: 12px;">
+            <span style="font-weight: 500;">Template:</span> {{ selectedTemplate?.name }}
+        </div>
+
+        <!-- Search -->
+        <nz-input-group [nzPrefix]="searchIcon" style="margin-bottom: 12px;">
+            <input nz-input [(ngModel)]="systemSearchTerm" placeholder="Search systems...">
+        </nz-input-group>
+        <ng-template #searchIcon><span nz-icon nzType="search"></span></ng-template>
+
+        <nz-spin [nzSpinning]="loadingSystems">
+            <!-- Select All -->
+            <div style="padding: 8px 0; border-bottom: 1px solid #f0f0f0; margin-bottom: 4px;">
+                <label nz-checkbox
+                    [ngModel]="isAllSelected()"
+                    [nzIndeterminate]="isSomeSelected()"
+                    (ngModelChange)="toggleSelectAll($event)">
+                    Select All
+                </label>
+            </div>
+
+            <!-- Systems List -->
+            <div style="max-height: 350px; overflow-y: auto;">
+                <div *ngFor="let sys of filteredSystems"
+                    style="display: flex; align-items: center; gap: 10px; padding: 8px 4px; cursor: pointer; border-radius: 4px;"
+                    (click)="toggleSystem(sys.id)">
+                    <label nz-checkbox
+                        [ngModel]="selectedSystemIds.has(sys.id)"
+                        (ngModelChange)="toggleSystem(sys.id)"
+                        (click)="$event.stopPropagation()">
+                    </label>
+                    <div>
+                        <div style="font-weight: 500; font-size: 13px;">{{ sys.destinationName || sys.sid }}</div>
+                        <div *ngIf="sys.sid && sys.destinationName" style="font-size: 12px; color: #8c8c8c;">{{ sys.sid }}</div>
+                    </div>
+                </div>
+
+                <div *ngIf="filteredSystems.length === 0" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 24px; color: #bfbfbf;">
+                    <span nz-icon nzType="inbox"></span> No systems found
+                </div>
+            </div>
+
+            <!-- Selected Count -->
+            <div style="padding: 8px 0; font-size: 12px; color: #8c8c8c; text-align: right; border-top: 1px solid #f0f0f0; margin-top: 4px;">
+                {{ selectedSystemIds.size }} system(s) selected
+            </div>
+        </nz-spin>
+    </ng-container>
+    <ng-template #assignFooter>
+        <button nz-button nzType="default" (click)="closeAssignDialog()">Cancel</button>
+        <button nz-button nzType="primary" (click)="confirmAssignment()" [nzLoading]="savingAssignment">Save</button>
+    </ng-template>
+</nz-modal>

@@ -1,0 +1,153 @@
+<div class="ot">
+  <nz-card nzSize="small" nzTitle="Org Value Templates" [nzExtra]="cardExtra">
+    <ng-template #cardExtra>
+      <nz-space>
+        <span *nzSpaceItem>
+          <nz-select nzPlaceHolder="Select SAP System" style="width: 220px;" nzSize="small"
+                     [ngModel]="selectedSystemId" (ngModelChange)="onSystemChange($event)"
+                     [nzLoading]="loadingSystems" nzShowSearch>
+            <nz-option *ngFor="let sys of sapSystems" [nzValue]="sys.id"
+                       [nzLabel]="sys.destinationName"></nz-option>
+          </nz-select>
+        </span>
+        <span *nzSpaceItem>
+          <nz-input-group nzSize="small" [nzPrefix]="searchIcon" style="width: 180px;">
+            <input nz-input nzSize="small" placeholder="Search..." [(ngModel)]="templateSearch">
+          </nz-input-group>
+          <ng-template #searchIcon><span nz-icon nzType="search"></span></ng-template>
+        </span>
+        <button *nzSpaceItem nz-button nzSize="small" nzType="primary"
+                [routerLink]="['new']" [disabled]="!selectedSystemId">
+          <span nz-icon nzType="plus" nzTheme="outline"></span> New
+        </button>
+        <button *nzSpaceItem nz-button nzSize="small" nzType="default" nz-dropdown [nzDropdownMenu]="moreMenu">
+          <span nz-icon nzType="more" nzTheme="outline"></span>
+        </button>
+      </nz-space>
+    </ng-template>
+
+    <nz-dropdown-menu #moreMenu>
+      <ul nz-menu>
+        <li nz-menu-item (click)="triggerImport()" [nzDisabled]="!selectedSystemId">
+          <span nz-icon nzType="upload" nzTheme="outline"></span> Import Excel
+        </li>
+        <li nz-menu-item (click)="exportExcel()" [nzDisabled]="!matrixData">
+          <span nz-icon nzType="download" nzTheme="outline"></span> Export Excel
+        </li>
+        <li nz-menu-divider></li>
+        <li nz-menu-item nzDanger (click)="deleteSelected()" [nzDisabled]="selectedTemplateIds.length === 0">
+          <span nz-icon nzType="delete" nzTheme="outline"></span> Delete Selected ({{ selectedTemplateIds.length }})
+        </li>
+      </ul>
+    </nz-dropdown-menu>
+
+    <!-- Hidden file input for import -->
+    <input type="file" #importFileInput accept=".xlsx,.xls" (change)="onImportFile($event)" style="display: none;">
+
+    <!-- Empty state -->
+    <div *ngIf="!selectedSystemId" class="ot__empty">
+      <nz-empty nzNotFoundContent="Select a SAP system to view org templates"></nz-empty>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loadingMatrix" class="ot__loading">
+      <nz-spin nzSimple></nz-spin>
+    </div>
+
+    <!-- Matrix Table -->
+    <div *ngIf="selectedSystemId && !loadingMatrix && matrixData" class="ot__matrix-wrapper">
+      <div class="ot__matrix-scroll">
+        <table class="ot__matrix">
+          <thead>
+            <tr>
+              <th class="ot__matrix-th ot__matrix-th--checkbox" nzWidth="40px">
+                <label nz-checkbox [nzChecked]="allSelected" (nzCheckedChange)="toggleSelectAll()"></label>
+              </th>
+              <th class="ot__matrix-th ot__matrix-th--field">Field</th>
+              <th class="ot__matrix-th" *ngFor="let tmpl of filteredTemplates">
+                <div class="ot__tmpl-header">
+                  <span class="ot__tmpl-name" nz-tooltip [nzTooltipTitle]="tmpl.description || ''">
+                    {{ tmpl.templateName }}
+                  </span>
+                  <span *ngIf="tmpl.templateCode" class="ot__tmpl-code">{{ tmpl.templateCode }}</span>
+                  <div class="ot__tmpl-actions">
+                    <button nz-button nzType="link" nzSize="small" [routerLink]="['edit', tmpl.id]"
+                            nz-tooltip nzTooltipTitle="Edit">
+                      <span nz-icon nzType="edit" nzTheme="outline"></span>
+                    </button>
+                    <button nz-button nzType="link" nzSize="small" (click)="cloneTemplate(tmpl)"
+                            nz-tooltip nzTooltipTitle="Clone">
+                      <span nz-icon nzType="copy" nzTheme="outline"></span>
+                    </button>
+                    <button nz-button nzType="link" nzSize="small" (click)="viewVersionHistory(tmpl)"
+                            nz-tooltip nzTooltipTitle="History">
+                      <span nz-icon nzType="history" nzTheme="outline"></span>
+                    </button>
+                    <button nz-button nzType="link" nzSize="small" nzDanger (click)="deleteTemplate(tmpl)"
+                            nz-tooltip nzTooltipTitle="Delete">
+                      <span nz-icon nzType="delete" nzTheme="outline"></span>
+                    </button>
+                  </div>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let field of filteredFields">
+              <td class="ot__matrix-td ot__matrix-td--checkbox">
+                <!-- Row checkboxes could go here if needed -->
+              </td>
+              <td class="ot__matrix-td ot__matrix-td--field">
+                <span nz-tooltip [nzTooltipTitle]="field.description">
+                  {{ field.fieldName }}
+                </span>
+              </td>
+              <td class="ot__matrix-td" *ngFor="let tmpl of filteredTemplates"
+                  (dblclick)="startEdit(tmpl.id, field.fieldName)">
+                <div *ngIf="!isEditing(tmpl.id, field.fieldName)" class="ot__cell-value"
+                     (click)="copyCellValue(getCellValue(tmpl.id, field.fieldName))"
+                     nz-tooltip nzTooltipTitle="Click to copy">
+                  {{ getCellValue(tmpl.id, field.fieldName) || '-' }}
+                </div>
+                <div *ngIf="isEditing(tmpl.id, field.fieldName)" class="ot__cell-edit">
+                  <input nz-input nzSize="small" [(ngModel)]="editingValue"
+                         (keydown.enter)="saveEdit()" (keydown.escape)="cancelEdit()"
+                         (blur)="saveEdit()">
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="matrixData.templates.length === 0" class="ot__no-data">
+        <nz-empty nzNotFoundContent="No templates found for this system"></nz-empty>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Version History Drawer -->
+  <nz-drawer [nzVisible]="showVersionDrawer" nzPlacement="right" nzWidth="420"
+             nzTitle="Version History" (nzOnClose)="closeVersionDrawer()">
+    <ng-container *nzDrawerContent>
+      <nz-timeline *ngIf="versionHistory.length > 0">
+        <nz-timeline-item *ngFor="let v of versionHistory"
+                          [nzColor]="v.changeType === 'CREATED' ? 'green' : v.changeType === 'DELETED' ? 'red' : 'blue'">
+          <div class="ot__version-item">
+            <div class="ot__version-header">
+              <nz-tag [nzColor]="v.changeType === 'CREATED' ? 'success' : v.changeType === 'DELETED' ? 'error' : 'processing'">
+                {{ v.changeTypeDisplay || v.changeType }}
+              </nz-tag>
+              <span class="ot__version-num">v{{ v.version }}</span>
+            </div>
+            <div *ngIf="v.changeSummary" class="ot__version-summary">{{ v.changeSummary }}</div>
+            <div class="ot__version-meta">
+              {{ v.changedBy }} &middot; {{ v.changedDate | date:'short' }}
+            </div>
+          </div>
+        </nz-timeline-item>
+      </nz-timeline>
+      <nz-empty *ngIf="versionHistory.length === 0" nzNotFoundContent="No version history"></nz-empty>
+    </ng-container>
+  </nz-drawer>
+</div>

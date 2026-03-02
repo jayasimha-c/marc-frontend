@@ -1,0 +1,194 @@
+<nz-spin [nzSpinning]="loading">
+  <!-- ─── Listing View ─────────────────────────────────── -->
+  <div *ngIf="!showEditor">
+    <nz-card nzSize="small">
+      <div class="vr__toolbar">
+        <h3 class="vr__toolbar-title">Risk Variants</h3>
+        <nz-space>
+          <button *nzSpaceItem nz-button nzType="primary" nzSize="small" (click)="onAdd()">
+            <span nz-icon nzType="plus-circle" nzTheme="outline"></span> Add
+          </button>
+          <button *nzSpaceItem nz-button nzSize="small" (click)="onEdit()">
+            <span nz-icon nzType="edit" nzTheme="outline"></span> Edit
+          </button>
+          <button *nzSpaceItem nz-button nzDanger nzSize="small" (click)="onDelete()">
+            <span nz-icon nzType="delete" nzTheme="outline"></span> Delete
+          </button>
+        </nz-space>
+      </div>
+
+      <nz-table #listingTable [nzData]="favorites" nzSize="small" [nzShowPagination]="favorites.length > 15"
+        [nzPageSize]="15" nzTableLayout="fixed" [nzFrontPagination]="true" [nzScroll]="{ y: '500px' }">
+        <thead>
+          <tr>
+            <th *ngFor="let col of listingColumns" [nzWidth]="col.width || null">{{ col.header }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of listingTable.data"
+            [class.vr__row--selected]="selectedVariant?.id === row.id"
+            class="vr__row"
+            (click)="onRowClick(row)">
+            <td *ngFor="let col of listingColumns">{{ row[col.field] }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+
+      <nz-empty *ngIf="!loading && !favorites.length"
+        nzNotFoundContent="No risk variants found" [nzNotFoundImage]="'simple'">
+      </nz-empty>
+    </nz-card>
+  </div>
+
+  <!-- ─── Editor View ──────────────────────────────────── -->
+  <div *ngIf="showEditor">
+    <!-- Header Panel -->
+    <nz-card nzSize="small">
+      <div class="vr__toolbar">
+        <div class="vr__toolbar-left">
+          <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()">
+            <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+          </button>
+          <h3 class="vr__toolbar-title">{{ isEditMode() ? 'Edit' : 'Add' }} Risk Variant</h3>
+        </div>
+        <button nz-button nzType="primary" nzSize="small" (click)="onSave()" [disabled]="selectedRisks.length === 0">
+          <span nz-icon nzType="save" nzTheme="outline"></span> Save
+        </button>
+      </div>
+
+      <form [formGroup]="form" nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label" [class.has-value]="form.get('description')?.value">
+                <input nz-input placeholder=" " formControlName="description" />
+                <label>Variant Name</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label" [class.has-value]="form.get('systemType')?.value">
+                <nz-select formControlName="systemType" nzPlaceHolder=" " (ngModelChange)="onSelectSystemType($event)">
+                  <nz-option *ngFor="let type of systemTypes" [nzValue]="type" [nzLabel]="type"></nz-option>
+                </nz-select>
+                <label>System Type</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label" [class.has-value]="form.get('system')?.value">
+                <nz-select formControlName="system" nzPlaceHolder=" " nzShowSearch (ngModelChange)="onSystemSelected()">
+                  <nz-option *ngFor="let sys of systemsList" [nzValue]="sys.id" [nzLabel]="sys.destinationName"></nz-option>
+                </nz-select>
+                <label>System</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </form>
+    </nz-card>
+
+    <!-- Catalogue + Selected -->
+    <div nz-row [nzGutter]="16" style="margin-top: 16px;">
+      <!-- LEFT: Catalogue -->
+      <div nz-col [nzSpan]="16">
+        <nz-card nzSize="small" class="vr__panel">
+          <div class="vr__toolbar">
+            <div class="vr__toolbar-left">
+              <h4 class="vr__toolbar-title">Risks Catalogue</h4>
+              <nz-tag>{{ catalogueData.length }}</nz-tag>
+            </div>
+            <div class="vr__toolbar-right">
+              <nz-input-group [nzPrefix]="searchIcon" nzSize="small" style="width: 200px;">
+                <input nz-input placeholder="Search..." [(ngModel)]="searchTerm" [ngModelOptions]="{standalone: true}"
+                  (input)="onSearchInput()" />
+              </nz-input-group>
+              <ng-template #searchIcon><span nz-icon nzType="search"></span></ng-template>
+              <button nz-button nzType="primary" nzSize="small"
+                [disabled]="checkedCatalogue.size === 0" (click)="onAddSelected()">
+                <span nz-icon nzType="plus" nzTheme="outline"></span> Add ({{ checkedCatalogue.size }})
+              </button>
+            </div>
+          </div>
+
+          <nz-table #catalogueTable [nzData]="catalogueData" nzSize="small"
+            [nzShowPagination]="catalogueData.length > 20" [nzPageSize]="20"
+            nzTableLayout="fixed" [nzFrontPagination]="true" [nzScroll]="{ y: '380px' }">
+            <thead>
+              <tr>
+                <th nzWidth="40px"
+                  [nzChecked]="catalogueCheckAll"
+                  [nzIndeterminate]="catalogueIndeterminate"
+                  (nzCheckedChange)="onCatalogueAllChecked($event)"></th>
+                <th>Risk ID</th>
+                <th>Description</th>
+                <th nzWidth="160px">Business Process</th>
+                <th nzWidth="100px">Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of catalogueTable.data">
+                <td [nzChecked]="checkedCatalogue.has(row.id)"
+                  (nzCheckedChange)="onCatalogueItemChecked(row.id, $event)"></td>
+                <td>{{ row.name }}</td>
+                <td>{{ row.riskDescription }}</td>
+                <td>{{ row.businessProcess?.name }}</td>
+                <td>{{ row.riskType?.name }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-card>
+      </div>
+
+      <!-- RIGHT: Selected -->
+      <div nz-col [nzSpan]="8">
+        <nz-card nzSize="small" class="vr__panel">
+          <div class="vr__toolbar">
+            <div class="vr__toolbar-left">
+              <h4 class="vr__toolbar-title">Risks Selected</h4>
+              <nz-tag *ngIf="selectedRisks.length" nzColor="blue">{{ selectedRisks.length }}</nz-tag>
+            </div>
+            <button *ngIf="selectedRisks.length" nz-button nzType="text" nzDanger nzSize="small" (click)="onRemoveSelected()"
+              nz-tooltip nzTooltipTitle="Remove selected">
+              <span nz-icon nzType="delete" nzTheme="outline"></span>
+            </button>
+          </div>
+
+          <ng-container *ngIf="selectedRisks.length; else emptySelected">
+            <nz-table #selectedTable [nzData]="selectedRisks" nzSize="small"
+              [nzShowPagination]="selectedRisks.length > 20" [nzPageSize]="20"
+              nzTableLayout="fixed" [nzFrontPagination]="true" [nzScroll]="{ y: '380px' }">
+              <thead>
+                <tr>
+                  <th>Risk ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of selectedTable.data"
+                  [class.vr__row--selected]="selectedRow?.id === row.id"
+                  class="vr__row"
+                  (click)="onSelectedRowClick(row)">
+                  <td>{{ row.name }}</td>
+                </tr>
+              </tbody>
+            </nz-table>
+          </ng-container>
+
+          <ng-template #emptySelected>
+            <div class="vr__empty">
+              <span nz-icon nzType="book" nzTheme="outline" style="font-size: 32px; margin-bottom: 8px;"></span>
+              <p>No risks added yet</p>
+              <p class="vr__empty-sub">Select risks from the catalogue and click "Add"</p>
+            </div>
+          </ng-template>
+        </nz-card>
+      </div>
+    </div>
+  </div>
+</nz-spin>

@@ -1,0 +1,31 @@
+<ng-container *ngIf="form$ | async; else loadingTpl">
+  <form [formGroup]="form">
+    <nz-form-item>
+      <nz-form-control nzErrorTip="Role Name is required">
+        <div class="nz-float-label has-value">
+          <input nz-input placeholder=" " formControlName="roleName" />
+          <label>Role Name</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-control nzErrorTip="Role Description is required">
+        <div class="nz-float-label" [class.has-value]="form.get('roleDescription')?.value">
+          <input nz-input placeholder=" " formControlName="roleDescription" />
+          <label>Role Description</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+  </form>
+</ng-container>
+<ng-template #loadingTpl>
+  <div style="text-align: center; padding: 24px;">
+    <nz-spin nzSimple></nz-spin>
+  </div>
+</ng-template>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+  <button nz-button nzType="primary" [nzLoading]="loading" (click)="save()">Save</button>
+</div>

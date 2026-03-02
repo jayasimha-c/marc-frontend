@@ -1,0 +1,338 @@
+<!-- Toolbar -->
+<div class="ilt__toolbar" *ngIf="title || _visibleActions.length || _overflowActions.length || showSearch || showRefresh || extraToolbarRef">
+  <!-- Left: Title + Unsaved tag -->
+  <div class="ilt__toolbar-left">
+    <div class="ilt__title-block" *ngIf="title">
+      <h4 class="ilt__title">{{ title }}</h4>
+      <span class="ilt__subtitle" *ngIf="subtitle">{{ subtitle }}</span>
+    </div>
+    <nz-tag *ngIf="_isDirty" nzColor="orange" class="ilt__dirty-tag">Unsaved</nz-tag>
+  </div>
+
+  <!-- Right: Search + Actions + Refresh -->
+  <div class="ilt__toolbar-right">
+    <!-- Global search -->
+    <nz-input-group [nzPrefix]="searchIcon" *ngIf="showSearch" class="ilt__search">
+      <input
+        nz-input
+        placeholder="Search..."
+        [(ngModel)]="globalSearch"
+        (ngModelChange)="onGlobalSearch()"
+        nzSize="small"
+      />
+    </nz-input-group>
+    <ng-template #searchIcon>
+      <span nz-icon nzType="search"></span>
+    </ng-template>
+
+    <!-- Extra toolbar content projection -->
+    <ng-container *ngIf="extraToolbarRef">
+      <ng-container *ngTemplateOutlet="extraToolbarRef"></ng-container>
+    </ng-container>
+
+    <!-- Action buttons -->
+    <nz-space *ngIf="_visibleActions.length || _overflowActions.length" [nzSize]="'small'">
+      <ng-container *ngFor="let action of _visibleActions; trackBy: trackByLabel">
+        <button
+          *nzSpaceItem
+          nz-button
+          [nzType]="action.type || 'default'"
+          [nzDanger]="action.danger || false"
+          [disabled]="action.disabled || false"
+          [nz-tooltip]="action.tooltip"
+          (click)="action.command()"
+          nzSize="small"
+        >
+          <span nz-icon *ngIf="action.icon" [nzType]="action.icon" nzTheme="outline"></span>
+          {{ action.label }}
+        </button>
+      </ng-container>
+      <!-- Overflow "More" dropdown -->
+      <ng-container *ngIf="_overflowActions.length">
+        <button *nzSpaceItem nz-button nzSize="small" nz-dropdown [nzDropdownMenu]="moreMenu" nzTrigger="click">
+          <span nz-icon nzType="more" nzTheme="outline"></span> More
+        </button>
+        <nz-dropdown-menu #moreMenu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item *ngFor="let action of _overflowActions; trackBy: trackByLabel"
+              [nzDanger]="action.danger || false"
+              [nzDisabled]="action.disabled || false"
+              (click)="action.command()">
+              <span nz-icon *ngIf="action.icon" [nzType]="action.icon" nzTheme="outline"></span>
+              <span>{{ action.label }}</span>
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </ng-container>
+    </nz-space>
+
+    <!-- Refresh -->
+    <button
+      *ngIf="showRefresh"
+      nz-button
+      nzType="text"
+      nzSize="small"
+      nz-tooltip="Refresh"
+      (click)="onRefresh()"
+    >
+      <span nz-icon nzType="reload"></span>
+    </button>
+  </div>
+</div>
+
+<!-- Table -->
+<nz-table
+  #iltTable
+  [nzData]="displayData"
+  [nzLoading]="loading"
+  [nzSize]="size"
+  [nzBordered]="bordered"
+  [nzTableLayout]="tableLayout"
+  [nzShowPagination]="showPagination"
+  [nzPageSize]="pageSize"
+  [nzPageIndex]="pageIndex"
+  [nzPageSizeOptions]="pageSizeOptions"
+  nzShowSizeChanger
+  [nzFrontPagination]="!serverSide"
+  [nzTotal]="serverSide ? (totalRecords || 0) : displayData.length"
+  [nzScroll]="{ x: scrollX || null, y: scrollY || null }"
+  [nzNoResult]="emptyTpl"
+  [nzShowTotal]="totalTpl"
+  (nzPageIndexChange)="onPageIndexChange($event)"
+  (nzPageSizeChange)="onPageSizeChange($event)"
+  (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+>
+  <thead>
+    <tr>
+      <!-- Select all checkbox -->
+      <th
+        *ngIf="showSelection"
+        nzWidth="40px"
+        [nzLeft]="!!scrollX"
+        nzAlign="center"
+      >
+        <label nz-checkbox
+          [ngModel]="checked"
+          [nzIndeterminate]="indeterminate"
+          (ngModelChange)="onAllChecked($event)">
+        </label>
+      </th>
+
+      <!-- Row number -->
+      <th *ngIf="showRowNumbers" nzWidth="40px" nzAlign="center">#</th>
+
+      <!-- Column headers -->
+      <th
+        *ngFor="let col of columns; trackBy: trackByField"
+        [nzWidth]="col.width || null"
+        [nzAlign]="col.align || 'left'"
+        [nzLeft]="col.fixed === 'left'"
+        [nzRight]="col.fixed === 'right'"
+      >
+        <span
+          class="ilt__header-text"
+          [class.ilt__sortable]="col.type !== 'template'"
+          (click)="col.type !== 'template' ? onSort(col) : null"
+        >
+          {{ col.header }}
+          <span class="ilt__sort-icons" *ngIf="col.type !== 'template'">
+            <span nz-icon nzType="caret-up" nzTheme="fill"
+              [class.active]="sortField === col.field && sortDirection === 'ascend'"></span>
+            <span nz-icon nzType="caret-down" nzTheme="fill"
+              [class.active]="sortField === col.field && sortDirection === 'descend'"></span>
+          </span>
+        </span>
+      </th>
+
+      <!-- Row actions header -->
+      <th *ngIf="showRowActions" nzWidth="80px" nzAlign="center">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr *ngFor="let row of iltTable.data; let ri = index; trackBy: trackByIndex"
+      [class.ilt__row--modified]="row._modified"
+      (click)="onRowClick(row)">
+
+      <!-- Row checkbox -->
+      <td *ngIf="showSelection" [nzLeft]="!!scrollX" nzAlign="center" (click)="$event.stopPropagation()">
+        <label nz-checkbox
+          [ngModel]="setOfCheckedId.has(getFieldValue(row, rowKey))"
+          (ngModelChange)="onItemChecked(getFieldValue(row, rowKey), $event)">
+        </label>
+      </td>
+
+      <!-- Row number -->
+      <td *ngIf="showRowNumbers" nzAlign="center" class="ilt__cell-num">{{ ri + 1 }}</td>
+
+      <!-- Cell rendering -->
+      <td *ngFor="let col of columns; let ci = index; trackBy: trackByField"
+        [nzAlign]="col.align || 'left'"
+        [nzLeft]="col.fixed === 'left'"
+        [nzRight]="col.fixed === 'right'"
+        class="ilt__cell"
+      >
+        <ng-container [ngSwitch]="col.type">
+
+          <!-- TEXT (default) -->
+          <ng-container *ngSwitchCase="'text'">
+            <ng-container *ngIf="isEditing; else textView">
+              <input nz-input nzSize="small" class="ilt__input"
+                [(ngModel)]="row[col.field]"
+                (ngModelChange)="onCellChange(row, col.field)"
+                (paste)="onPaste($event, ri, ci)"
+                [placeholder]="col.placeholder || ''" />
+            </ng-container>
+            <ng-template #textView>
+              <span [title]="getDisplayValue(row, col)">{{ getDisplayValue(row, col) }}</span>
+            </ng-template>
+          </ng-container>
+
+          <!-- NUMBER -->
+          <ng-container *ngSwitchCase="'number'">
+            <ng-container *ngIf="isEditing; else numberView">
+              <nz-input-number nzSize="small" class="ilt__input-number"
+                [(ngModel)]="row[col.field]"
+                (ngModelChange)="onCellChange(row, col.field)"
+                [nzPlaceHolder]="col.placeholder || ''">
+              </nz-input-number>
+            </ng-container>
+            <ng-template #numberView>
+              <span>{{ getDisplayValue(row, col) }}</span>
+            </ng-template>
+          </ng-container>
+
+          <!-- SELECT -->
+          <ng-container *ngSwitchCase="'select'">
+            <ng-container *ngIf="isEditing; else selectView">
+              <nz-select nzSize="small" style="width: 100%"
+                [(ngModel)]="row[col.field]"
+                (ngModelChange)="onCellChange(row, col.field)"
+                [nzShowSearch]="col.showSearch || false"
+                [nzAllowClear]="col.allowClear || false"
+                [nzPlaceHolder]="col.placeholder || ''">
+                <nz-option *ngFor="let opt of getSelectOptions(row, col); trackBy: trackByIndex"
+                  [nzValue]="opt" [nzLabel]="opt"></nz-option>
+              </nz-select>
+            </ng-container>
+            <ng-template #selectView>
+              <span>{{ getDisplayValue(row, col) }}</span>
+            </ng-template>
+          </ng-container>
+
+          <!-- AUTOCOMPLETE -->
+          <ng-container *ngSwitchCase="'autocomplete'">
+            <ng-container *ngIf="isEditing; else autoView">
+              <input nz-input nzSize="small" class="ilt__input"
+                [(ngModel)]="row[col.field]"
+                [nzAutocomplete]="autoRef"
+                (input)="onAutocompleteFilter(col, row[col.field])"
+                (ngModelChange)="onCellChange(row, col.field)"
+                (paste)="onPaste($event, ri, ci)"
+                [placeholder]="col.placeholder || ''" />
+              <nz-autocomplete #autoRef nzBackfill>
+                <nz-auto-option *ngFor="let opt of getAutocompleteOptions(col); trackBy: trackByIndex" [nzValue]="opt">{{ opt }}</nz-auto-option>
+              </nz-autocomplete>
+            </ng-container>
+            <ng-template #autoView>
+              <span>{{ getDisplayValue(row, col) }}</span>
+            </ng-template>
+          </ng-container>
+
+          <!-- TEXTAREA -->
+          <ng-container *ngSwitchCase="'textarea'">
+            <ng-container *ngIf="isEditing; else textareaView">
+              <textarea nz-input nzSize="small" class="ilt__textarea"
+                [(ngModel)]="row[col.field]"
+                (ngModelChange)="onCellChange(row, col.field)"
+                [placeholder]="col.placeholder || ''"
+                [nzAutosize]="{ minRows: 1, maxRows: 3 }">
+              </textarea>
+            </ng-container>
+            <ng-template #textareaView>
+              <span>{{ getDisplayValue(row, col) }}</span>
+            </ng-template>
+          </ng-container>
+
+          <!-- BOOLEAN (select with true/false) -->
+          <ng-container *ngSwitchCase="'boolean'">
+            <ng-container *ngIf="isEditing; else boolView">
+              <nz-select nzSize="small" style="width: 100%"
+                [(ngModel)]="row[col.field]"
+                (ngModelChange)="onCellChange(row, col.field)">
+                <nz-option [nzValue]="getBooleanLabels(col)[0]" [nzLabel]="getBooleanLabels(col)[0]"></nz-option>
+                <nz-option [nzValue]="getBooleanLabels(col)[1]" [nzLabel]="getBooleanLabels(col)[1]"></nz-option>
+              </nz-select>
+            </ng-container>
+            <ng-template #boolView>
+              <span>{{ getDisplayValue(row, col) }}</span>
+            </ng-template>
+          </ng-container>
+
+          <!-- TAG -->
+          <ng-container *ngSwitchCase="'tag'">
+            <nz-tag [nzColor]="getTagColor(getFieldValue(row, col.field), col)">
+              {{ getDisplayValue(row, col) }}
+            </nz-tag>
+          </ng-container>
+
+          <!-- READONLY -->
+          <ng-container *ngSwitchCase="'readonly'">
+            <span>{{ getDisplayValue(row, col) }}</span>
+          </ng-container>
+
+          <!-- TEMPLATE -->
+          <ng-container *ngSwitchCase="'template'">
+            <ng-container *ngIf="col.templateRef"
+              [ngTemplateOutlet]="col.templateRef"
+              [ngTemplateOutletContext]="{ $implicit: row, row: row, value: getFieldValue(row, col.field), index: ri }">
+            </ng-container>
+          </ng-container>
+
+          <!-- Default: text -->
+          <ng-container *ngSwitchDefault>
+            <ng-container *ngIf="isEditing; else defaultView">
+              <input nz-input nzSize="small" class="ilt__input"
+                [(ngModel)]="row[col.field]"
+                (ngModelChange)="onCellChange(row, col.field)"
+                (paste)="onPaste($event, ri, ci)"
+                [placeholder]="col.placeholder || ''" />
+            </ng-container>
+            <ng-template #defaultView>
+              <span>{{ getDisplayValue(row, col) }}</span>
+            </ng-template>
+          </ng-container>
+
+        </ng-container>
+      </td>
+
+      <!-- Row actions -->
+      <td *ngIf="showRowActions" nzAlign="center" class="ilt__cell-actions" (click)="$event.stopPropagation()">
+        <button nz-button nzType="text" nzSize="small"
+          (click)="insertRow(ri)" nz-tooltip="Insert Below" class="ilt__btn-insert">
+          <span nz-icon nzType="plus-square" nzTheme="outline"></span>
+        </button>
+        <button nz-button nzType="text" nzSize="small"
+          (click)="deleteRow(ri)" nz-tooltip="Delete Row" class="ilt__btn-delete">
+          <span nz-icon nzType="delete" nzTheme="outline"></span>
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</nz-table>
+
+<!-- Total template -->
+<ng-template #totalTpl let-range="range" let-total>
+  {{ range[0] }}-{{ range[1] }} of {{ total }} items
+</ng-template>
+
+<!-- Empty template -->
+<ng-template #emptyTpl>
+  <nz-empty [nzNotFoundContent]="emptyText"></nz-empty>
+</ng-template>
+
+<!-- Paste hint -->
+<div *ngIf="isEditing" class="ilt__hint">
+  <span nz-icon nzType="info-circle" nzTheme="outline"></span>
+  Paste from Excel: copy rows and Ctrl+V into editable cells
+</div>

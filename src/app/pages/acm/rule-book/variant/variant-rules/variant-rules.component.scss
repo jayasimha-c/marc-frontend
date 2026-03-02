@@ -1,0 +1,57 @@
+.vr {
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+
+  &__toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__toolbar-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  &__panel {
+    min-height: 480px;
+  }
+
+  &__row {
+    cursor: pointer;
+    &:hover { background: #e6f7ff; }
+    &--selected { background: #e6f7ff; }
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 380px;
+    color: #999;
+    text-align: center;
+
+    p {
+      margin: 0;
+      font-size: 13px;
+    }
+  }
+
+  &__empty-sub {
+    font-size: 12px !important;
+    color: #bbb;
+  }
+}

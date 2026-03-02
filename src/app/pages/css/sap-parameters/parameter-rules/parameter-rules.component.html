@@ -1,0 +1,188 @@
+<div class="parameter-rules-container">
+  <!-- Dashboard Metrics -->
+  <div class="metrics-grid">
+    <app-statistics-card
+      title="Severity"
+      [value]="ruleMetrics.totalRules"
+      [loading]="metricsLoading"
+      color="#7c3aed"
+      icon="bar-chart">
+      <div class="chart-section" *ngIf="!metricsLoading && severityChartData.length > 0">
+        <div class="chart-bar">
+          <div *ngFor="let item of severityChartData" class="chart-bar__segment"
+            [style.width.%]="item.percentage" [style.background-color]="item.color"
+            [title]="item.label + ': ' + item.value + ' (' + item.percentage + '%)'"></div>
+        </div>
+        <div class="chart-legend">
+          <span *ngFor="let item of severityChartData" class="chart-legend__item">
+            <span class="chart-legend__dot" [style.background-color]="item.color"></span>
+            {{ item.label }} {{ item.value }}
+          </span>
+        </div>
+      </div>
+    </app-statistics-card>
+
+    <app-statistics-card
+      title="Category"
+      [value]="ruleMetrics.totalRules"
+      [loading]="metricsLoading"
+      color="#3b82f6"
+      icon="folder">
+      <div class="chart-section" *ngIf="!metricsLoading && categoryChartData.length > 0">
+        <div class="chart-bar">
+          <div *ngFor="let item of categoryChartData" class="chart-bar__segment"
+            [style.width.%]="item.percentage" [style.background-color]="item.color"
+            [title]="item.label + ': ' + item.value + ' (' + item.percentage + '%)'"></div>
+        </div>
+        <div class="chart-legend">
+          <span *ngFor="let item of categoryChartData" class="chart-legend__item">
+            <span class="chart-legend__dot" [style.background-color]="item.color"></span>
+            {{ item.label }} {{ item.value }}
+          </span>
+        </div>
+      </div>
+    </app-statistics-card>
+
+    <app-statistics-card
+      title="Rules with Control"
+      [value]="ruleMetrics.rulesWithControl"
+      [loading]="metricsLoading"
+      description="Rules mapped to security controls"
+      color="#16a34a"
+      icon="safety-certificate">
+    </app-statistics-card>
+
+    <app-statistics-card
+      title="Controls Mapped"
+      [value]="ruleMetrics.controlsMapped"
+      [loading]="metricsLoading"
+      description="Total security controls linked"
+      color="#ea580c"
+      icon="lock">
+    </app-statistics-card>
+  </div>
+
+  <!-- Object Filter Bar -->
+  <div class="filter-bar">
+    <nz-input-group [nzSuffix]="searchIconTpl" style="width: 200px;">
+      <input nz-input [(ngModel)]="objectFilterValue" placeholder="Object Filter" (keyup.enter)="applyObjectFilter()">
+    </nz-input-group>
+    <ng-template #searchIconTpl>
+      <span nz-icon nzType="search" nzTheme="outline" style="cursor: pointer;" (click)="applyObjectFilter()"></span>
+    </ng-template>
+
+    <nz-select [(ngModel)]="objectTypeFilter" (ngModelChange)="applyObjectFilter()" nzPlaceHolder="Type" style="width: 140px;">
+      <nz-option nzValue="" nzLabel="All Types"></nz-option>
+      <nz-option nzValue="SAP_PARAMETER" nzLabel="S4H"></nz-option>
+      <nz-option nzValue="SAP_UME" nzLabel="UME"></nz-option>
+      <nz-option nzValue="SAP_ABAP" nzLabel="ABAP"></nz-option>
+      <nz-option nzValue="HANA_DATABASE" nzLabel="HDB"></nz-option>
+      <nz-option nzValue="AUDIT_LOG" nzLabel="Audit"></nz-option>
+      <nz-option nzValue="BTP" nzLabel="BTP"></nz-option>
+    </nz-select>
+
+    <div *ngIf="isObjectFilterActive" class="filter-active-badge">
+      <span nz-icon nzType="filter" nzTheme="outline"></span>
+      <span>{{ totalRecords }} results</span>
+      <button nz-button nzType="text" nzSize="small" (click)="clearObjectFilter()">
+        <span nz-icon nzType="close" nzTheme="outline"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Cyber Security Rules Table -->
+  <app-advanced-table
+    title="Cyber Security Rules"
+    [columns]="columns"
+    [data]="data"
+    [totalRecords]="totalRecords"
+    [actions]="actions"
+    [serverSide]="true"
+    [loading]="loading"
+    (queryParamsChange)="onQueryParamsChanged($event)"
+    (rowClick)="onRowClicked($event)">
+  </app-advanced-table>
+</div>
+
+<!-- Side Panel -->
+<app-side-panel
+  #ruleDetailsPanel
+  title="Rule Details"
+  [loading]="drawerLoading"
+  [primaryAction]="{ label: 'Edit Rule', icon: 'edit' }"
+  [secondaryAction]="{ label: 'Close' }"
+  (primaryClick)="onEditFromDrawer()"
+  (secondaryClick)="ruleDetailsPanel.close()">
+
+  <div panel-content *ngIf="drawerRule">
+    <nz-divider nzText="Basic Information" nzOrientation="left"></nz-divider>
+    <nz-descriptions [nzColumn]="1" nzSize="small" nzBordered>
+      <nz-descriptions-item nzTitle="Rule ID">{{ drawerRule?.code || drawerRule?.id || '-' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Rule Name">{{ drawerRule?.name || drawerRule?.ruleName || '-' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Severity">
+        <nz-tag [nzColor]="getSeverityColor(drawerRule?.severity || drawerRule?.errorStatus)">
+          {{ drawerRule?.severity || drawerRule?.errorStatus || '-' }}
+        </nz-tag>
+      </nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Category" *ngIf="drawerRule?.tag">{{ drawerRule.tag }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Parameter Type">{{ getParameterTypeLabel(drawerRule?.parameterType) || '-' }}</nz-descriptions-item>
+    </nz-descriptions>
+
+    <ng-container *ngIf="drawerRule?.parameter">
+      <nz-divider nzText="Parameter Information" nzOrientation="left"></nz-divider>
+      <nz-descriptions [nzColumn]="1" nzSize="small" nzBordered>
+        <nz-descriptions-item nzTitle="Parameter Name"><code>{{ drawerRule?.parameter?.parameterName || '-' }}</code></nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Description" *ngIf="drawerRule?.parameter?.description">{{ drawerRule.parameter.description }}</nz-descriptions-item>
+      </nz-descriptions>
+    </ng-container>
+
+    <ng-container *ngIf="drawerRule?.conditions?.length > 0">
+      <nz-divider nzText="Rule Conditions" nzOrientation="left"></nz-divider>
+      <nz-table #condTable [nzData]="drawerRule.conditions" nzSize="small" [nzShowPagination]="false" nzTableLayout="fixed" [nzFrontPagination]="false">
+        <thead>
+          <tr>
+            <th nzWidth="40px">#</th>
+            <th nzWidth="100px">Type</th>
+            <th>Values</th>
+            <th nzWidth="80px" *ngIf="hasMatchMode">Mode</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cond of condTable.data; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ cond.conditionType }}</td>
+            <td>{{ cond.values?.join(', ') || '-' }}</td>
+            <td *ngIf="hasMatchMode">
+              <nz-tag *ngIf="cond.matchMode && cond.matchMode !== 'NORMAL'">{{ cond.matchMode }}</nz-tag>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </ng-container>
+
+    <nz-divider nzText="Linked Security Controls" nzOrientation="left"></nz-divider>
+    <ng-container *ngIf="drawerRule?.requirementNodes?.length > 0">
+      <nz-table #ctrlTable [nzData]="drawerRule.requirementNodes" nzSize="small" [nzShowPagination]="false" nzTableLayout="fixed" [nzFrontPagination]="false">
+        <thead>
+          <tr>
+            <th nzWidth="100px">Code</th>
+            <th>Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ctrl of ctrlTable.data">
+            <td><code>{{ ctrl.code || ctrl.nodeId }}</code></td>
+            <td>{{ ctrl.name || ctrl.title }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </ng-container>
+    <nz-empty *ngIf="!drawerRule?.requirementNodes?.length" nzNotFoundContent="No security controls linked" [nzNotFoundImage]="'simple'"></nz-empty>
+
+    <ng-container *ngIf="drawerRule?.description">
+      <nz-divider nzText="Description" nzOrientation="left"></nz-divider>
+      <p style="padding: 0 16px; white-space: pre-wrap; word-wrap: break-word;">{{ drawerRule.description }}</p>
+    </ng-container>
+  </div>
+
+</app-side-panel>

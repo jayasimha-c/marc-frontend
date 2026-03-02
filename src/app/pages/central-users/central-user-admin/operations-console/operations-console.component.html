@@ -1,0 +1,111 @@
+<div class="operations-console-container">
+    <nz-row [nzGutter]="[16, 16]">
+        <!-- User Search and Select Panel -->
+        <nz-col [nzXs]="24" [nzLg]="8">
+            <app-page-panel>
+                <div headerSection>
+                    <nz-row nzJustify="space-between" nzAlign="middle">
+                        <nz-col>
+                            <nz-space nzAlign="center">
+                                <button *nzSpaceItem nz-button nzType="text" nzShape="circle" (click)="goBack()">
+                                    <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+                                </button>
+                                <h3 *nzSpaceItem style="margin-bottom: 0;">Select Users</h3>
+                            </nz-space>
+                        </nz-col>
+                        <nz-col>
+                            <nz-badge *ngIf="selectedUsers.length > 0" [nzCount]="selectedUsers.length"
+                                [nzStyle]="{ backgroundColor: '#e6f4ff', color: '#1677ff', boxShadow: '0 0 0 1px #91caff inset' }">
+                            </nz-badge>
+                        </nz-col>
+                    </nz-row>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <nz-input-group [nzSuffix]="searchSuffixTpl">
+                        <input nz-input [(ngModel)]="userSearchTerm" (input)="onUserSearchInput()"
+                            placeholder="Search users..." />
+                    </nz-input-group>
+                    <ng-template #searchSuffixTpl>
+                        <span nz-icon nzType="search"></span>
+                    </ng-template>
+                </div>
+
+                <div *ngIf="!userSearchInitiated" style="text-align: center; padding: 40px 0; color: rgba(0,0,0,0.45);">
+                    <span nz-icon nzType="search" style="font-size: 32px; margin-bottom: 8px;"></span>
+                    <div>Search for users to select</div>
+                    <div style="font-size: 12px;">Enter at least 2 characters</div>
+                </div>
+
+                <app-advanced-table *ngIf="userSearchInitiated" [data]="searchedUsers" [columns]="userTableColumns"
+                    [loading]="userSearchLoading" [serverSide]="true" [totalRecords]="totalUserRecords"
+                    [pageIndex]="pageIndex" [pageSize]="pageSize" (queryParamsChange)="onUserQueryParamsChange($event)"
+                    [showSelection]="true" rowKey="sapBname" (selectionChange)="onUserSelectionChange($event)"
+                    size="small" scrollY="300px" [showSearch]="false" [showRefresh]="false">
+                </app-advanced-table>
+            </app-page-panel>
+        </nz-col>
+
+        <!-- Systems List Panel -->
+        <nz-col [nzXs]="24" [nzLg]="16">
+            <app-page-panel>
+                <div headerSection>
+                    <nz-row nzJustify="space-between" nzAlign="middle">
+                        <nz-col>
+                            <nz-space nzAlign="center">
+                                <h3 *nzSpaceItem style="margin-bottom: 0;">Systems List</h3>
+                                <ng-container *ngIf="selectedSystemIds.length > 0">
+                                    <span *nzSpaceItem nz-typography nzType="info">
+                                        {{ selectedSystemIds.length }} selected
+                                    </span>
+                                </ng-container>
+                            </nz-space>
+                        </nz-col>
+                    </nz-row>
+                </div>
+
+                <app-advanced-table [data]="systemsWithStatus" [columns]="systemTableColumns" [loading]="systemsLoading"
+                    [showPagination]="false" [showSelection]="true" rowKey="id"
+                    (selectionChange)="onSystemSelectionChange($event)" [actions]="systemTableActions" size="small"
+                    scrollY="365px" [showSearch]="false" [showRefresh]="false">
+                </app-advanced-table>
+            </app-page-panel>
+        </nz-col>
+    </nz-row>
+
+    <!-- Operation Logs Panel -->
+    <nz-row style="margin-top: 16px;">
+        <nz-col nzSpan="24">
+            <app-page-panel>
+                <div headerSection>
+                    <nz-row nzJustify="space-between" nzAlign="middle">
+                        <nz-col>
+                            <h3 style="margin-bottom: 0;">Operation Logs</h3>
+                        </nz-col>
+                    </nz-row>
+                </div>
+
+                <app-advanced-table *ngIf="operationLogs.length > 0" [data]="operationLogs" [columns]="logTableColumns"
+                    [showPagination]="false" [actions]="logTableActions" size="small" scrollY="300px"
+                    [showSearch]="false" [showRefresh]="false" [customStatusTemplate]="logStatusTemplate">
+                    <ng-template #logStatusTemplate let-row>
+                        <nz-tag [nzColor]="getStatusColor(row.status)">
+                            <span *ngIf="row.status === 'Pending' || row.status === 'In-progress'" nz-icon nzType="sync"
+                                nzSpin></span>
+                            <span
+                                *ngIf="row.status !== 'Pending' && row.status !== 'In-progress' && getStatusIcon(row.status)"
+                                nz-icon [nzType]="getStatusIcon(row.status)"></span>
+                            {{ row.status }}
+                        </nz-tag>
+                    </ng-template>
+                </app-advanced-table>
+
+                <div *ngIf="operationLogs.length === 0"
+                    style="text-align: center; padding: 40px 0; color: rgba(0,0,0,0.45);">
+                    <span nz-icon nzType="history" style="font-size: 32px; margin-bottom: 8px;"></span>
+                    <div>No operation logs yet. Select users and systems, then execute an operation.</div>
+                </div>
+            </app-page-panel>
+        </nz-col>
+    </nz-row>
+</div>

@@ -1,0 +1,40 @@
+<div class="auth-container">
+    <nz-card class="auth-card dark:bg-gray-900 border-0 shadow-lg">
+        <div class="auth-header mb-8 text-center text-gray-900 dark:text-gray-100">
+            <h1 class="text-3xl font-bold">Unlock your session</h1>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">Your session is locked due to inactivity</p>
+        </div>
+
+        <form nz-form [formGroup]="form" (ngSubmit)="submit()" nzLayout="vertical">
+            <nz-form-item>
+                <nz-form-control>
+                    <nz-input-group nzPrefixIcon="user" nzSize="large">
+                        <input nz-input formControlName="name" />
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+                <nz-form-control nzErrorTip="Password is required">
+                    <nz-input-group nzPrefixIcon="lock" nzSize="large" [nzSuffix]="suffixTemplate">
+                        <input nz-input formControlName="password" [type]="hidePassword ? 'password' : 'text'"
+                            placeholder="Password" />
+                    </nz-input-group>
+                    <ng-template #suffixTemplate>
+                        <span nz-icon [nzType]="hidePassword ? 'eye-invisible' : 'eye'"
+                            (click)="hidePassword = !hidePassword" style="cursor: pointer;"></span>
+                    </ng-template>
+                </nz-form-control>
+            </nz-form-item>
+
+            <button nz-button nzType="primary" nzSize="large" nzBlock [nzLoading]="loading" type="submit">
+                <span nz-icon nzType="unlock" nzTheme="outline" class="mr-2"></span>
+                Unlock your session
+            </button>
+
+            <div style="text-align: center; margin-top: 16px;">
+                I'm not <a routerLink="/sign-out">{{name}}</a>
+            </div>
+        </form>
+    </nz-card>
+</div>

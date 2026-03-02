@@ -1,0 +1,42 @@
+<app-page-panel [title]="'About'">
+    <ng-container headerSection>
+        <button nz-button nzType="default" [routerLink]="['../']">
+            <span nz-icon nzType="arrow-left" nzTheme="outline" class="mr-2"></span>
+            Back to Help Center
+        </button>
+    </ng-container>
+
+    <div panel-content>
+        <div class="flex flex-col items-center justify-center py-12">
+            <!-- App Logo/Icon here -->
+            <div
+                class="w-24 h-24 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-blue-100 dark:border-blue-800">
+                <span nz-icon nzType="appstore" nzTheme="outline"
+                    class="text-4xl text-blue-600 dark:text-blue-400"></span>
+            </div>
+
+            <h1 class="text-2xl font-bold mb-2">MARC Application</h1>
+            <p class="text-secondary text-lg mb-6">Management And Reporting of Controls</p>
+
+            <div
+                class="bg-card w-full max-w-md rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+                    <span class="text-secondary">Version</span>
+                    <span class="font-medium">1.0.0</span>
+                </div>
+                <div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+                    <span class="text-secondary">Last Updated</span>
+                    <span class="font-medium">2026</span>
+                </div>
+                <div class="flex items-center justify-between p-4">
+                    <span class="text-secondary">Developer</span>
+                    <span class="font-medium">MARC Team</span>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center text-sm text-secondary">
+                <p>&copy; 2026 MARC for GRC. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</app-page-panel>

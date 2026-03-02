@@ -1,0 +1,90 @@
+<app-advanced-table
+  title="Identity Exceptions"
+  [columns]="exceptionColumns"
+  [data]="exceptionData"
+  [loading]="loading"
+  [total]="exceptionTotal"
+  [serverSide]="true"
+  [actions]="exceptionActions"
+  [showSearch]="true"
+  (queryParamsChange)="onQueryChange($event)"
+  (rowClick)="onRowClick($event)"
+  (rowDoubleClick)="onRowDoubleClick($event)">
+</app-advanced-table>
+
+<app-side-panel
+  #detailsPanel
+  title="Exception Details"
+  [subtitle]="selectedExcep?.sourceUsername || selectedExcep?.sourceUserId || ''"
+  width="520px"
+  (closed)="closeDetailsPanel()">
+  <div panel-content *ngIf="selectedExcep">
+    <nz-divider [nzText]="sourceTitle" nzOrientation="left"></nz-divider>
+    <ng-template #sourceTitle>
+      <span nz-icon nzType="cloud-server" nzTheme="outline"></span> Source Information
+    </ng-template>
+    <nz-descriptions [nzColumn]="2" nzSize="small" nzBordered>
+      <nz-descriptions-item nzTitle="Source System">{{ selectedExcep.sourceSystemDisplay }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="User ID"><code>{{ selectedExcep.sourceUserId }}</code></nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Username" *ngIf="selectedExcep.sourceUsername">
+        <code>{{ selectedExcep.sourceUsername }}</code>
+      </nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Email" *ngIf="selectedExcep.sourceEmail">
+        {{ selectedExcep.sourceEmail }}
+      </nz-descriptions-item>
+    </nz-descriptions>
+
+    <nz-divider [nzText]="exceptionInfoTitle" nzOrientation="left"></nz-divider>
+    <ng-template #exceptionInfoTitle>
+      <span nz-icon nzType="warning" nzTheme="outline"></span> Exception Information
+    </ng-template>
+    <nz-descriptions [nzColumn]="2" nzSize="small" nzBordered>
+      <nz-descriptions-item nzTitle="Type">
+        <nz-tag [nzColor]="getExceptionTypeColor(selectedExcep.exceptionType)">
+          {{ selectedExcep.exceptionTypeDisplay }}
+        </nz-tag>
+      </nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Phase">Phase {{ selectedExcep.correlationPhase }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Reason" [nzSpan]="2">{{ selectedExcep.reason }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Created">{{ selectedExcep.createdAtStr }}</nz-descriptions-item>
+    </nz-descriptions>
+
+    <ng-container *ngIf="!selectedExcep.resolvedAtStr">
+      <nz-divider [nzText]="actionsTitle" nzOrientation="left"></nz-divider>
+      <ng-template #actionsTitle>
+        <span nz-icon nzType="tool" nzTheme="outline"></span> Resolution Actions
+      </ng-template>
+      <nz-space nzDirection="vertical" [nzSize]="12" class="id-excep__actions">
+        <button *nzSpaceItem nz-button nzType="primary" nzBlock (click)="openLinkDialog()">
+          <span nz-icon nzType="link" nzTheme="outline"></span>
+          Link to Identity
+        </button>
+        <button *nzSpaceItem nz-button nzBlock (click)="resolveByCreatingNew()">
+          <span nz-icon nzType="user-add" nzTheme="outline"></span>
+          Create New Identity
+        </button>
+        <button *nzSpaceItem nz-button nzBlock (click)="resolveByIgnoring()">
+          <span nz-icon nzType="stop" nzTheme="outline"></span>
+          Ignore
+        </button>
+      </nz-space>
+    </ng-container>
+
+    <ng-container *ngIf="selectedExcep.resolvedAtStr">
+      <nz-divider [nzText]="resolvedTitle" nzOrientation="left"></nz-divider>
+      <ng-template #resolvedTitle>
+        <span nz-icon nzType="check-circle" nzTheme="outline"></span> Resolution
+      </ng-template>
+      <nz-descriptions [nzColumn]="2" nzSize="small" nzBordered>
+        <nz-descriptions-item nzTitle="Status">
+          <nz-tag nzColor="success">{{ selectedExcep.statusDisplay }}</nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Resolved By">{{ selectedExcep.resolvedBy }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Resolved At">{{ selectedExcep.resolvedAtStr }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Notes" *ngIf="selectedExcep.resolutionNotes" [nzSpan]="2">
+          {{ selectedExcep.resolutionNotes }}
+        </nz-descriptions-item>
+      </nz-descriptions>
+    </ng-container>
+  </div>
+</app-side-panel>

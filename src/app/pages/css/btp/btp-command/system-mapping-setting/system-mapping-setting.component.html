@@ -1,0 +1,30 @@
+<nz-form-item>
+  <nz-form-label>Cron Expression</nz-form-label>
+  <nz-form-control>
+    <input nz-input [(ngModel)]="cronExpression" (ngModelChange)="onCronChange()" placeholder="*/30 * * * *" />
+  </nz-form-control>
+</nz-form-item>
+
+<div *ngIf="cronDescription" style="padding: 8px 12px; background: #fafafa; border-radius: 4px; margin-bottom: 16px; font-size: 13px; color: rgba(0,0,0,0.65);">
+  <span nz-icon nzType="clock-circle" nzTheme="outline" style="margin-right: 6px;"></span>
+  {{ cronDescription }}
+</div>
+
+<nz-form-item>
+  <nz-form-label>Quick Presets</nz-form-label>
+  <nz-form-control>
+    <nz-radio-group [(ngModel)]="cronExpression" (ngModelChange)="onCronChange()">
+      <label nz-radio nzValue="*/5 * * * *">Every 5 min</label>
+      <label nz-radio nzValue="*/15 * * * *">Every 15 min</label>
+      <label nz-radio nzValue="*/30 * * * *">Every 30 min</label>
+      <label nz-radio nzValue="0 * * * *">Every hour</label>
+      <label nz-radio nzValue="0 0 * * *">Daily</label>
+      <label nz-radio nzValue="0 0 * * 1">Weekly</label>
+    </nz-radio-group>
+  </nz-form-control>
+</nz-form-item>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+  <button nz-button nzType="primary" (click)="save()">Save</button>
+</div>

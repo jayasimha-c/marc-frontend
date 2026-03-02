@@ -1,0 +1,33 @@
+<app-advanced-table title="PAM Review Rule" [columns]="columns" [data]="data" [actions]="tableActions"
+    [loading]="loading" [showSearch]="false" [showPagination]="false" [showSelection]="true" rowKey="id"
+    (selectionChange)="onSelectionChange($event)"></app-advanced-table>
+
+<ng-template #transactionTpl let-row="row">
+    <input type="text" nz-input nzSize="small" [(ngModel)]="row.entryId" (ngModelChange)="markModified(row)"
+        (paste)="onPaste($event)" />
+</ng-template>
+
+<ng-template #objectValueTpl let-row="row">
+    <input type="text" nz-input nzSize="small" [(ngModel)]="row.objid" (ngModelChange)="markModified(row)"
+        (paste)="onPaste($event)" />
+</ng-template>
+
+<ng-template #changeTypeTpl let-row="row">
+    <input type="text" nz-input nzSize="small" [(ngModel)]="row.updatetype" (ngModelChange)="markModified(row)"
+        (paste)="onPaste($event)" />
+</ng-template>
+
+<ng-template #tableNameTpl let-row="row">
+    <input type="text" nz-input nzSize="small" [(ngModel)]="row.tabname" (ngModelChange)="markModified(row)"
+        (paste)="onPaste($event)" />
+</ng-template>
+
+<ng-template #fieldNameTpl let-row="row">
+    <input type="text" nz-input nzSize="small" [(ngModel)]="row.fname" (ngModelChange)="markModified(row)"
+        (paste)="onPaste($event)" />
+</ng-template>
+
+<ng-template #conditionTpl let-row="row">
+    <input type="text" nz-input nzSize="small" [(ngModel)]="row.condition" (ngModelChange)="markModified(row)"
+        (paste)="onPaste($event)" />
+</ng-template>

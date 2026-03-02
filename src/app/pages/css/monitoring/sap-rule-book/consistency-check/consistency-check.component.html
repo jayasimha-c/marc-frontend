@@ -1,0 +1,46 @@
+<nz-spin [nzSpinning]="loading">
+  <nz-table #checkTable
+    [nzData]="data"
+    nzSize="small"
+    [nzShowPagination]="data.length > 20"
+    [nzPageSize]="20"
+    nzTableLayout="fixed"
+    [nzScroll]="{ x: '1100px' }">
+    <thead>
+      <tr>
+        <th nzWidth="100px">Rule Code</th>
+        <th nzWidth="180px">Rule Name</th>
+        <th nzWidth="100px">Rule Type</th>
+        <th nzWidth="120px">Parameter Type</th>
+        <th nzWidth="80px">Severity</th>
+        <th nzWidth="100px">Issue Severity</th>
+        <th>Issues Found</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of checkTable.data">
+        <td>{{ row.ruleCode }}</td>
+        <td nzEllipsis>{{ row.ruleName }}</td>
+        <td>
+          <nz-tag>{{ row.ruleType }}</nz-tag>
+        </td>
+        <td>{{ row.parameterType }}</td>
+        <td>
+          <nz-tag [nzColor]="getSeverityColor(row.severity)">{{ row.severity }}</nz-tag>
+        </td>
+        <td>
+          <nz-tag [nzColor]="getSeverityColor(row.checkSeverity)">{{ row.checkSeverity }}</nz-tag>
+        </td>
+        <td nzEllipsis>{{ row.inconsistencies }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-spin>
+
+<nz-empty *ngIf="!loading && data.length === 0"
+          nzNotFoundContent="No inconsistencies found"
+          [nzNotFoundImage]="'simple'"></nz-empty>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal?.close()">Close</button>
+</div>

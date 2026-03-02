@@ -1,0 +1,38 @@
+<form [formGroup]="form">
+  <nz-form-item>
+    <nz-form-control>
+      <div class="nz-float-label has-value">
+        <input nz-input placeholder=" " formControlName="ruleName" />
+        <label>Rule</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control nzErrorTip="BPMN Diagram is required">
+      <div class="nz-float-label" [class.has-value]="form.get('processId')?.value">
+        <nz-select formControlName="processId" nzPlaceHolder=" " nzShowSearch
+          (ngModelChange)="onProcessChange($event)">
+          <nz-option *ngFor="let p of bpmnList" [nzValue]="p.id" [nzLabel]="p.name"></nz-option>
+        </nz-select>
+        <label>BPMN Diagram</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Task is required">
+      <div class="nz-float-label" [class.has-value]="form.get('taskId')?.value">
+        <nz-select formControlName="taskId" nzPlaceHolder=" " nzShowSearch>
+          <nz-option *ngFor="let t of taskList" [nzValue]="t.id" [nzLabel]="t.name"></nz-option>
+        </nz-select>
+        <label>Task</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+</form>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modalRef.close()">Close</button>
+  <button nz-button nzType="primary" [disabled]="form.invalid" (click)="save()">Save</button>
+</div>

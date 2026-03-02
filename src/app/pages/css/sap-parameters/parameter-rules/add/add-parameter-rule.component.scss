@@ -1,0 +1,169 @@
+.add-rule-container {
+  padding: 16px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.step-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+// Step 2 Collapsible Section Boxes
+.step2-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.builder-section {
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.section-subtitle {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.section-toggle {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.section-body {
+  padding: 14px;
+}
+
+.test-result {
+  color: rgba(0, 0, 0, 0.85);
+}
+
+// AI Import
+.audit-log-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ai-import-bar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ai-import-panel {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ai-import-content {
+  padding: 12px;
+}
+
+.ai-import-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-import-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  > span {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.45);
+  }
+}
+
+.ai-import-actions {
+  display: flex;
+  gap: 4px;
+
+  button {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.ai-json-textarea {
+  width: 100%;
+  min-height: 120px;
+  max-height: 200px;
+  padding: 10px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  background: #fafafa;
+  font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.85);
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: #1890ff;
+  }
+
+  &::placeholder {
+    color: rgba(0, 0, 0, 0.25);
+  }
+}
+
+.ai-validation-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+
+  .status-success {
+    color: #16a34a;
+  }
+
+  .status-error {
+    color: #dc2626;
+  }
+}

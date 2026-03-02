@@ -1,0 +1,87 @@
+<app-page-panel [title]="'License Information'">
+    <ng-container headerSection>
+        <button nz-button nzType="default" [routerLink]="['../']">
+            <span nz-icon nzType="arrow-left" nzTheme="outline" class="mr-2"></span>
+            Back to Help Center
+        </button>
+    </ng-container>
+
+    <div panel-content>
+        <ng-container *ngIf="!isLoading && licenseInfo; else loadingTemplate">
+            <!-- License Status Banner -->
+            <nz-alert class="mb-6" [nzType]="isLicenseValid() ? 'success' : 'error'" [nzMessage]="alertMessage"
+                [nzDescription]="alertDescription" nzShowIcon>
+            </nz-alert>
+            <ng-template #alertMessage>
+                <div class="text-base font-semibold">{{ isLicenseValid() ? 'License Valid' : licenseInfo.status }}</div>
+            </ng-template>
+            <ng-template #alertDescription>
+                <div class="text-gray-600 dark:text-gray-400">Licensed to <strong
+                        class="text-gray-800 dark:text-gray-200">{{ licenseInfo.registeredTo }}</strong></div>
+            </ng-template>
+
+            <!-- License Cards Grid -->
+            <div nz-row [nzGutter]="[24, 24]">
+                <!-- License Details Card -->
+                <div nz-col nzXs="24" nzLg="12">
+                    <nz-card [nzBordered]="true" class="rounded-lg shadow-sm h-full" nzTitle="License Details">
+                        <nz-descriptions [nzColumn]="1" nzSize="middle" nzBordered>
+                            <nz-descriptions-item nzTitle="Registered To">{{ licenseInfo.registeredTo || '—'
+                                }}</nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="Email">{{ licenseInfo.email || '—' }}</nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="Company">
+                                <span [ngClass]="{'text-gray-400': !licenseInfo.company}">{{ licenseInfo.company || '—'
+                                    }}</span>
+                            </nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="Hardware ID">
+                                <span class="font-mono text-sm">{{
+                                    licenseInfo.hardwareID || '—' }}</span>
+                            </nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="Status">
+                                <nz-tag [nzColor]="isLicenseValid() ? 'success' : 'error'">{{ licenseInfo.status
+                                    }}</nz-tag>
+                            </nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="Validity Period">{{ licenseInfo.validity || '—'
+                                }}</nz-descriptions-item>
+                        </nz-descriptions>
+                    </nz-card>
+                </div>
+
+                <!-- License Limits Card -->
+                <div nz-col nzXs="24" nzLg="12">
+                    <nz-card [nzBordered]="true" class="rounded-lg shadow-sm h-full" nzTitle="License Limits">
+                        <nz-descriptions [nzColumn]="1" nzSize="middle" nzBordered>
+                            <nz-descriptions-item nzTitle="Systems">
+                                <nz-tag nzColor="default">{{ getLimitDisplay(licenseInfo.limits?.systems) }}</nz-tag>
+                            </nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="Risks">
+                                <nz-tag nzColor="default">{{ getLimitDisplay(licenseInfo.limits?.risks) }}</nz-tag>
+                            </nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="Rules">
+                                <nz-tag nzColor="default">{{ getLimitDisplay(licenseInfo.limits?.rules) }}</nz-tag>
+                            </nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="CAM Requests">
+                                <nz-tag nzColor="default">{{ getLimitDisplay(licenseInfo.limits?.camRequests)
+                                    }}</nz-tag>
+                            </nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="PAM Requests">
+                                <nz-tag nzColor="default">{{ getLimitDisplay(licenseInfo.limits?.pamRequests)
+                                    }}</nz-tag>
+                            </nz-descriptions-item>
+                            <nz-descriptions-item nzTitle="ICM Controls">
+                                <nz-tag nzColor="default">{{ getLimitDisplay(licenseInfo.limits?.icmControls)
+                                    }}</nz-tag>
+                            </nz-descriptions-item>
+                        </nz-descriptions>
+                    </nz-card>
+                </div>
+            </div>
+        </ng-container>
+
+        <ng-template #loadingTemplate>
+            <div class="flex items-center justify-center py-16">
+                <nz-spin nzSimple></nz-spin>
+            </div>
+        </ng-template>
+    </div>
+</app-page-panel>

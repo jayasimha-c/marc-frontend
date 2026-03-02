@@ -1,0 +1,58 @@
+<!-- Backdrop overlay -->
+<div class="side-panel-backdrop" *ngIf="isOpen" (click)="onBackdropClick()"></div>
+
+<!-- Side Panel -->
+<div class="side-panel-drawer" [class.open]="isOpen" [style.width]="width">
+  <div class="side-panel-wrapper">
+    <!-- Header -->
+    <div class="side-panel-header">
+      <div class="side-panel-header__content">
+        <span nz-icon [nzType]="icon" nzTheme="outline" class="side-panel-header__icon" *ngIf="icon"></span>
+        <div class="side-panel-header__text">
+          <h2 class="side-panel-header__title">{{ title }}</h2>
+          <span class="side-panel-header__subtitle" *ngIf="subtitle">{{ subtitle }}</span>
+        </div>
+      </div>
+      <div class="side-panel-header__actions">
+        <ng-content select="[panel-header-actions]"></ng-content>
+        <button nz-button nzType="text" nzShape="circle" (click)="onCloseClick()">
+          <span nz-icon nzType="close" nzTheme="outline"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="side-panel-loading" *ngIf="loading">
+      <nz-spin nzSimple nzSize="large"></nz-spin>
+      <span class="side-panel-loading__text">{{ loadingMessage }}</span>
+    </div>
+
+    <!-- Content -->
+    <div class="side-panel-content" [class.side-panel-content--loading]="loading">
+      <ng-content select="[panel-content]"></ng-content>
+    </div>
+
+    <!-- Footer -->
+    <div class="side-panel-footer" *ngIf="showFooter && (primaryAction || secondaryAction)">
+      <button
+        nz-button
+        nzType="default"
+        *ngIf="secondaryAction"
+        [disabled]="secondaryAction.disabled"
+        (click)="onSecondaryClick()">
+        <span nz-icon *ngIf="secondaryAction.icon" [nzType]="secondaryAction.icon" nzTheme="outline"></span>
+        {{ secondaryAction.label }}
+      </button>
+      <button
+        nz-button
+        nzType="primary"
+        *ngIf="primaryAction"
+        [nzDanger]="primaryAction.color === 'warn'"
+        [disabled]="primaryAction.disabled || loading"
+        (click)="onPrimaryClick()">
+        <span nz-icon *ngIf="primaryAction.icon" [nzType]="primaryAction.icon" nzTheme="outline"></span>
+        {{ primaryAction.label }}
+      </button>
+    </div>
+  </div>
+</div>

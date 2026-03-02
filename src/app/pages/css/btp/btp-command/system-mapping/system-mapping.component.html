@@ -1,0 +1,31 @@
+<div style="margin-bottom: 12px;">
+  <button nz-button nzType="primary" nzSize="small" (click)="onAdd()">
+    <span nz-icon nzType="plus" nzTheme="outline"></span> Add
+  </button>
+</div>
+
+<nz-table #mappingTable [nzData]="mappings" nzSize="small" [nzLoading]="loading"
+  [nzShowPagination]="false" [nzFrontPagination]="false" nzTableLayout="fixed">
+  <thead>
+    <tr>
+      <th>BTP System</th>
+      <th>Global Account Subdomain</th>
+      <th nzWidth="80px">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let row of mappingTable.data">
+      <td>{{ row.btpSystemName }}</td>
+      <td>{{ row.btpSystemGlobalAccountSubdomain }}</td>
+      <td>
+        <button nz-button nzType="text" nzSize="small" nzDanger (click)="onDelete(row)" nz-tooltip nzTooltipTitle="Delete">
+          <span nz-icon nzType="delete" nzTheme="outline"></span>
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</nz-table>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+</div>

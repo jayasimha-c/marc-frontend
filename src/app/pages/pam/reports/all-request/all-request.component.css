@@ -1,0 +1,8 @@
+.search-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    padding-bottom: 24px;
+    /* Align with the input bottom edges */
+    gap: 8px;
+}

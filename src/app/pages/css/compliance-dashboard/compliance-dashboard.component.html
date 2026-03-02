@@ -1,0 +1,184 @@
+<div style="padding: 16px;">
+  <!-- Header -->
+  <nz-card style="margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Compliance Dashboard</h3>
+        <p style="margin: 4px 0 0; color: rgba(0,0,0,0.45); font-size: 13px;">
+          Framework compliance posture and control coverage across systems
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <nz-button-group>
+          <button nz-button [nzType]="activePreset === 7 ? 'primary' : 'default'" nzSize="small" (click)="setPreset(7)">7d</button>
+          <button nz-button [nzType]="activePreset === 30 ? 'primary' : 'default'" nzSize="small" (click)="setPreset(30)">1m</button>
+          <button nz-button [nzType]="activePreset === 90 ? 'primary' : 'default'" nzSize="small" (click)="setPreset(90)">3m</button>
+          <button nz-button [nzType]="activePreset === 365 ? 'primary' : 'default'" nzSize="small" (click)="setPreset(365)">1y</button>
+        </nz-button-group>
+        <nz-range-picker nzSize="small" [(ngModel)]="dateRange" (ngModelChange)="onDateRangeChange()"></nz-range-picker>
+        <nz-select nzSize="small" nzPlaceHolder="All Frameworks" nzAllowClear style="min-width: 160px;"
+                   [(ngModel)]="selectedFramework" (ngModelChange)="onFilterChange()">
+          <nz-option *ngFor="let f of frameworks" [nzValue]="f.id" [nzLabel]="f.name"></nz-option>
+        </nz-select>
+        <nz-select nzSize="small" nzPlaceHolder="All Systems" nzAllowClear style="min-width: 160px;"
+                   [(ngModel)]="selectedSystem" (ngModelChange)="onFilterChange()">
+          <nz-option *ngFor="let s of systems" [nzValue]="s.id" [nzLabel]="s.destinationName"></nz-option>
+        </nz-select>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Stats Cards -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+    <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6" *ngFor="let card of statsCards" style="margin-bottom: 8px;">
+      <app-statistics-card
+        [title]="card.title"
+        [value]="card.value"
+        [icon]="card.icon"
+        [color]="card.color"
+        [loading]="loading">
+      </app-statistics-card>
+    </div>
+  </div>
+
+  <!-- Row 2: Severity by Framework + Control Status -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+
+    <!-- Severity by Framework (16 col) -->
+    <div nz-col [nzXs]="24" [nzLg]="16">
+      <nz-card nzSize="small" style="height: 100%;">
+        <div style="font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">
+          Violations by Framework &amp; Severity
+        </div>
+        <!-- Header row -->
+        <div class="cd-sev-header">
+          <span class="cd-sev-col cd-sev-fw">Framework</span>
+          <span class="cd-sev-col cd-sev-bar">Distribution</span>
+          <span class="cd-sev-col cd-sev-num" style="color: #f5222d;">C</span>
+          <span class="cd-sev-col cd-sev-num" style="color: #fa8c16;">H</span>
+          <span class="cd-sev-col cd-sev-num" style="color: #722ed1;">M</span>
+          <span class="cd-sev-col cd-sev-num" style="color: #52c41a;">L</span>
+          <span class="cd-sev-col cd-sev-total">Total</span>
+        </div>
+        <!-- Data rows -->
+        <div *ngFor="let fw of severityByFrameworkRows" class="cd-sev-row">
+          <span class="cd-sev-col cd-sev-fw" nz-tooltip [nzTooltipTitle]="fw.framework">{{ fw.framework }}</span>
+          <div class="cd-sev-col cd-sev-bar">
+            <div class="cd-sev-bar-track">
+              <div *ngIf="fw.critical > 0" class="cd-sev-bar-seg" style="background: #f5222d;" [style.width.%]="fw.criticalPct"></div>
+              <div *ngIf="fw.high > 0" class="cd-sev-bar-seg" style="background: #fa8c16;" [style.width.%]="fw.highPct"></div>
+              <div *ngIf="fw.medium > 0" class="cd-sev-bar-seg" style="background: #722ed1;" [style.width.%]="fw.mediumPct"></div>
+              <div *ngIf="fw.low > 0" class="cd-sev-bar-seg" style="background: #52c41a;" [style.width.%]="fw.lowPct"></div>
+            </div>
+          </div>
+          <span class="cd-sev-col cd-sev-num" style="color: #f5222d; font-weight: 600;">{{ fw.critical }}</span>
+          <span class="cd-sev-col cd-sev-num" style="color: #fa8c16; font-weight: 600;">{{ fw.high }}</span>
+          <span class="cd-sev-col cd-sev-num" style="color: #722ed1; font-weight: 600;">{{ fw.medium }}</span>
+          <span class="cd-sev-col cd-sev-num" style="color: #52c41a; font-weight: 600;">{{ fw.low }}</span>
+          <span class="cd-sev-col cd-sev-total">{{ fw.total }}</span>
+        </div>
+        <nz-empty *ngIf="!loading && !severityByFrameworkRows.length"
+                  nzNotFoundContent="No violation data" [nzNotFoundImage]="'simple'"
+                  style="padding: 24px 0;"></nz-empty>
+      </nz-card>
+    </div>
+
+    <!-- Control Status (8 col) -->
+    <div nz-col [nzXs]="24" [nzLg]="8">
+      <nz-card nzSize="small" style="height: 100%;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span nz-icon nzType="check-square" nzTheme="outline" style="color: #52c41a; font-size: 16px;"></span>
+          <strong>Control Status</strong>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span style="font-size: 11px; color: rgba(0,0,0,0.45); text-transform: uppercase; letter-spacing: 0.5px;">Total Controls</span>
+          <span style="font-size: 18px; font-weight: 700;">{{ assessableControls + nonAssessableControls }}</span>
+        </div>
+        <div class="cd-control-bar">
+          <div *ngIf="assessableControls > 0" class="cd-control-seg"
+               style="background: #52c41a;" [style.width.%]="getControlBarPct(assessableControls)">
+            <span>{{ assessableControls }}</span>
+          </div>
+          <div *ngIf="nonAssessableControls > 0" class="cd-control-seg"
+               style="background: #8c8c8c;" [style.width.%]="getControlBarPct(nonAssessableControls)">
+            <span>{{ nonAssessableControls }}</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 16px; margin-top: 8px;">
+          <span class="cd-legend">
+            <span class="cd-legend-dot" style="background: #52c41a;"></span>
+            Assessable <strong>{{ assessableControls }}</strong>
+          </span>
+          <span class="cd-legend">
+            <span class="cd-legend-dot" style="background: #8c8c8c;"></span>
+            Non-Assessable <strong>{{ nonAssessableControls }}</strong>
+          </span>
+        </div>
+      </nz-card>
+    </div>
+  </div>
+
+  <!-- Compliance Trend Chart -->
+  <div style="margin-bottom: 16px;">
+    <common-apx-chart #complianceTrendChart
+                      [chartOptions]="complianceTrendChartOptions"
+                      [loading]="loading">
+    </common-apx-chart>
+  </div>
+
+  <!-- Violations Table -->
+  <nz-card nzTitle="Recent Compliance Violations" nzSize="small" style="margin-bottom: 16px;">
+    <nz-spin [nzSpinning]="loading">
+      <nz-table #violationsTable [nzData]="violationTableData" nzSize="small"
+                [nzShowPagination]="violationTableData.length > 10"
+                nzTableLayout="fixed" [nzPageSize]="10">
+        <thead>
+          <tr>
+            <th nzWidth="140px">Control ID</th>
+            <th nzWidth="130px">Framework</th>
+            <th>Description</th>
+            <th nzWidth="100px">Violations</th>
+            <th nzWidth="140px">Last Checked</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of violationsTable.data" style="cursor: pointer;" (click)="drillDownControl(row)">
+            <td><a style="color: #1890ff;">{{ row.controlId }}</a></td>
+            <td>{{ row.framework }}</td>
+            <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ row.description }}</td>
+            <td>{{ row.violations }}</td>
+            <td>{{ row.lastChecked | date:'mediumDate' }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </nz-spin>
+  </nz-card>
+
+  <!-- Framework Controls Table -->
+  <nz-card *ngIf="controlDetailsTableData.length" nzTitle="Framework Controls" nzSize="small">
+    <nz-spin [nzSpinning]="loading">
+      <nz-table #controlsTable [nzData]="controlDetailsTableData" nzSize="small"
+                [nzShowPagination]="controlDetailsTableData.length > 10"
+                nzTableLayout="fixed" [nzPageSize]="10">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th nzWidth="120px">Control ID</th>
+            <th nzWidth="100px">Assessable</th>
+            <th nzWidth="100px">Violations</th>
+            <th nzWidth="140px">Last Checked</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of controlsTable.data">
+            <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ row.description }}</td>
+            <td>{{ row.controlId }}</td>
+            <td>{{ row.assessable }}</td>
+            <td>{{ row.violations }}</td>
+            <td>{{ row.lastChecked | date:'mediumDate' }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </nz-spin>
+  </nz-card>
+</div>

@@ -1,0 +1,38 @@
+<div class="logo-section">
+  <nz-card nzTitle="Upload Logo">
+    <div class="logo-section__content">
+      <!-- Instructions -->
+      <div class="logo-section__instructions">
+        <div class="logo-section__icon-wrapper">
+          <span nz-icon nzType="cloud-upload" nzTheme="outline" class="logo-section__upload-icon"></span>
+        </div>
+        <h3>Upload Instructions</h3>
+        <ul>
+          <li>Refer to instructions before Upload process</li>
+          <li>Be cautious while selecting the files</li>
+          <li>Make sure there are no duplicate records</li>
+          <li>It takes a while to upload records, please be patient</li>
+          <li>Please maintain correct image sizes</li>
+        </ul>
+      </div>
+
+      <!-- Preview & Actions -->
+      <div class="logo-section__preview">
+        <div class="logo-section__image-wrapper">
+          <img *ngIf="imageData" [src]="imageData" alt="Logo preview" />
+          <nz-empty *ngIf="!imageData" nzNotFoundContent="No logo uploaded"></nz-empty>
+        </div>
+
+        <div class="logo-section__actions">
+          <input type="file" #fileInput style="display: none;" accept="image/*" (change)="uploadFile($event)" />
+          <button nz-button nzType="primary" (click)="fileInput.click()" [nzLoading]="uploading">
+            <span nz-icon nzType="upload" nzTheme="outline"></span> Upload Logo
+          </button>
+          <button nz-button nzType="default" (click)="saveFile()" [nzLoading]="saving" [disabled]="!imageId">
+            <span nz-icon nzType="save" nzTheme="outline"></span> Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </nz-card>
+</div>

@@ -1,0 +1,99 @@
+<form [formGroup]="clientForm" *ngIf="!generatedSecret">
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Client ID is required (alphanumeric, dash, underscore only)">
+      <div class="nz-float-label" [class.has-value]="clientForm.get('clientId')?.value">
+        <input nz-input placeholder=" " formControlName="clientId" />
+        <label>Client ID</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Client Name is required">
+      <div class="nz-float-label" [class.has-value]="clientForm.get('clientName')?.value">
+        <input nz-input placeholder=" " formControlName="clientName" />
+        <label>Client Name</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control>
+      <div class="nz-float-label" [class.has-value]="clientForm.get('description')?.value">
+        <textarea nz-input placeholder=" " formControlName="description" [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
+        <label>Description</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Grant Type is required">
+      <div class="nz-float-label" [class.has-value]="clientForm.get('grantTypes')?.value">
+        <nz-select formControlName="grantTypes" nzPlaceHolder=" ">
+          <nz-option *ngFor="let gt of grantTypeOptions" [nzValue]="gt.value" [nzLabel]="gt.label"></nz-option>
+        </nz-select>
+        <label>Grant Type</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Scopes are required">
+      <div class="nz-float-label" [class.has-value]="clientForm.get('scopes')?.value?.length">
+        <nz-select formControlName="scopes" nzMode="multiple" nzPlaceHolder=" " nzShowSearch>
+          <nz-option *ngFor="let scope of availableScopes" [nzValue]="scope.scopeName" [nzLabel]="scope.scopeName"></nz-option>
+        </nz-select>
+        <label>Scopes</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control nzErrorTip="Expiry date is required">
+      <div class="nz-float-label has-value">
+        <nz-date-picker formControlName="tokenExpiryDate" style="width: 100%"></nz-date-picker>
+        <label>Token Expires On</label>
+      </div>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div *ngIf="clientForm.get('tokenExpiryDate')?.value" style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: rgba(0,0,0,0.45);">
+    <span nz-icon nzType="clock-circle" nzTheme="outline"></span>
+    <span>Token validity: <strong>{{ getValidityDisplay() }}</strong></span>
+  </div>
+
+  <label nz-checkbox formControlName="enabled">Enabled</label>
+</form>
+
+<div *ngIf="generatedSecret">
+  <div style="display: flex; align-items: flex-start; gap: 8px; padding: 12px; margin-bottom: 16px; border-radius: 4px; background: rgba(250, 173, 20, 0.1); border: 1px solid rgba(250, 173, 20, 0.3);">
+    <span nz-icon nzType="warning" nzTheme="outline" style="color: #faad14; margin-top: 2px;"></span>
+    <span><strong>Important:</strong> This is the only time you will see this secret. Please copy and store it securely.</span>
+  </div>
+
+  <nz-form-item>
+    <nz-form-control>
+      <div class="nz-float-label has-value">
+        <nz-input-group [nzSuffix]="copyBtn">
+          <input nz-input placeholder=" " [value]="generatedSecret" readonly />
+        </nz-input-group>
+        <label>Client Secret</label>
+      </div>
+      <ng-template #copyBtn>
+        <button nz-button nzType="text" nzShape="circle" (click)="copySecret()" nz-tooltip nzTooltipTitle="Copy to clipboard">
+          <span nz-icon nzType="copy" nzTheme="outline"></span>
+        </button>
+      </ng-template>
+    </nz-form-control>
+  </nz-form-item>
+</div>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="closeDialog()" *ngIf="generatedSecret || mode === 'edit'">
+    {{ generatedSecret ? 'Close' : 'Cancel' }}
+  </button>
+  <button nz-button nzType="default" (click)="modal.close(false)" *ngIf="!generatedSecret && mode === 'add'">Cancel</button>
+  <button nz-button nzType="primary" [nzLoading]="loading" (click)="onSubmit()" *ngIf="!generatedSecret">
+    {{ mode === 'add' ? 'Create' : 'Update' }}
+  </button>
+</div>

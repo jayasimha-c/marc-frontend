@@ -1,0 +1,21 @@
+<app-page-panel header="FUE Measurement Results">
+    <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+        <button nz-button nzType="text" nzShape="circle" (click)="goBack()"
+            nz-tooltip nzTooltipTitle="Back to Jobs">
+            <span nz-icon nzType="arrow-left"></span>
+        </button>
+        <nz-select [(ngModel)]="systemFilter" (ngModelChange)="onSystemFilterChange()"
+            nzPlaceHolder="All Systems" nzAllowClear style="width: 200px;">
+            <nz-option *ngFor="let sys of systems" [nzValue]="sys" [nzLabel]="sys"></nz-option>
+        </nz-select>
+    </div>
+
+    <app-advanced-table
+        [columns]="columns"
+        [data]="data"
+        [loading]="loading"
+        [total]="total"
+        [showSearch]="true"
+        [scrollX]="'1500px'">
+    </app-advanced-table>
+</app-page-panel>

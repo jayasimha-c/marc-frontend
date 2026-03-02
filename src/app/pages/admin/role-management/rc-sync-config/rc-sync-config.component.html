@@ -1,0 +1,379 @@
+<nz-card nzSize="small" nzTitle="Role Catalogue Sync">
+    <!-- Loading -->
+    <div *ngIf="loading" class="rsc__loading">
+        <nz-spin nzSimple></nz-spin>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Content -->
+    <ng-container *ngIf="!loading">
+        <nz-tabset [(nzSelectedIndex)]="selectedTabIndex">
+
+            <!-- ═══ Tab 1: Sync Jobs ═══ -->
+            <nz-tab nzTitle="Sync Jobs">
+                <div class="rsc__tab">
+                    <!-- Sync Control Panel -->
+                    <div class="rsc__sync-panel">
+                        <div class="rsc__sync-row">
+                            <nz-select class="rsc__concept-select" [(ngModel)]="selectedConceptId"
+                                       nzPlaceHolder="Select a concept..." nzShowSearch nzAllowClear
+                                       (ngModelChange)="onConceptChange()">
+                                <nz-option *ngFor="let concept of concepts" [nzValue]="concept.id"
+                                           [nzLabel]="concept.name + (concept.linkedSystemCount ? ' (' + concept.linkedSystemCount + ' systems)' : '')">
+                                </nz-option>
+                            </nz-select>
+
+                            <button nz-button nzType="primary" [disabled]="!selectedConceptId || runningSync"
+                                    (click)="runConceptSync()">
+                                <span nz-icon [nzType]="runningSync ? 'loading' : 'caret-right'" nzTheme="outline"></span>
+                                Run Sync
+                            </button>
+                        </div>
+
+                        <!-- Selected Concept Info -->
+                        <div *ngIf="selectedConcept" class="rsc__concept-info">
+                            <div class="rsc__concept-header">
+                                <span nz-icon nzType="appstore" nzTheme="outline" class="rsc__concept-icon"></span>
+                                <span class="rsc__concept-name">{{ selectedConcept.name }}</span>
+                            </div>
+                            <p *ngIf="selectedConcept.description" class="rsc__concept-desc">{{ selectedConcept.description }}</p>
+                            <div class="rsc__linked-systems">
+                                <span nz-icon nzType="cluster" nzTheme="outline"></span>
+                                <strong>{{ selectedConcept.linkedSystemCount || 0 }}</strong> linked system(s)
+                                <span *ngIf="selectedConcept.linkedSystems && selectedConcept.linkedSystems.length > 0" class="rsc__system-chips">
+                                    <nz-tag *ngFor="let sys of selectedConcept.linkedSystems">{{ sys.name }}</nz-tag>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div *ngIf="!concepts.length" class="rsc__no-concepts">
+                            <span nz-icon nzType="info-circle" nzTheme="outline"></span>
+                            <span>No concepts available. Create concepts in the
+                                <a routerLink="/admin/role-management/rc-concepts">RC Concepts</a> page first.</span>
+                        </div>
+                    </div>
+
+                    <!-- Job History -->
+                    <div class="rsc__section">
+                        <div class="rsc__section-header">
+                            <h4>Job History</h4>
+                            <button nz-button nzSize="small" nzType="text" (click)="loadJobs()"
+                                    nz-tooltip nzTooltipTitle="Refresh">
+                                <span nz-icon nzType="reload" nzTheme="outline"></span>
+                            </button>
+                        </div>
+
+                        <nz-table #jobsTable [nzData]="jobs" nzSize="small" [nzLoading]="loadingJobs"
+                                  [nzTotal]="jobsTotal" [nzPageIndex]="jobsPage" [nzPageSize]="jobsPageSize"
+                                  nzFrontPagination="false" [nzShowSizeChanger]="true"
+                                  [nzPageSizeOptions]="[10, 20, 50]"
+                                  (nzPageIndexChange)="onJobsPageChange($event)"
+                                  (nzPageSizeChange)="onJobsPageSizeChange($event)"
+                                  [nzScroll]="{ x: '1200px' }">
+                            <thead>
+                                <tr>
+                                    <th nzWidth="70px">Job ID</th>
+                                    <th nzWidth="140px">Concept</th>
+                                    <th nzWidth="120px">System</th>
+                                    <th nzWidth="100px">Status</th>
+                                    <th nzWidth="160px">Started</th>
+                                    <th nzWidth="160px">Completed</th>
+                                    <th nzWidth="70px">Found</th>
+                                    <th nzWidth="70px">Added</th>
+                                    <th nzWidth="80px">Updated</th>
+                                    <th nzWidth="120px">Run By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let job of jobsTable.data">
+                                    <td>{{ job.id }}</td>
+                                    <td>{{ job.conceptName }}</td>
+                                    <td>{{ job.sapSystemName }}</td>
+                                    <td>
+                                        <nz-tag [nzColor]="getStatusColor(job.status)">{{ job.status }}</nz-tag>
+                                    </td>
+                                    <td>{{ formatDate(job.startedOn) }}</td>
+                                    <td>{{ formatDate(job.completedOn) }}</td>
+                                    <td>{{ job.rolesFound }}</td>
+                                    <td>{{ job.rolesAdded }}</td>
+                                    <td>{{ job.rolesUpdated }}</td>
+                                    <td>{{ job.runBy }}</td>
+                                </tr>
+                            </tbody>
+                        </nz-table>
+                    </div>
+                </div>
+            </nz-tab>
+
+            <!-- ═══ Tab 2: Auto-Categorization Rules ═══ -->
+            <nz-tab nzTitle="Auto-Categorization Rules">
+                <div class="rsc__tab">
+                    <!-- Toolbar -->
+                    <div class="rsc__toolbar">
+                        <div class="rsc__toolbar-left">
+                            <nz-select class="rsc__test-system-select" [(ngModel)]="testSystemId"
+                                       nzPlaceHolder="Test System..." nzShowSearch nzAllowClear>
+                                <nz-option *ngFor="let sys of sapSystems" [nzValue]="sys.id"
+                                           [nzLabel]="sys.sid || sys.destinationName"></nz-option>
+                            </nz-select>
+                            <span *ngIf="namingConfig?.version" class="rsc__version">
+                                Version {{ namingConfig.version }}
+                            </span>
+                        </div>
+                        <nz-space>
+                            <button *nzSpaceItem nz-button nzSize="small" nzType="primary"
+                                    (click)="saveNamingConfig()" [nzLoading]="savingConfig">
+                                <span nz-icon nzType="save" nzTheme="outline"></span> Save
+                            </button>
+                            <button *nzSpaceItem nz-button nzSize="small" (click)="addRule()">
+                                <span nz-icon nzType="plus-circle" nzTheme="outline"></span> Add Row
+                            </button>
+                            <button *nzSpaceItem nz-button nzSize="small" nzDanger
+                                    [disabled]="!rulesIndeterminate && !rulesAllChecked"
+                                    (click)="deleteSelectedRules()">
+                                <span nz-icon nzType="delete" nzTheme="outline"></span> Delete
+                            </button>
+                            <button *nzSpaceItem nz-button nzSize="small" (click)="triggerRulesImport()">
+                                <span nz-icon nzType="upload" nzTheme="outline"></span> Import
+                            </button>
+                            <button *nzSpaceItem nz-button nzSize="small" (click)="exportRulesToExcel()">
+                                <span nz-icon nzType="download" nzTheme="outline"></span> Export
+                            </button>
+                            <button *nzSpaceItem nz-button nzSize="small" (click)="cancelRulesEdit()">
+                                <span nz-icon nzType="close-circle" nzTheme="outline"></span> Cancel
+                            </button>
+                        </nz-space>
+                    </div>
+
+                    <!-- Rules Table -->
+                    <nz-table #rulesTableRef [nzData]="rules" nzSize="small"
+                              [nzShowPagination]="false" [nzScroll]="{ x: '1800px', y: '55vh' }">
+                        <thead>
+                            <tr>
+                                <th nzWidth="40px" nzLeft>
+                                    <label nz-checkbox [nzChecked]="rulesAllChecked"
+                                           [nzIndeterminate]="rulesIndeterminate"
+                                           (nzCheckedChange)="onRulesAllChecked($event)"></label>
+                                </th>
+                                <th nzWidth="150px">Pattern</th>
+                                <th nzWidth="120px">Match Type</th>
+                                <th nzWidth="150px">Business Process</th>
+                                <th nzWidth="130px">Sub-Process</th>
+                                <th nzWidth="130px">Department</th>
+                                <th nzWidth="120px">Division</th>
+                                <th nzWidth="110px">Criticality</th>
+                                <th nzWidth="120px">Role Type</th>
+                                <th nzWidth="180px">Approver(s)</th>
+                                <th nzWidth="180px">Backup Approver(s)</th>
+                                <th nzWidth="60px" nzRight>Test</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let rule of rulesTableRef.data">
+                                <td nzLeft>
+                                    <label nz-checkbox [(ngModel)]="rule.selected"
+                                           (ngModelChange)="onRulesItemChecked()"></label>
+                                </td>
+                                <td>
+                                    <input nz-input nzSize="small" [(ngModel)]="rule.pattern"
+                                           placeholder="Pattern...">
+                                </td>
+                                <td>
+                                    <nz-select nzSize="small" [(ngModel)]="rule.patternType" style="width: 100%;">
+                                        <nz-option *ngFor="let pt of patternTypes" [nzValue]="pt" [nzLabel]="pt"></nz-option>
+                                    </nz-select>
+                                </td>
+                                <td>
+                                    <nz-select nzSize="small" [(ngModel)]="rule.businessProcess"
+                                               style="width: 100%;" nzShowSearch nzAllowClear>
+                                        <nz-option *ngFor="let bp of businessProcesses" [nzValue]="bp" [nzLabel]="bp"></nz-option>
+                                    </nz-select>
+                                </td>
+                                <td>
+                                    <nz-select nzSize="small" [(ngModel)]="rule.subBusinessProcess"
+                                               style="width: 100%;" nzShowSearch nzAllowClear>
+                                        <nz-option *ngFor="let sp of subBusinessProcesses" [nzValue]="sp" [nzLabel]="sp"></nz-option>
+                                    </nz-select>
+                                </td>
+                                <td>
+                                    <nz-select nzSize="small" [(ngModel)]="rule.department"
+                                               style="width: 100%;" nzShowSearch nzAllowClear>
+                                        <nz-option *ngFor="let dept of departments" [nzValue]="dept" [nzLabel]="dept"></nz-option>
+                                    </nz-select>
+                                </td>
+                                <td>
+                                    <nz-select nzSize="small" [(ngModel)]="rule.division"
+                                               style="width: 100%;" nzShowSearch nzAllowClear>
+                                        <nz-option *ngFor="let div of divisions" [nzValue]="div" [nzLabel]="div"></nz-option>
+                                    </nz-select>
+                                </td>
+                                <td>
+                                    <nz-select nzSize="small" [(ngModel)]="rule.criticality"
+                                               style="width: 100%;" nzShowSearch nzAllowClear>
+                                        <nz-option *ngFor="let crit of criticalities" [nzValue]="crit" [nzLabel]="crit"></nz-option>
+                                    </nz-select>
+                                </td>
+                                <td>
+                                    <nz-select nzSize="small" [(ngModel)]="rule.roleType"
+                                               style="width: 100%;" nzShowSearch nzAllowClear>
+                                        <nz-option *ngFor="let rt of roleTypes" [nzValue]="rt" [nzLabel]="rt"></nz-option>
+                                    </nz-select>
+                                </td>
+                                <td>
+                                    <textarea nz-input nzSize="small" [(ngModel)]="rule.approver"
+                                              [nzAutosize]="{ minRows: 1, maxRows: 3 }"
+                                              placeholder="Comma or line separated..."></textarea>
+                                </td>
+                                <td>
+                                    <textarea nz-input nzSize="small" [(ngModel)]="rule.backupApprover"
+                                              [nzAutosize]="{ minRows: 1, maxRows: 3 }"
+                                              placeholder="Comma or line separated..."></textarea>
+                                </td>
+                                <td nzRight>
+                                    <button nz-button nzType="text" nzSize="small" nzShape="circle"
+                                            (click)="testPattern(rule)" nz-tooltip nzTooltipTitle="Test Pattern">
+                                        <span nz-icon nzType="caret-right" nzTheme="outline"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </nz-table>
+
+                    <input type="file" #excelFileInput accept=".xlsx,.xls" style="display: none"
+                           (change)="onRulesFileSelected($event)">
+                </div>
+            </nz-tab>
+
+            <!-- ═══ Tab 3: Dropdown Options ═══ -->
+            <nz-tab nzTitle="Dropdown Options">
+                <div class="rsc__tab">
+                    <!-- Toolbar -->
+                    <div class="rsc__toolbar">
+                        <div class="rsc__toolbar-left">
+                            <nz-select class="rsc__category-select" [(ngModel)]="selectedCategory"
+                                       nzShowSearch (ngModelChange)="onCategoryChange()">
+                                <nz-option *ngFor="let cat of categoryOptions"
+                                           [nzValue]="cat.value" [nzLabel]="cat.label"></nz-option>
+                            </nz-select>
+                            <span *ngIf="masterDataConfig?.version" class="rsc__version">
+                                Version {{ masterDataConfig.version }}
+                            </span>
+                        </div>
+                        <nz-space>
+                            <button *nzSpaceItem nz-button nzSize="small" nzType="primary"
+                                    (click)="saveMasterDataConfig()" [nzLoading]="savingConfig">
+                                <span nz-icon nzType="save" nzTheme="outline"></span> Save
+                            </button>
+                            <button *nzSpaceItem nz-button nzSize="small" (click)="addMasterDataRow()">
+                                <span nz-icon nzType="plus-circle" nzTheme="outline"></span> Add Row
+                            </button>
+                            <button *nzSpaceItem nz-button nzSize="small" nzDanger
+                                    [disabled]="!masterDataIndeterminate && !masterDataAllChecked"
+                                    (click)="deleteSelectedMasterData()">
+                                <span nz-icon nzType="delete" nzTheme="outline"></span> Delete
+                            </button>
+                            <button *nzSpaceItem nz-button nzSize="small" (click)="triggerMasterDataImport()">
+                                <span nz-icon nzType="upload" nzTheme="outline"></span> Import
+                            </button>
+                            <button *nzSpaceItem nz-button nzSize="small" (click)="exportMasterDataToExcel()">
+                                <span nz-icon nzType="download" nzTheme="outline"></span> Export
+                            </button>
+                            <button *nzSpaceItem nz-button nzSize="small" (click)="cancelMasterDataEdit()">
+                                <span nz-icon nzType="close-circle" nzTheme="outline"></span> Cancel
+                            </button>
+                        </nz-space>
+                    </div>
+
+                    <!-- Master Data Table -->
+                    <nz-table #mdTableRef [nzData]="masterDataItems" nzSize="small"
+                              [nzShowPagination]="false" [nzScroll]="{ y: '55vh' }">
+                        <thead>
+                            <tr>
+                                <th nzWidth="40px">
+                                    <label nz-checkbox [nzChecked]="masterDataAllChecked"
+                                           [nzIndeterminate]="masterDataIndeterminate"
+                                           (nzCheckedChange)="onMasterDataAllChecked($event)"></label>
+                                </th>
+                                <th>Code</th>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of mdTableRef.data">
+                                <td>
+                                    <label nz-checkbox [(ngModel)]="item.selected"
+                                           (ngModelChange)="onMasterDataItemChecked()"></label>
+                                </td>
+                                <td>
+                                    <input nz-input nzSize="small" [(ngModel)]="item.code" placeholder="Code...">
+                                </td>
+                                <td>
+                                    <input nz-input nzSize="small" [(ngModel)]="item.name" placeholder="Name...">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </nz-table>
+
+                    <input type="file" #masterDataFileInput accept=".xlsx,.xls" style="display: none"
+                           (change)="onMasterDataFileSelected($event)">
+                </div>
+            </nz-tab>
+
+        </nz-tabset>
+    </ng-container>
+</nz-card>
+
+<!-- Assign to Systems Modal -->
+<nz-modal [(nzVisible)]="showAssignDialog" nzTitle="Assign to SAP Systems" [nzWidth]="500"
+          (nzOnCancel)="closeAssignDialog()" [nzFooter]="assignFooter">
+    <ng-container *nzModalContent>
+        <div *ngIf="loadingSystems" class="rsc__loading">
+            <nz-spin nzSimple></nz-spin>
+            <span>Loading systems...</span>
+        </div>
+
+        <ng-container *ngIf="!loadingSystems">
+            <nz-input-group [nzPrefix]="searchIconTpl" class="rsc__assign-search">
+                <input nz-input placeholder="Search systems..." [(ngModel)]="systemSearchTerm">
+            </nz-input-group>
+            <ng-template #searchIconTpl><span nz-icon nzType="search" nzTheme="outline"></span></ng-template>
+
+            <div class="rsc__select-all">
+                <label nz-checkbox
+                       [nzChecked]="isAllSystemsSelected()"
+                       [nzIndeterminate]="isSomeSystemsSelected()"
+                       (nzCheckedChange)="toggleSelectAllSystems($event)">
+                    Select All ({{ filteredSystems.length }})
+                </label>
+            </div>
+
+            <div class="rsc__systems-list">
+                <div *ngFor="let system of filteredSystems" class="rsc__system-item"
+                     (click)="toggleSystem(system.id)">
+                    <label nz-checkbox [nzChecked]="selectedSystemIds.has(system.id)"
+                           (click)="$event.stopPropagation()"
+                           (nzCheckedChange)="toggleSystem(system.id)"></label>
+                    <div class="rsc__system-info">
+                        <span class="rsc__system-name">{{ system.sid || system.destinationName }}</span>
+                        <span *ngIf="system.sid" class="rsc__system-desc">{{ system.destinationName }}</span>
+                    </div>
+                </div>
+
+                <div *ngIf="filteredSystems.length === 0" class="rsc__no-systems">
+                    <span nz-icon nzType="file-search" nzTheme="outline"></span>
+                    <span>No systems found</span>
+                </div>
+            </div>
+
+            <div class="rsc__selected-count">
+                {{ selectedSystemIds.size }} system(s) selected
+            </div>
+        </ng-container>
+    </ng-container>
+
+    <ng-template #assignFooter>
+        <button nz-button nzType="default" (click)="closeAssignDialog()">Cancel</button>
+        <button nz-button nzType="primary" [disabled]="savingAssignment || loadingSystems"
+                [nzLoading]="savingAssignment" (click)="confirmAssignment()">Save</button>
+    </ng-template>
+</nz-modal>

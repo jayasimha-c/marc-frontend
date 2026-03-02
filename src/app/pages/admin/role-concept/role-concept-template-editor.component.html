@@ -1,0 +1,410 @@
+<div class="rce">
+    <!-- Header -->
+    <div class="rce__header">
+        <div class="rce__header-left">
+            <button nz-button nzType="text" nzShape="circle" (click)="goBack()">
+                <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+            </button>
+            <div>
+                <h2>{{ isEditMode ? 'Edit' : 'Create' }} Role Concept Template</h2>
+                <p>Define role naming convention with visual segment builder</p>
+            </div>
+        </div>
+        <div class="rce__header-actions">
+            <button nz-button nzType="default" (click)="goBack()">Cancel</button>
+            <button nz-button nzType="primary" (click)="saveTemplate()" [nzLoading]="saving">
+                Save Template
+            </button>
+        </div>
+    </div>
+
+    <ng-container *ngIf="loading">
+        <div class="rce__loading">
+            <nz-spin nzSimple></nz-spin>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="!loading">
+        <div class="rce__body">
+            <form [formGroup]="templateForm">
+                <!-- Template Information Section -->
+                <nz-card nzSize="small" class="rce__section">
+                    <div class="rce__section-title">Template Information</div>
+                    <div nz-row [nzGutter]="16">
+                        <div nz-col [nzXs]="24" [nzMd]="6">
+                            <nz-form-item>
+                                <nz-form-control nzErrorTip="Required, max 100 chars">
+                                    <div class="nz-float-label" [class.has-value]="templateForm.get('name')?.value">
+                                        <input nz-input placeholder=" " formControlName="name">
+                                        <label>Template Name</label>
+                                    </div>
+                                </nz-form-control>
+                            </nz-form-item>
+                        </div>
+                        <div nz-col [nzXs]="24" [nzMd]="8">
+                            <nz-form-item>
+                                <nz-form-control>
+                                    <div class="nz-float-label" [class.has-value]="templateForm.get('description')?.value">
+                                        <input nz-input placeholder=" " formControlName="description">
+                                        <label>Description</label>
+                                    </div>
+                                </nz-form-control>
+                            </nz-form-item>
+                        </div>
+                        <div nz-col [nzXs]="12" [nzMd]="4">
+                            <nz-form-item>
+                                <nz-form-control>
+                                    <div class="nz-float-label has-value">
+                                        <nz-select formControlName="roleType" nzPlaceHolder=" ">
+                                            <nz-option nzValue="SINGLE" nzLabel="Single Role"></nz-option>
+                                            <nz-option nzValue="COMPOSITE" nzLabel="Composite Role"></nz-option>
+                                        </nz-select>
+                                        <label>Role Type</label>
+                                    </div>
+                                </nz-form-control>
+                            </nz-form-item>
+                        </div>
+                        <div nz-col [nzXs]="6" [nzMd]="3">
+                            <nz-form-item>
+                                <nz-form-control nzErrorTip="1-100">
+                                    <div class="nz-float-label" [class.has-value]="templateForm.get('totalLength')?.value">
+                                        <input nz-input type="number" placeholder=" " formControlName="totalLength"
+                                            min="1" max="100" (change)="generateCanvas()">
+                                        <label>Length</label>
+                                    </div>
+                                </nz-form-control>
+                            </nz-form-item>
+                        </div>
+                        <div nz-col [nzXs]="6" [nzMd]="3" style="display: flex; align-items: center; padding-top: 4px;">
+                            <label nz-checkbox formControlName="isActive">Active</label>
+                        </div>
+                    </div>
+                </nz-card>
+
+                <!-- Visual Segment Builder -->
+                <nz-card nzSize="small" class="rce__section">
+                    <div class="rce__section-header">
+                        <div>
+                            <div class="rce__section-title">Visual Segment Builder</div>
+                            <div class="rce__section-subtitle">
+                                Click and drag unassigned positions to define segments.
+                                <span class="rce__code">_</span>=Available,
+                                <span class="rce__code">*</span>=FreeText,
+                                <span class="rce__code">#</span>=Pattern,
+                                <span class="rce__code">O</span>=OrgTemplate
+                            </div>
+                        </div>
+                        <div class="rce__legend">
+                            <span class="rce__legend-item">
+                                <span class="rce__legend-dot rce__legend-dot--selected"></span> Selected
+                            </span>
+                            <span class="rce__legend-item">
+                                <span class="rce__legend-dot rce__legend-dot--assigned"></span> Assigned
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Position Ruler -->
+                    <div class="canvas-ruler">
+                        <div *ngFor="let cell of canvasCells" class="ruler-mark"
+                            [class.mark-5]="cell.position % 5 === 0">
+                            <ng-container *ngIf="cell.position % 5 === 0 || cell.position === 1">
+                                {{ cell.position }}
+                            </ng-container>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Grid -->
+                    <div class="canvas-container"
+                        (mouseup)="onCellMouseUp()"
+                        (mouseleave)="onCellMouseUp()">
+                        <div *ngFor="let cell of canvasCells"
+                            [class]="getCellClass(cell)"
+                            [ngStyle]="getCellStyle(cell)"
+                            (mousedown)="onCellMouseDown(cell, $event)"
+                            (mouseenter)="onCellMouseEnter(cell)"
+                            nz-tooltip [nzTooltipTitle]="cell.segmentIndex !== null ? segments[cell.segmentIndex].segmentName : 'Position ' + cell.position">
+                            {{ cell.char }}
+                        </div>
+                    </div>
+
+                    <!-- Selection Info -->
+                    <div *ngIf="selectionStart !== null && selectionEnd !== null && getSelectedLength() > 0"
+                        class="rce__selection-info">
+                        <div class="rce__selection-left">
+                            <span>
+                                <strong>Selected:</strong>
+                                <span class="rce__code" style="margin-left: 4px;">{{ getSelectedPreview() }}</span>
+                            </span>
+                            <span class="rce__selection-range">
+                                Pos {{ getSelectedStart() }}-{{ getSelectedEnd() }} ({{ getSelectedLength() }} chars)
+                            </span>
+                        </div>
+                        <div class="rce__selection-actions">
+                            <button nz-button nzType="default" nzSize="small" (click)="openSegmentPanel()">
+                                <span nz-icon nzType="plus" nzTheme="outline"></span>
+                                Define Segment
+                            </button>
+                            <button nz-button nzType="text" nzShape="circle" nzSize="small" (click)="clearSelection()"
+                                nz-tooltip nzTooltipTitle="Clear Selection">
+                                <span nz-icon nzType="close" nzTheme="outline"></span>
+                            </button>
+                        </div>
+                    </div>
+                </nz-card>
+
+                <!-- Defined Segments Table -->
+                <nz-card nzSize="small" class="rce__section">
+                    <div class="rce__section-title">Defined Segments ({{ segments.length }})</div>
+
+                    <div *ngIf="segments.length === 0" class="rce__empty">
+                        <span nz-icon nzType="appstore" nzTheme="outline" style="font-size: 32px; opacity: 0.3;"></span>
+                        <p>No segments defined</p>
+                        <p class="rce__empty-hint">Select positions on the canvas to define segments</p>
+                    </div>
+
+                    <nz-table *ngIf="segments.length > 0"
+                        [nzData]="segments" [nzShowPagination]="false" nzSize="small" [nzFrontPagination]="false">
+                        <thead>
+                            <tr>
+                                <th nzWidth="50px">#</th>
+                                <th>Name</th>
+                                <th nzWidth="120px">Type</th>
+                                <th nzWidth="100px">Position</th>
+                                <th nzWidth="60px">Len</th>
+                                <th>Value / Pattern</th>
+                                <th nzWidth="60px" nzAlign="center">Req</th>
+                                <th nzWidth="80px" nzAlign="center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let segment of segments; let i = index">
+                                <td>
+                                    <span class="rce__seg-order" [style.background-color]="segment.color">
+                                        {{ segment.segmentOrder }}
+                                    </span>
+                                </td>
+                                <td style="font-weight: 500;">{{ segment.segmentName }}</td>
+                                <td>
+                                    <span class="rce__seg-type" [attr.data-type]="segment.segmentType">
+                                        {{ getSegmentTypeLabel(segment.segmentType) }}
+                                    </span>
+                                </td>
+                                <td class="rce__code" style="font-size: 12px;">{{ segment.startPosition }}-{{ segment.endPosition }}</td>
+                                <td>{{ segment.length }}</td>
+                                <td>
+                                    <ng-container [ngSwitch]="segment.segmentType">
+                                        <span *ngSwitchCase="'FIXED'" class="rce__code" style="font-size: 12px;">{{ segment.fixedValue }}</span>
+                                        <span *ngSwitchCase="'ENUM'" class="rce__code rce__truncate" style="font-size: 12px;"
+                                            nz-tooltip [nzTooltipTitle]="segment.allowedValues">
+                                            {{ segment.allowedValues }}
+                                        </span>
+                                        <span *ngSwitchCase="'FREE_TEXT'" style="font-size: 12px; color: #8c8c8c;">
+                                            {{ segment.minLength || 0 }}-{{ segment.maxLength || segment.length }} chars
+                                        </span>
+                                        <span *ngSwitchCase="'PATTERN'" class="rce__code rce__truncate" style="font-size: 12px;"
+                                            nz-tooltip [nzTooltipTitle]="segment.regexPattern">
+                                            {{ segment.regexPattern }}
+                                        </span>
+                                        <span *ngSwitchCase="'ORG_TEMPLATE'" style="font-size: 12px; color: #8c8c8c;">
+                                            Org template identifier
+                                        </span>
+                                    </ng-container>
+                                </td>
+                                <td nzAlign="center">
+                                    <span *ngIf="segment.isRequired" nz-icon nzType="check-circle" nzTheme="outline" style="color: #52c41a;"></span>
+                                    <span *ngIf="!segment.isRequired" nz-icon nzType="minus-circle" nzTheme="outline" style="color: #d9d9d9;"></span>
+                                </td>
+                                <td nzAlign="center">
+                                    <button nz-button nzType="text" nzShape="circle" nzSize="small"
+                                        (click)="openSegmentPanel(i)" nz-tooltip nzTooltipTitle="Edit">
+                                        <span nz-icon nzType="edit" nzTheme="outline"></span>
+                                    </button>
+                                    <button nz-button nzType="text" nzShape="circle" nzSize="small" nzDanger
+                                        (click)="deleteSegment(i)" nz-tooltip nzTooltipTitle="Delete">
+                                        <span nz-icon nzType="delete" nzTheme="outline"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </nz-table>
+                </nz-card>
+
+                <!-- Test Validation Section -->
+                <nz-card nzSize="small" class="rce__section">
+                    <div class="rce__section-title">Test Validation</div>
+                    <div class="rce__test-controls">
+                        <div class="rce__test-input-wrap">
+                            <div class="nz-float-label" [class.has-value]="testRoleName">
+                                <input nz-input placeholder=" " [(ngModel)]="testRoleName"
+                                    [ngModelOptions]="{standalone: true}"
+                                    class="rce__code" [maxlength]="totalLength">
+                                <label>Role Name to Test</label>
+                            </div>
+                            <div class="rce__test-counter">{{ testRoleName.length }}/{{ totalLength }} characters</div>
+                        </div>
+                        <button nz-button nzType="primary" (click)="testValidation()" [disabled]="!testRoleName" style="margin-top: 4px;">
+                            <span nz-icon nzType="caret-right" nzTheme="outline"></span>
+                            Test
+                        </button>
+                    </div>
+
+                    <div *ngIf="testResult" class="rce__test-result" [class.rce__test-result--valid]="testResult.valid"
+                        [class.rce__test-result--invalid]="!testResult.valid">
+                        <div class="rce__test-result-header">
+                            <span *ngIf="testResult.valid" nz-icon nzType="check-circle" nzTheme="outline" style="color: #52c41a; font-size: 18px;"></span>
+                            <span *ngIf="!testResult.valid" nz-icon nzType="exclamation-circle" nzTheme="outline" style="color: #ff4d4f; font-size: 18px;"></span>
+                            <span style="font-weight: 500;">{{ testResult.valid ? 'Valid Role Name' : 'Invalid Role Name' }}</span>
+                        </div>
+                        <ul *ngIf="!testResult.valid && testResult.errors.length > 0" class="rce__test-errors">
+                            <li *ngFor="let error of testResult.errors">{{ error }}</li>
+                        </ul>
+                    </div>
+                </nz-card>
+
+                <!-- Version History (edit mode only) -->
+                <nz-card *ngIf="isEditMode && templateId" nzSize="small" class="rce__section">
+                    <div class="rce__version-header" (click)="showVersionHistory = !showVersionHistory">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span nz-icon nzType="history" nzTheme="outline" style="color: #8c8c8c;"></span>
+                            <span class="rce__section-title" style="margin-bottom: 0;">Version History</span>
+                        </div>
+                        <span nz-icon [nzType]="showVersionHistory ? 'up' : 'down'" nzTheme="outline" style="color: #8c8c8c;"></span>
+                    </div>
+                    <div *ngIf="showVersionHistory" style="padding-top: 12px;">
+                        <app-version-timeline [templateId]="templateId"></app-version-timeline>
+                    </div>
+                </nz-card>
+            </form>
+        </div>
+    </ng-container>
+</div>
+
+<!-- Segment Definition Side Panel -->
+<nz-drawer
+    [nzVisible]="showSegmentPanel"
+    [nzTitle]="editingSegmentIndex !== null ? 'Edit Segment' : 'Define Segment'"
+    nzPlacement="right"
+    [nzWidth]="480"
+    (nzOnClose)="closeSegmentPanel()">
+    <ng-container *nzDrawerContent>
+        <form [formGroup]="segmentForm">
+            <!-- Preview -->
+            <div class="rce__panel-preview">
+                <div class="rce__panel-preview-label">Selected Text</div>
+                <div class="rce__panel-preview-value rce__code">{{ getSelectedPreview() }}</div>
+                <div class="rce__panel-preview-range">
+                    Position {{ getSelectedStart() }} - {{ getSelectedEnd() }} ({{ getSelectedLength() }} chars)
+                </div>
+            </div>
+
+            <!-- Segment Name and Type -->
+            <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+                <div nz-col nzSpan="12">
+                    <div class="nz-float-label" [class.has-value]="segmentForm.get('segmentName')?.value">
+                        <input nz-input placeholder=" " formControlName="segmentName">
+                        <label>Segment Name</label>
+                    </div>
+                </div>
+                <div nz-col nzSpan="12">
+                    <div class="nz-float-label has-value">
+                        <nz-select formControlName="segmentType" nzPlaceHolder=" ">
+                            <nz-option nzValue="FIXED" nzLabel="Fixed Value"></nz-option>
+                            <nz-option nzValue="ENUM" nzLabel="List of Values"></nz-option>
+                            <nz-option nzValue="FREE_TEXT" nzLabel="Free Text"></nz-option>
+                            <nz-option nzValue="PATTERN" nzLabel="Pattern (Regex)"></nz-option>
+                            <nz-option nzValue="ORG_TEMPLATE" nzLabel="Organization Template"></nz-option>
+                        </nz-select>
+                        <label>Segment Type</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Type-specific fields -->
+            <ng-container [ngSwitch]="segmentForm.get('segmentType')?.value">
+
+                <!-- FIXED -->
+                <ng-container *ngSwitchCase="'FIXED'">
+                    <div class="nz-float-label" [class.has-value]="segmentForm.get('fixedValue')?.value" style="margin-bottom: 16px;">
+                        <input nz-input placeholder=" " formControlName="fixedValue" class="rce__code"
+                            [maxLength]="getSelectedLength()">
+                        <label>Fixed Value</label>
+                    </div>
+                </ng-container>
+
+                <!-- ENUM -->
+                <ng-container *ngSwitchCase="'ENUM'">
+                    <div class="nz-float-label" [class.has-value]="segmentForm.get('enumSetId')?.value !== null" style="margin-bottom: 16px;">
+                        <nz-select formControlName="enumSetId" nzPlaceHolder=" "
+                            style="width: 100%;" [nzDropdownMatchSelectWidth]="false"
+                            nzDropdownClassName="rce__enum-dropdown">
+                            <nz-option [nzValue]="null" nzLabel="-- Custom Values --"></nz-option>
+                            <nz-option *ngFor="let es of enumSets" [nzValue]="es.id"
+                                [nzLabel]="es.name + (es.description ? ' — ' + es.description : '')"></nz-option>
+                        </nz-select>
+                        <label>Predefined Enum Set</label>
+                    </div>
+                    <div class="nz-float-label" [class.has-value]="segmentForm.get('allowedValues')?.value" style="margin-bottom: 16px;">
+                        <textarea nz-input placeholder=" " formControlName="allowedValues"
+                            class="rce__code" [nzAutosize]="{ minRows: 2, maxRows: 6 }"></textarea>
+                        <label>Allowed Values (comma separated)</label>
+                    </div>
+                </ng-container>
+
+                <!-- FREE_TEXT -->
+                <ng-container *ngSwitchCase="'FREE_TEXT'">
+                    <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+                        <div nz-col nzSpan="12">
+                            <div class="nz-float-label" [class.has-value]="segmentForm.get('minLength')?.value">
+                                <input nz-input type="number" placeholder=" " formControlName="minLength" min="0" [max]="getSelectedLength()">
+                                <label>Min Length</label>
+                            </div>
+                        </div>
+                        <div nz-col nzSpan="12">
+                            <div class="nz-float-label" [class.has-value]="segmentForm.get('maxLength')?.value">
+                                <input nz-input type="number" placeholder=" " formControlName="maxLength" min="1" [max]="getSelectedLength()">
+                                <label>Max Length</label>
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <!-- PATTERN -->
+                <ng-container *ngSwitchCase="'PATTERN'">
+                    <div class="nz-float-label" [class.has-value]="segmentForm.get('regexPattern')?.value" style="margin-bottom: 16px;">
+                        <input nz-input placeholder=" " formControlName="regexPattern" class="rce__code">
+                        <label>Regex Pattern</label>
+                    </div>
+                </ng-container>
+
+                <!-- ORG_TEMPLATE -->
+                <ng-container *ngSwitchCase="'ORG_TEMPLATE'">
+                    <nz-alert nzType="info" nzShowIcon style="margin-bottom: 16px;"
+                        nzMessage="This segment identifies the Organization Template code (e.g., INXXX). Used for org value compliance checks.">
+                    </nz-alert>
+                </ng-container>
+            </ng-container>
+
+            <!-- Required and Error Message -->
+            <div nz-row [nzGutter]="16" style="align-items: center;">
+                <div nz-col nzSpan="6">
+                    <label nz-checkbox formControlName="isRequired">Required</label>
+                </div>
+                <div nz-col nzSpan="18">
+                    <div class="nz-float-label" [class.has-value]="segmentForm.get('errorMessage')?.value">
+                        <input nz-input placeholder=" " formControlName="errorMessage">
+                        <label>Custom Error Message</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Actions -->
+            <div class="rce__panel-footer">
+                <button nz-button nzType="default" (click)="closeSegmentPanel()">Cancel</button>
+                <button nz-button nzType="primary" (click)="saveSegment()">
+                    {{ editingSegmentIndex !== null ? 'Update Segment' : 'Add Segment' }}
+                </button>
+            </div>
+        </form>
+    </ng-container>
+</nz-drawer>

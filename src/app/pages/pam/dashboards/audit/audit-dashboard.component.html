@@ -1,0 +1,50 @@
+<app-page-panel title="Audit Dashboard"
+    description="Track request analytics, audit events, and detailed transaction histories" icon="safety">
+
+    <div nz-row [nzGutter]="[24, 24]" class="mt-4">
+        <!-- Date Range Tools -->
+        <div nz-col [nzSpan]="24">
+            <nz-card [nzBordered]="false" class="shadow-sm rounded-lg" nzTitle="Requests by Date Range">
+
+                <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-4">
+                    <div class="text-gray-500">Filter and analyze request patterns by selecting a precise window</div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <nz-range-picker [(ngModel)]="dateRange" [nzFormat]="'MM/dd/yyyy'"
+                            (nzOnOpenChange)="onPickerOpenChange($event)">
+                        </nz-range-picker>
+
+                        <nz-button-group>
+                            <button nz-button *ngFor="let preset of dateRangePresets"
+                                (click)="setDateRangePreset(preset.days)">
+                                {{ preset.label }}
+                            </button>
+                        </nz-button-group>
+                    </div>
+                </div>
+
+                <common-apx-chart #requestsByDateChart [loading]="loading" [chartOptions]="requestsByDateChartOptions">
+                </common-apx-chart>
+
+            </nz-card>
+        </div>
+    </div>
+
+    <!-- Recent Audits Table -->
+    <div class="mt-6">
+        <nz-card [nzBordered]="false" class="shadow-sm rounded-lg" [nzExtra]="extraTemplate" nzTitle="Requests">
+
+            <ng-template #extraTemplate>
+                <button nz-button nzType="text" nzShape="circle" (click)="resetData()" nz-tooltip
+                    nzTooltipTitle="Refresh / Reset Data">
+                    <span nz-icon nzType="reload"></span>
+                </button>
+            </ng-template>
+
+            <app-advanced-table [data]="tableData" [columns]="tableColumns" [total]="totalRecord" [loading]="loading"
+                [showPagination]="true" [pageSizeOptions]="[10, 25, 50, 100]" (queryParams)="getTableData($event)">
+            </app-advanced-table>
+
+        </nz-card>
+    </div>
+
+</app-page-panel>

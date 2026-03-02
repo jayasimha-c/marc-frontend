@@ -1,0 +1,114 @@
+<!-- Header -->
+<app-page-panel>
+    <div headerSection>
+        <div nz-row nzJustify="space-between" nzAlign="middle">
+            <div nz-col>
+                <nz-space nzAlign="center">
+                    <button *nzSpaceItem nz-button nzType="text" nzShape="circle" (click)="goBack()">
+                        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+                    </button>
+                    <div *nzSpaceItem>
+                        <h1 style="margin-bottom: 0;">System Landscape</h1>
+                        <span nz-typography nzType="secondary">Manage and monitor all connected SAP systems</span>
+                    </div>
+                </nz-space>
+            </div>
+            <div nz-col>
+                <button nz-button nzType="default" (click)="loadSystems()">
+                    <span nz-icon nzType="reload" nzTheme="outline"></span>
+                    Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+</app-page-panel>
+
+<!-- Stats -->
+<div nz-row [nzGutter]="[16, 16]" style="margin-top: 16px;">
+    <div nz-col nzXs="12" nzSm="6">
+        <app-statistics-card title="Total Systems" [value]="systems.length" [loading]="loading"
+            description="Connected SAP systems" icon="cloud-server" color="#722ed1">
+        </app-statistics-card>
+    </div>
+    <div nz-col nzXs="12" nzSm="6">
+        <app-statistics-card title="Total Users" [value]="totalUsers" [loading]="loading"
+            description="Across all systems" icon="team" color="#1890ff">
+        </app-statistics-card>
+    </div>
+    <div nz-col nzXs="12" nzSm="6">
+        <app-statistics-card title="Locked Users" [value]="totalLockedUsers" [loading]="loading"
+            [description]="lockedPercentage + '% of total'" icon="lock" color="#faad14">
+        </app-statistics-card>
+    </div>
+    <div nz-col nzXs="12" nzSm="6">
+        <app-statistics-card title="Online Systems" [value]="systems.length" [loading]="loading"
+            [description]="onlinePercentage + '% available'" icon="cloud" color="#52c41a">
+        </app-statistics-card>
+    </div>
+</div>
+
+<!-- Systems Table -->
+<app-page-panel style="margin-top: 16px;">
+    <div headerSection>
+        <div nz-row nzJustify="space-between" nzAlign="middle">
+            <div nz-col>
+                <h2 style="margin: 0;">Systems List</h2>
+            </div>
+            <div nz-col>
+                <nz-input-group [nzPrefix]="searchIcon" [nzSuffix]="clearIcon" style="width: 260px;">
+                    <ng-template #searchIcon>
+                        <span nz-icon nzType="search"></span>
+                    </ng-template>
+                    <input nz-input placeholder="Search systems..." [ngModel]="searchTerm"
+                        (ngModelChange)="onSearchChange($event)">
+                </nz-input-group>
+                <ng-template #clearIcon>
+                    <span *ngIf="searchTerm" nz-icon nzType="close-circle" nzTheme="fill"
+                        style="cursor: pointer;" (click)="onSearchChange('')"></span>
+                </ng-template>
+            </div>
+        </div>
+    </div>
+
+    <nz-table #systemTable [nzData]="filteredRows" [nzFrontPagination]="true" [nzShowPagination]="true"
+        [nzLoading]="loading" nzSize="small" [nzPageSize]="20"
+        style="height: calc(100vh - 420px); overflow-y: auto;">
+        <thead>
+            <tr>
+                <th nzWidth="100px" [nzSortFn]="true" nzColumnKey="sid">SID</th>
+                <th nzWidth="80px">Client</th>
+                <th>Description</th>
+                <th nzWidth="120px">Environment</th>
+                <th nzWidth="120px">Type</th>
+                <th nzWidth="80px" [nzSortFn]="true" nzColumnKey="userCount">Users</th>
+                <th nzWidth="80px">Locked</th>
+                <th nzWidth="130px">Active %</th>
+                <th nzWidth="90px">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of systemTable.data">
+                <td><span style="font-family: monospace; font-weight: 600;">{{ row.sid }}</span></td>
+                <td>{{ row.clientNumber }}</td>
+                <td>{{ row.description }}</td>
+                <td>
+                    <nz-tag [nzColor]="getEnvironmentColor(row.environment)">{{ row.environment }}</nz-tag>
+                </td>
+                <td>{{ row.systemTypeName }}</td>
+                <td style="text-align: right;">{{ row.userCount }}</td>
+                <td style="text-align: right;">{{ row.lockedCount }}</td>
+                <td>
+                    <nz-progress [nzPercent]="row.activePercentage" nzSize="small"
+                        [nzStatus]="row.activePercentage >= 80 ? 'success' : (row.activePercentage >= 50 ? 'normal' : 'exception')">
+                    </nz-progress>
+                </td>
+                <td>
+                    <button nz-button nzType="link" nzSize="small" (click)="viewSystemUsers(row)" nz-tooltip
+                        nzTooltipTitle="View Users">
+                        <span nz-icon nzType="team" nzTheme="outline"></span>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </nz-table>
+</app-page-panel>

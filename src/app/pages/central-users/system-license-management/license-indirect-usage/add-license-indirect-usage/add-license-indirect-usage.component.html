@@ -1,0 +1,55 @@
+<form [formGroup]="form" nz-form nzLayout="vertical">
+    <nz-form-item>
+        <nz-form-control nzErrorTip="Application is required">
+            <div class="nz-float-label" [class.has-value]="form.get('application')?.value">
+                <input nz-input placeholder=" " formControlName="application" />
+                <label>Application</label>
+            </div>
+        </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+        <nz-form-control nzErrorTip="App User ID is required">
+            <div class="nz-float-label" [class.has-value]="form.get('appUserID')?.value">
+                <input nz-input placeholder=" " formControlName="appUserID" />
+                <label>App User ID</label>
+            </div>
+        </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+        <nz-form-control nzErrorTip="SAP System is required">
+            <div class="nz-float-label" [class.has-value]="form.get('sapSystem')?.value">
+                <nz-select formControlName="sapSystem" nzPlaceHolder=" " nzShowSearch>
+                    <nz-option *ngFor="let i of sapSysList" [nzValue]="i" [nzLabel]="i"></nz-option>
+                </nz-select>
+                <label>SAP System</label>
+            </div>
+        </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+        <nz-form-control nzErrorTip="No of Users is required">
+            <div class="nz-float-label" [class.has-value]="form.get('noOfUsers')?.value">
+                <input nz-input placeholder=" " formControlName="noOfUsers" />
+                <label>No of Users</label>
+            </div>
+        </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+        <nz-form-control nzErrorTip="License Type is required">
+            <div class="nz-float-label" [class.has-value]="form.get('licenseType')?.value">
+                <nz-select formControlName="licenseType" nzPlaceHolder=" " nzShowSearch>
+                    <nz-option *ngFor="let i of licenseTypeList" [nzValue]="i" [nzLabel]="i"></nz-option>
+                </nz-select>
+                <label>License Type</label>
+            </div>
+        </nz-form-control>
+    </nz-form-item>
+</form>
+
+<div class="modal-footer">
+    <button nz-button nzType="default" (click)="modal.close()">Close</button>
+    <button nz-button nzType="primary" [disabled]="!form.valid" (click)="save()">Save</button>
+</div>

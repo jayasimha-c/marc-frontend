@@ -1,0 +1,196 @@
+<div class="template-editor">
+  <nz-card>
+    <div class="template-editor__title">Email Template Editor</div>
+
+    <div class="template-editor__workspace">
+      <!-- Left Sidebar - Template Library -->
+      <div class="template-editor__sidebar">
+        <div class="template-editor__sidebar-header">
+          <h3>Template Library</h3>
+          <nz-input-group [nzPrefix]="searchPrefix" class="template-editor__search">
+            <input nz-input placeholder="Search templates..." [(ngModel)]="searchTerm" (input)="filterTemplates()" />
+          </nz-input-group>
+          <ng-template #searchPrefix>
+            <span nz-icon nzType="search" nzTheme="outline"></span>
+          </ng-template>
+        </div>
+
+        <div class="template-editor__categories">
+          <div *ngFor="let group of filteredGroupedItems" class="template-editor__category">
+            <div class="template-editor__category-header" (click)="toggleCategory(group.value)">
+              <span nz-icon nzType="right" nzTheme="outline"
+                    [class.template-editor__category-icon--expanded]="expandedCategories[group.value]"
+                    class="template-editor__category-icon"></span>
+              <span class="template-editor__category-name">{{ group.label }}</span>
+              <nz-tag>{{ group.items.length }}</nz-tag>
+            </div>
+
+            <div class="template-editor__template-list"
+                 [class.template-editor__template-list--expanded]="expandedCategories[group.value]">
+              <div *ngFor="let item of group.items"
+                   class="template-editor__template-item"
+                   [class.template-editor__template-item--active]="selectedItem?.value === item.value"
+                   (click)="selectTemplate(item)">
+                <div class="template-editor__template-name">{{ item.label }}</div>
+                <div class="template-editor__template-file">{{ item.value }}</div>
+                <span *ngIf="selectedItem?.value === item.value && hasChanges"
+                      class="template-editor__unsaved-dot"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Editor Area -->
+      <div class="template-editor__main">
+        <!-- Toolbar -->
+        <div class="template-editor__toolbar">
+          <div class="template-editor__toolbar-left">
+            <ng-container *ngIf="selectedItem">
+              <nz-tag nzColor="blue">
+                <span nz-icon nzType="file-text" nzTheme="outline"></span>
+                {{ selectedItem.label }}
+              </nz-tag>
+              <span class="template-editor__save-status" *ngIf="!hasChanges" style="color: #52c41a;">
+                <span nz-icon nzType="check-circle" nzTheme="outline"></span> Saved
+              </span>
+              <span class="template-editor__save-status" *ngIf="hasChanges" style="color: #faad14;">
+                <span nz-icon nzType="info-circle" nzTheme="outline"></span> Unsaved changes
+              </span>
+            </ng-container>
+          </div>
+
+          <div class="template-editor__toolbar-right" *ngIf="selectedItem">
+            <button nz-button nzType="default" nzSize="small" (click)="toggleVariables()"
+                    [class.ant-btn-active]="showVariables">
+              <span nz-icon nzType="code" nzTheme="outline"></span> Variables
+            </button>
+            <button nz-button nzType="default" nzSize="small" (click)="togglePreview()"
+                    [class.ant-btn-active]="showPreview">
+              <span nz-icon nzType="eye" nzTheme="outline"></span> Preview
+            </button>
+            <button nz-button nzType="default" nzSize="small" *ngIf="hasChanges"
+                    [disabled]="isLoading || isSaving" (click)="resetChanges()">
+              <span nz-icon nzType="reload" nzTheme="outline"></span> Reset
+            </button>
+            <button nz-button nzType="primary" nzSize="small"
+                    [disabled]="!hasChanges || isLoading || isSaving || validationErrors.length > 0"
+                    [nzLoading]="isSaving" (click)="saveTemplateChanges()">
+              <span nz-icon nzType="save" nzTheme="outline"></span> Save
+            </button>
+          </div>
+        </div>
+
+        <!-- Editor Content -->
+        <div class="template-editor__content" *ngIf="selectedItem">
+          <nz-spin [nzSpinning]="isLoading" nzTip="Loading template...">
+            <div class="template-editor__layout" [class.template-editor__layout--split]="showPreview || showVariables">
+              <!-- Editors Panel -->
+              <div class="template-editor__editors">
+                <!-- Header Editor -->
+                <div class="template-editor__editor-section">
+                  <div class="template-editor__section-header">
+                    <span>
+                      <span nz-icon nzType="file-text" nzTheme="outline" style="color: #1890ff;"></span>
+                      Email Header
+                    </span>
+                    <span class="template-editor__char-count"
+                          [class.template-editor__char-count--warning]="editorOneData.length > 8000">
+                      {{ editorOneData.length }} / 10,000
+                    </span>
+                  </div>
+                  <div class="template-editor__section-desc">Content that appears at the beginning of every email</div>
+                  <div class="template-editor__editor-wrapper">
+                    <quill-editor [(ngModel)]="editorOneData"
+                                  [modules]="quillModules"
+                                  (onContentChanged)="onEditorChange()"
+                                  [disabled]="isLoading">
+                    </quill-editor>
+                  </div>
+                </div>
+
+                <!-- Footer Editor -->
+                <div class="template-editor__editor-section">
+                  <div class="template-editor__section-header">
+                    <span>
+                      <span nz-icon nzType="file-text" nzTheme="outline" style="color: #1890ff;"></span>
+                      Email Footer
+                    </span>
+                    <span class="template-editor__char-count"
+                          [class.template-editor__char-count--warning]="editorTwoData.length > 8000">
+                      {{ editorTwoData.length }} / 10,000
+                    </span>
+                  </div>
+                  <div class="template-editor__section-desc">Content that appears at the end of every email</div>
+                  <div class="template-editor__editor-wrapper">
+                    <quill-editor [(ngModel)]="editorTwoData"
+                                  [modules]="quillModules"
+                                  (onContentChanged)="onEditorChange()"
+                                  [disabled]="isLoading">
+                    </quill-editor>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Variables Panel -->
+              <div class="template-editor__side-panel" *ngIf="showVariables">
+                <div class="template-editor__side-panel-header">
+                  <h4>Available Variables</h4>
+                  <button nz-button nzType="text" nzSize="small" (click)="toggleVariables()">
+                    <span nz-icon nzType="close" nzTheme="outline"></span>
+                  </button>
+                </div>
+                <div class="template-editor__side-panel-body">
+                  <nz-alert nzType="info" nzMessage="Click any variable to copy it to your clipboard, then paste it into your template." [nzShowIcon]="true"></nz-alert>
+                  <div *ngFor="let cat of templateVariables" class="template-editor__var-category">
+                    <h5>{{ cat.category }}</h5>
+                    <div *ngFor="let v of cat.variables"
+                         class="template-editor__var-item"
+                         (click)="insertVariable(v.name)"
+                         [nzTooltipTitle]="v.description" nz-tooltip>
+                      <code>{{ v.name }}</code>
+                      <small>{{ v.description }}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Preview Panel -->
+              <div class="template-editor__side-panel" *ngIf="showPreview">
+                <div class="template-editor__side-panel-header">
+                  <h4>Email Preview</h4>
+                  <button nz-button nzType="text" nzSize="small" (click)="togglePreview()">
+                    <span nz-icon nzType="close" nzTheme="outline"></span>
+                  </button>
+                </div>
+                <div class="template-editor__side-panel-body">
+                  <div class="template-editor__preview-email">
+                    <div class="template-editor__preview-header" [innerHTML]="editorOneData"></div>
+                    <div class="template-editor__preview-body">
+                      <p><strong>Sample Email Content</strong></p>
+                      <p>This is where the main email content would appear. The header and footer templates wrap around this content.</p>
+                    </div>
+                    <div class="template-editor__preview-footer" [innerHTML]="editorTwoData"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </nz-spin>
+        </div>
+
+        <!-- Empty State -->
+        <div class="template-editor__empty" *ngIf="!selectedItem">
+          <nz-empty nzNotFoundContent="Select a template from the library to start editing"></nz-empty>
+        </div>
+      </div>
+    </div>
+
+    <!-- Validation Errors -->
+    <nz-alert *ngIf="validationErrors.length > 0"
+              nzType="error"
+              [nzMessage]="'Validation Errors: ' + validationErrors.join(', ')"
+              [nzShowIcon]="true"
+              style="margin-top: 16px;">
+    </nz-alert>
+  </nz-card>
+</div>

@@ -1,0 +1,15 @@
+<app-advanced-table
+    [columns]="columns"
+    [data]="data"
+    [loading]="loading"
+    [serverSide]="true"
+    [totalRecords]="total"
+    [showSearch]="true"
+    [showRefresh]="false"
+    [scrollX]="'1200px'"
+    (queryParamsChange)="onQueryParamsChange($event)">
+</app-advanced-table>
+
+<div class="modal-footer">
+    <button nz-button nzType="default" (click)="modal.close()">Close</button>
+</div>

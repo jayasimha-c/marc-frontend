@@ -1,0 +1,38 @@
+<div class="audit-logs">
+  <app-advanced-table
+    title="Change Log"
+    [data]="data"
+    [columns]="columns"
+    [loading]="loading"
+    [serverSide]="true"
+    [total]="total"
+    [showPagination]="true"
+    size="middle"
+    (queryParamsChange)="onQueryChange($event)"
+    (rowClick)="onRowSelect($event)">
+
+    <ng-template #extraToolbar>
+      <div class="audit-logs__toolbar-extra">
+        <nz-range-picker
+          [(ngModel)]="dateRange"
+          [nzPlaceHolder]="['Start date', 'End date']">
+        </nz-range-picker>
+        <button nz-button nzType="primary" (click)="export()">
+          <span nz-icon nzType="export" nzTheme="outline"></span>
+          Export To
+        </button>
+      </div>
+    </ng-template>
+  </app-advanced-table>
+
+  <div class="audit-logs__details">
+    <app-advanced-table
+      title="Change Details"
+      [data]="detailData"
+      [columns]="detailColumns"
+      [showPagination]="false"
+      [showSearch]="false"
+      size="small">
+    </app-advanced-table>
+  </div>
+</div>

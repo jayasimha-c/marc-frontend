@@ -1,0 +1,83 @@
+<nz-card [nzBordered]="false">
+  <!-- Configurations Table -->
+  <app-advanced-table
+    title="Agent Configurations"
+    [data]="configsData"
+    [columns]="configsColumns"
+    [actions]="configActions"
+    [showPagination]="false"
+    size="small"
+    (rowClick)="onConfigSelect($event)">
+  </app-advanced-table>
+</nz-card>
+
+<!-- Selected Config: Stats + Logs -->
+<nz-card *ngIf="selectedConfig" [nzBordered]="false" style="margin-top: 16px;">
+  <!-- Stats Header -->
+  <div class="agent__stats-header">
+    <h4 nz-typography style="margin: 0;">
+      Decision Summary
+      <span class="agent__stats-sub">
+        ({{ selectedConfig.snowSystemName }} &rarr; {{ selectedConfig.targetSapSystemName }})
+      </span>
+    </h4>
+    <button nz-button nzType="primary" nzSize="small"
+      [nzLoading]="pollRunning" [disabled]="pollRunning"
+      (click)="onTriggerPoll()">
+      <span nz-icon nzType="caret-right" nzTheme="outline"></span> Trigger Poll
+    </button>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="agent__stats-grid">
+    <div class="stat-card stat-card--total">
+      <span nz-icon nzType="file-text" nzTheme="outline" class="stat-card__icon"></span>
+      <div>
+        <div class="stat-card__value">{{ getTotalProcessed() }}</div>
+        <div class="stat-card__label">Total Processed</div>
+      </div>
+    </div>
+    <div class="stat-card stat-card--approved">
+      <span nz-icon nzType="check-circle" nzTheme="outline" class="stat-card__icon"></span>
+      <div>
+        <div class="stat-card__value">{{ getStatCount('AUTO_APPROVED') }}</div>
+        <div class="stat-card__label">Auto-Approved</div>
+      </div>
+    </div>
+    <div class="stat-card stat-card--workflow">
+      <span nz-icon nzType="apartment" nzTheme="outline" class="stat-card__icon"></span>
+      <div>
+        <div class="stat-card__value">{{ getStatCount('WORKFLOW_CREATED') }}</div>
+        <div class="stat-card__label">Workflow Created</div>
+      </div>
+    </div>
+    <div class="stat-card stat-card--escalated">
+      <span nz-icon nzType="warning" nzTheme="outline" class="stat-card__icon"></span>
+      <div>
+        <div class="stat-card__value">{{ getStatCount('ESCALATED') }}</div>
+        <div class="stat-card__label">Escalated</div>
+      </div>
+    </div>
+    <div class="stat-card stat-card--error">
+      <span nz-icon nzType="close-circle" nzTheme="outline" class="stat-card__icon"></span>
+      <div>
+        <div class="stat-card__value">{{ getStatCount('ERROR') }}</div>
+        <div class="stat-card__label">Errors</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs Table -->
+  <app-advanced-table
+    title="Processing Logs"
+    [data]="logsData"
+    [columns]="logsColumns"
+    [loading]="logsLoading"
+    [total]="logsTotal"
+    [serverSide]="true"
+    [showSearch]="true"
+    size="small"
+    (queryParamsChange)="onLogsQueryChange($event)"
+    (rowClick)="onLogRowClick($event)">
+  </app-advanced-table>
+</nz-card>

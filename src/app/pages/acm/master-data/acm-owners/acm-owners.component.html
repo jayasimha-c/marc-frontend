@@ -1,0 +1,70 @@
+<app-page-panel [header]="'Owner Assignment'">
+  <ng-container headerSection>
+    <nz-space>
+      <div *nzSpaceItem class="add-user-input">
+        <div class="nz-float-label" [class.has-value]="userSearchCtrl.value">
+          <input nz-input placeholder=" "
+            [formControl]="userSearchCtrl"
+            [nzAutocomplete]="userAuto"
+            (keydown.enter)="onUserSubmit()" />
+          <label>Add User</label>
+        </div>
+        <nz-autocomplete #userAuto (selectionChange)="onUserSelected($event.nzValue)">
+          <nz-auto-option *ngFor="let option of filteredUsers$ | async" [nzValue]="option" [nzLabel]="option">
+            {{ option }}
+          </nz-auto-option>
+        </nz-autocomplete>
+      </div>
+      <button *nzSpaceItem nz-button nzType="primary" (click)="saveAll()" [disabled]="dirtyUsers.size === 0">
+        <span nz-icon nzType="save" nzTheme="outline"></span> Save
+      </button>
+    </nz-space>
+  </ng-container>
+
+  <nz-table
+    #ownerTable
+    [nzData]="data"
+    [nzLoading]="loading"
+    nzSize="small"
+    [nzFrontPagination]="false"
+    [nzTotal]="total"
+    [nzPageIndex]="pageIndex"
+    [nzPageSize]="pageSize"
+    [nzPageSizeOptions]="[10, 20, 50, 100]"
+    nzShowSizeChanger
+    (nzPageIndexChange)="onPageChange($event)"
+    (nzPageSizeChange)="onPageSizeChange($event)"
+    [nzScroll]="{ y: '450px' }">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th nzWidth="140px" nzAlign="center">Risk Owner</th>
+        <th nzWidth="140px" nzAlign="center">Risk Notifier</th>
+        <th nzWidth="160px" nzAlign="center">Mitigation Owner</th>
+        <th nzWidth="160px" nzAlign="center">Mitigation Notifier</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of ownerTable.data" [class.dirty-row]="dirtyUsers.has(row.username)">
+        <td>
+          <div class="user-cell">
+            <span class="user-name">{{ row.username }}</span>
+            <span class="user-detail">{{ getDisplayDetail(row) }}</span>
+          </div>
+        </td>
+        <td nzAlign="center">
+          <label nz-checkbox [(ngModel)]="row.riskOwner" (ngModelChange)="onCheckboxChange(row)"></label>
+        </td>
+        <td nzAlign="center">
+          <label nz-checkbox [(ngModel)]="row.riskNotifier" (ngModelChange)="onCheckboxChange(row)"></label>
+        </td>
+        <td nzAlign="center">
+          <label nz-checkbox [(ngModel)]="row.mitigationOwner" (ngModelChange)="onCheckboxChange(row)"></label>
+        </td>
+        <td nzAlign="center">
+          <label nz-checkbox [(ngModel)]="row.mitigationNotifier" (ngModelChange)="onCheckboxChange(row)"></label>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</app-page-panel>

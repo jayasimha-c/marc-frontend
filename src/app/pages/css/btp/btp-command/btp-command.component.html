@@ -1,0 +1,24 @@
+<div style="padding: 16px;">
+  <nz-card>
+    <nz-tabset [nzAnimated]="false" [(nzSelectedIndex)]="activeTab">
+      <nz-tab nzTitle="Commands">
+        <app-advanced-table
+          title=""
+          [columns]="columns"
+          [data]="data"
+          [totalRecords]="totalRecords"
+          [actions]="actions"
+          (rowClick)="onRowClicked($event)">
+        </app-advanced-table>
+      </nz-tab>
+      <nz-tab nzTitle="Logs">
+        <app-execution-log *ngIf="activeTab === 1"></app-execution-log>
+      </nz-tab>
+    </nz-tabset>
+  </nz-card>
+
+  <nz-card *ngIf="activeTab === 1" style="margin-top: 16px;">
+    <div style="font-weight: 500; margin-bottom: 12px;">Command Execution Log</div>
+    <textarea nz-input readonly [nzAutosize]="{ minRows: 6, maxRows: 12 }" [value]="logDetail"></textarea>
+  </nz-card>
+</div>

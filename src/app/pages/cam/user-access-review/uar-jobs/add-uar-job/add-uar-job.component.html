@@ -1,0 +1,343 @@
+<!-- Page Mode Layout -->
+<ng-container *ngIf="isPageMode">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button nz-button nzType="text" nzShape="circle" (click)="cancel()">
+        <span nz-icon nzType="arrow-left"></span>
+      </button>
+      <h2 style="margin: 0;">{{ isViewOnly ? 'View ARC Job Configuration' : 'Create New ARC Job' }}</h2>
+    </div>
+  </div>
+
+  <nz-card>
+    <ng-container *ngTemplateOutlet="formContent"></ng-container>
+
+    <div style="text-align: right; margin-top: 16px;">
+      <button nz-button nzType="default" (click)="cancel()">Cancel</button>
+      <button nz-button nzType="primary" style="margin-left: 12px;"
+        (click)="onPrevious()" [disabled]="currentStep === 0">
+        <span nz-icon nzType="arrow-left"></span> Back
+      </button>
+      @if (currentStep === 4) {
+        <button *ngIf="!isViewOnly" nz-button nzType="primary" style="margin-left: 12px;" (click)="save()">
+          <span nz-icon nzType="save"></span> Save
+        </button>
+      } @else {
+        <button nz-button nzType="primary" style="margin-left: 12px;" (click)="onNext()">
+          Next <span nz-icon nzType="arrow-right"></span>
+        </button>
+      }
+    </div>
+  </nz-card>
+</ng-container>
+
+<!-- Dialog Mode Layout -->
+<ng-container *ngIf="!isPageMode">
+  <ng-container *ngTemplateOutlet="formContent"></ng-container>
+
+  <div class="flex justify-end gap-3 mt-4 pt-4 border-t">
+    <button nz-button nzType="default" (click)="modal.close()">Close</button>
+    @if (currentStep === 4) {
+      <button *ngIf="!isViewOnly" nz-button nzType="primary" (click)="save()">Save</button>
+    } @else {
+      <button nz-button nzType="primary" style="margin-left: 12px;" (click)="onNext()">Next</button>
+    }
+  </div>
+</ng-container>
+
+<!-- Shared Form Template -->
+<ng-template #formContent>
+  <form [formGroup]="form" style="margin-top: 8px;">
+    <nz-steps [nzCurrent]="currentStep" style="margin-bottom: 24px;">
+      <nz-step nzTitle="System"></nz-step>
+      <nz-step nzTitle="Criteria"></nz-step>
+      <nz-step nzTitle="Scheduler"></nz-step>
+      <nz-step nzTitle="Reconciliation"></nz-step>
+      <nz-step nzTitle="Config"></nz-step>
+    </nz-steps>
+
+    <div [ngSwitch]="currentStep">
+      <!-- Step 0: System -->
+      <div *ngSwitchCase="0">
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('sapSystem')!.value">
+                  <nz-select formControlName="sapSystem" nzPlaceHolder=" " nzShowSearch>
+                    <nz-option *ngFor="let i of sapSysList" [nzValue]="i?.id" [nzLabel]="i.description"></nz-option>
+                  </nz-select>
+                  <label>System</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('durationDays')!.value">
+                  <nz-select formControlName="durationDays" nzPlaceHolder=" " nzShowSearch>
+                    <nz-option *ngFor="let i of durationDays" [nzValue]="i" [nzLabel]="'' + i"></nz-option>
+                  </nz-select>
+                  <label>Duration Days</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="24">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('notes')!.value">
+                  <input nz-input placeholder=" " formControlName="notes" />
+                  <label>Notes</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div style="margin-top: 8px;">
+          <button type="button" nz-button nzType="primary" (click)="fileInput.click()">
+            <span nz-icon nzType="upload"></span> Review Guide and Instruction
+          </button>
+          <input type="file" #fileInput style="display: none" (change)="onFileSelected($event, 'system')" />
+          <span *ngIf="attachmentId" style="margin-left: 12px; color: #1890ff;">{{ attachmentName }}</span>
+        </div>
+      </div>
+
+      <!-- Step 1: Criteria -->
+      <div *ngSwitchCase="1">
+        <nz-radio-group formControlName="radioOption" style="display: flex; gap: 20px;">
+          <label nz-radio nzValue="1">Automated Selection Rules</label>
+          <label nz-radio nzValue="2">From File Upload</label>
+        </nz-radio-group>
+
+        <div *ngIf="form.get('radioOption')!.value === '2'" style="margin-top: 20px;">
+          <button nz-button nzType="primary" (click)="downloadTemplate()">
+            <span nz-icon nzType="download"></span> Download Template
+          </button>
+          <button type="button" nz-button nzType="primary" style="margin-left: 20px;" (click)="fileInput1.click()">
+            <span nz-icon nzType="upload"></span> Select File
+          </button>
+          <input type="file" #fileInput1 style="display: none" (change)="onFileSelected($event, 'criteria')" />
+          <span *ngIf="userFile" style="margin-left: 12px; color: #1890ff;">{{ userFileName }}</span>
+        </div>
+      </div>
+
+      <!-- Step 2: Scheduler -->
+      <div *ngSwitchCase="2">
+        <div style="margin-bottom: 16px;">
+          <label nz-checkbox formControlName="periodicJob">Periodic Job</label>
+        </div>
+
+        <ng-container *ngIf="form.get('periodicJob')!.value">
+          <div nz-row [nzGutter]="16">
+            <div nz-col [nzSpan]="12">
+              <nz-form-item>
+                <nz-form-control>
+                  <div class="nz-float-label" [class.has-value]="form.get('interval')!.value">
+                    <nz-select formControlName="interval" nzPlaceHolder=" ">
+                      <nz-option nzValue="MONTHLY" nzLabel="Monthly"></nz-option>
+                      <nz-option nzValue="QUARTERLY" nzLabel="Quarterly"></nz-option>
+                      <nz-option nzValue="YEARLY" nzLabel="Yearly"></nz-option>
+                    </nz-select>
+                    <label>Interval</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </div>
+          <div nz-row [nzGutter]="16">
+            <div nz-col [nzSpan]="12">
+              <nz-form-item>
+                <nz-form-control>
+                  <div class="nz-float-label" [class.has-value]="form.get('startMonth')!.value">
+                    <nz-select formControlName="startMonth" nzPlaceHolder=" " nzShowSearch>
+                      <nz-option *ngFor="let month of months" [nzValue]="month.id" [nzLabel]="month.name"></nz-option>
+                    </nz-select>
+                    <label>Start Month</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col [nzSpan]="12">
+              <nz-form-item>
+                <nz-form-control>
+                  <div class="nz-float-label" [class.has-value]="form.get('startYear')!.value">
+                    <nz-input-number formControlName="startYear" [nzMin]="2020" [nzMax]="2050" [nzStep]="1" style="width: 100%;" nzPlaceHolder=" "></nz-input-number>
+                    <label>Start Year</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </div>
+          <div nz-row [nzGutter]="16">
+            <div nz-col [nzSpan]="12">
+              <nz-form-item>
+                <nz-form-control>
+                  <div class="nz-float-label" [class.has-value]="form.get('endMonth')!.value">
+                    <nz-select formControlName="endMonth" nzPlaceHolder=" " nzShowSearch>
+                      <nz-option *ngFor="let month of months" [nzValue]="month.id" [nzLabel]="month.name"></nz-option>
+                    </nz-select>
+                    <label>End Month</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col [nzSpan]="12">
+              <nz-form-item>
+                <nz-form-control>
+                  <div class="nz-float-label" [class.has-value]="form.get('endYear')!.value">
+                    <nz-input-number formControlName="endYear" [nzMin]="2020" [nzMax]="2050" [nzStep]="1" style="width: 100%;" nzPlaceHolder=" "></nz-input-number>
+                    <label>End Year</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="!form.get('periodicJob')!.value">
+          <div nz-row [nzGutter]="16">
+            <div nz-col [nzSpan]="12">
+              <nz-form-item>
+                <nz-form-control>
+                  <div class="nz-float-label" [class.has-value]="form.get('startDate')!.value">
+                    <nz-date-picker formControlName="startDate" nzPlaceHolder=" " style="width: 100%;"></nz-date-picker>
+                    <label>Start</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </div>
+        </ng-container>
+
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('startTime')!.value">
+                  <nz-time-picker formControlName="startTime" nzPlaceHolder=" " [nzUse12Hours]="true" nzFormat="h:mm a" style="width: 100%;"></nz-time-picker>
+                  <label>Start Time</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div style="margin-top: 8px;">
+          <label nz-checkbox formControlName="expireExisting">
+            Expire Existing User Review Tasks that are in Hold. Pending for Review.
+          </label>
+        </div>
+      </div>
+
+      <!-- Step 3: Reconciliation -->
+      <div *ngSwitchCase="3">
+        <div style="margin-bottom: 8px;">
+          <label nz-checkbox formControlName="performReconciliation" (ngModelChange)="onReconciliationChange()">
+            Perform ServiceNow Reconciliation
+          </label>
+        </div>
+        <p style="font-size: 12px; color: #8c8c8c; margin-bottom: 16px;">
+          Compare SAP user roles against ServiceNow authorizations to identify unauthorized or missing roles.
+        </p>
+
+        <div nz-row [nzGutter]="16" *ngIf="form.get('performReconciliation')!.value">
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('snowSystemId')!.value">
+                  <nz-select formControlName="snowSystemId" nzPlaceHolder=" " nzShowSearch>
+                    <nz-option *ngFor="let sys of snowSystemList" [nzValue]="sys.id" [nzLabel]="sys.name"></nz-option>
+                  </nz-select>
+                  <label>ServiceNow System</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Config -->
+      <div *ngSwitchCase="4">
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('includeExpiredAccounts')!.value !== null && form.get('includeExpiredAccounts')!.value !== ''">
+                  <nz-select formControlName="includeExpiredAccounts" nzPlaceHolder=" ">
+                    <nz-option [nzValue]="true" nzLabel="Yes"></nz-option>
+                    <nz-option [nzValue]="false" nzLabel="No"></nz-option>
+                  </nz-select>
+                  <label>Include Expired Accounts</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('lockedAccounts')!.value !== null && form.get('lockedAccounts')!.value !== ''">
+                  <nz-select formControlName="lockedAccounts" nzPlaceHolder=" ">
+                    <nz-option [nzValue]="true" nzLabel="Yes"></nz-option>
+                    <nz-option [nzValue]="false" nzLabel="No"></nz-option>
+                  </nz-select>
+                  <label>Locked Accounts</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('ignoreUsersWithoutRoles')!.value !== null && form.get('ignoreUsersWithoutRoles')!.value !== ''">
+                  <nz-select formControlName="ignoreUsersWithoutRoles" nzPlaceHolder=" ">
+                    <nz-option [nzValue]="true" nzLabel="Yes"></nz-option>
+                    <nz-option [nzValue]="false" nzLabel="No"></nz-option>
+                  </nz-select>
+                  <label>Ignore Users without Roles</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('transactionHistory')!.value">
+                  <input nz-input placeholder=" " formControlName="transactionHistory" />
+                  <label>Transaction History (Days)</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('userType')!.value?.length">
+                  <nz-select formControlName="userType" nzMode="multiple" nzPlaceHolder=" ">
+                    <nz-option nzValue="A" nzLabel="Dialog"></nz-option>
+                    <nz-option nzValue="B" nzLabel="System"></nz-option>
+                    <nz-option nzValue="C" nzLabel="Communication"></nz-option>
+                    <nz-option nzValue="L" nzLabel="Reference"></nz-option>
+                    <nz-option nzValue="S" nzLabel="Service"></nz-option>
+                  </nz-select>
+                  <label>User Type</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</ng-template>

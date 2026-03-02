@@ -1,0 +1,77 @@
+<div class="tp">
+  <div class="tp__header">
+    <!-- Left: Back + Title -->
+    <div class="tp__title-section">
+      <button *ngIf="showBack" class="tp__back-btn" (click)="onBack()">
+        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+      </button>
+      <div>
+        <h1 class="tp__title">{{ title }}</h1>
+        <p *ngIf="subtitle" class="tp__subtitle">{{ subtitle }}</p>
+      </div>
+    </div>
+
+    <!-- Right: Actions -->
+    <div class="tp__actions">
+      <ng-content select="[title-actions]"></ng-content>
+
+      <!-- Date range picker -->
+      <ng-container *ngIf="showDateRange">
+        <nz-range-picker
+          class="tp__date-field"
+          [(ngModel)]="dateRange"
+          (ngModelChange)="onDateRangeChange($event)"
+          [nzFormat]="'MM/dd/yyyy'"
+        ></nz-range-picker>
+
+        <div *ngIf="datePresets.length" class="tp__presets">
+          <button
+            *ngFor="let preset of datePresets"
+            (click)="onPreset(preset)"
+            class="tp__preset-btn"
+            [class.active]="activePreset === preset.days"
+          >{{ preset.label }}</button>
+        </div>
+      </ng-container>
+
+      <!-- Filter button -->
+      <div *ngIf="filters.length" class="tp__filter-wrapper">
+        <button class="tp__filter-btn" (click)="toggleFilterPanel()" [class.active]="filterPanelOpen || activeFilterCount > 0">
+          <span nz-icon nzType="filter" nzTheme="outline"></span>
+          <span>Filters</span>
+          <span *ngIf="activeFilterCount > 0" class="tp__filter-badge">{{ activeFilterCount }}</span>
+        </button>
+
+        <div *ngIf="filterPanelOpen" class="tp__backdrop" (click)="closeFilterPanel()"></div>
+
+        <div *ngIf="filterPanelOpen" class="tp__filter-panel">
+          <div *ngFor="let filter of filters" class="tp__filter-item">
+            <label class="tp__filter-label">{{ filter.label }}</label>
+            <nz-select
+              class="tp__filter-field"
+              [(ngModel)]="filterValues[filter.key]"
+              [nzPlaceHolder]="filter.placeholder || 'All'"
+              nzAllowClear
+            >
+              <nz-option *ngFor="let opt of filter.options" [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
+            </nz-select>
+          </div>
+          <div class="tp__filter-actions">
+            <button class="tp__clear-btn" (click)="clearAllFilters()">Clear All</button>
+            <button class="tp__apply-btn" (click)="applyFilters()">Apply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active filter chips -->
+  <div *ngIf="activeFilters.length > 0" class="tp__chips">
+    <div *ngFor="let af of activeFilters" class="tp__chip">
+      <span class="tp__chip-label">{{ af.label }}:</span>
+      <span class="tp__chip-value">{{ af.displayValue }}</span>
+      <span nz-icon nzType="close" nzTheme="outline" class="tp__chip-remove" (click)="removeFilter(af.key)"></span>
+    </div>
+    <button class="tp__clear-all" (click)="clearAllFilters()">Clear all</button>
+  </div>
+</div>

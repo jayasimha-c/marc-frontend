@@ -1,0 +1,220 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.email-settings {
+  padding: 16px;
+
+  &__header {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: rgba(0, 0, 0, 0.85);
+  }
+
+  // ── Status Bar ─────────────────────────────────────
+  &__status-bar {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    border-radius: 4px;
+    border: 1px solid #f0f0f0;
+    background: #fafafa;
+    transition: all 0.3s ease;
+
+    &--connected {
+      background: #f6ffed;
+      border-color: #52c41a;
+
+      .email-settings__status-dot {
+        background: #52c41a;
+        animation: pulse 2s infinite;
+      }
+      .email-settings__status-text {
+        color: #389e0d;
+      }
+    }
+
+    &--disconnected {
+      background: #fff2f0;
+      border-color: #ff4d4f;
+
+      .email-settings__status-dot {
+        background: #ff4d4f;
+      }
+      .email-settings__status-text {
+        color: #cf1322;
+      }
+    }
+
+    &--testing {
+      background: #fffbe6;
+      border-color: #faad14;
+
+      .email-settings__status-dot {
+        background: #faad14;
+        animation: pulse 1s infinite;
+      }
+      .email-settings__status-text {
+        color: #d48806;
+      }
+    }
+  }
+
+  &__status-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  &__status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d9d9d9;
+  }
+
+  &__status-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.45);
+  }
+
+  &__last-test {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.45);
+  }
+
+  // ── Form ───────────────────────────────────────────
+  &__form {
+    // nothing needed here
+  }
+
+  &__section {
+    margin-bottom: 24px;
+
+    &:last-of-type {
+      margin-bottom: 32px;
+    }
+  }
+
+  &__section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.85);
+    margin: 0 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+
+    span[nz-icon] {
+      color: #1890ff;
+      font-size: 16px;
+    }
+  }
+
+  &__row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  &__field {
+    flex: 1;
+    min-width: 0;
+
+    &--port {
+      flex: 0 0 140px;
+    }
+
+    &--flex2 {
+      flex: 2;
+    }
+  }
+
+  &__field-icon {
+    color: rgba(0, 0, 0, 0.25);
+    font-size: 14px;
+  }
+
+  &__hint {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.45);
+  }
+
+  // ── Actions ────────────────────────────────────────
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  &__actions-spacer {
+    flex: 1;
+  }
+
+  // ── Dialog ─────────────────────────────────────────
+  &__dialog-desc {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.45);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+}
+
+// ── Animations ─────────────────────────────────────────
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+// ── Responsive ─────────────────────────────────────────
+@media (max-width: 768px) {
+  .email-settings {
+    &__row {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    &__field--port {
+      flex: 1;
+    }
+
+    &__status-content {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    &__actions {
+      flex-wrap: wrap;
+
+      .email-settings__actions-spacer {
+        display: none;
+      }
+
+      button {
+        flex: 1;
+        min-width: 140px;
+      }
+    }
+  }
+}

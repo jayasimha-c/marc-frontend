@@ -1,0 +1,50 @@
+<nz-card [nzTitle]="header" nzSize="small" [nzExtra]="riskActions">
+  <ng-template #riskActions>
+    <nz-button-group>
+      <button nz-button nzSize="small" nz-tooltip nzTooltipTitle="Remove Selected" [disabled]="selectedItems.length === 0" (click)="remove()">
+        <span nz-icon nzType="delete" nzTheme="outline"></span>
+      </button>
+      <button nz-button nzSize="small" nz-tooltip nzTooltipTitle="Remove All" (click)="removeAll()">
+        <span nz-icon nzType="close-circle" nzTheme="outline"></span>
+      </button>
+      <button nz-button nzSize="small" nzType="primary" nz-tooltip nzTooltipTitle="Select Risks" (click)="openRiskSelectDialog()">
+        <span nz-icon nzType="plus" nzTheme="outline"></span> Select
+      </button>
+    </nz-button-group>
+  </ng-template>
+
+  <nz-input-group nzSize="small" [nzSuffix]="riskSearchIcon" style="margin-bottom: 8px; max-width: 280px;">
+    <input nz-input placeholder="Search risks..." [(ngModel)]="searchText" (ngModelChange)="applyFilter()" />
+  </nz-input-group>
+  <ng-template #riskSearchIcon>
+    <span nz-icon nzType="search"></span>
+  </ng-template>
+
+  <nz-table #riskTable [nzData]="displayItems" nzSize="small"
+            [nzFrontPagination]="true"
+            [nzPageIndex]="currentPage"
+            [nzPageSize]="pageSize"
+            nzTableLayout="fixed"
+            [nzScroll]="{ y: '50vh' }">
+    <thead>
+      <tr>
+        <th nzWidth="40px" [nzChecked]="allChecked" (nzCheckedChange)="onAllChecked($event)"></th>
+        <th>Risk ID</th>
+        <th>Description</th>
+        <th>Business Process</th>
+        <th>Sub Process</th>
+        <th>Risk Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of riskTable.data">
+        <td [nzChecked]="isChecked(row)" (nzCheckedChange)="onItemChecked(row, $event)"></td>
+        <td style="color: #1890ff; cursor: pointer;" (click)="openDetail(row)">{{ row.name }}</td>
+        <td>{{ row.riskDescription }}</td>
+        <td>{{ row.businessProcess?.name }}</td>
+        <td>{{ row.businessProcess?.subProcessNames }}</td>
+        <td>{{ row.riskType?.name }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>

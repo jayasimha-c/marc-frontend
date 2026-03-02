@@ -1,0 +1,250 @@
+:host { display: block; }
+
+.rc {
+  // ── Dashboard ──
+  &__dashboard {
+    margin-bottom: 16px;
+    overflow: hidden;
+
+    ::ng-deep .ant-card-body {
+      padding: 0;
+    }
+  }
+
+  &__dashboard-top {
+    display: flex;
+    align-items: stretch;
+    min-height: 88px;
+  }
+
+  &__dashboard-total {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-width: 180px;
+    flex-shrink: 0;
+  }
+
+  &__dashboard-total-icon {
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  &__dashboard-total-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__dashboard-total-value {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    letter-spacing: -0.02em;
+  }
+
+  &__dashboard-total-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 4px;
+  }
+
+  &__dashboard-total-tags {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  &__dashboard-total-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.7);
+    cursor: default;
+
+    span[nz-icon] {
+      font-size: 10px;
+    }
+  }
+
+  // ── Quick Stats ──
+  &__dashboard-stats {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+  }
+
+  &__dashboard-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px;
+    border-right: 1px solid #f0f0f0;
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+
+  &__dashboard-stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    color: rgba(0, 0, 0, 0.85);
+
+    &--warn {
+      color: #ef4444;
+    }
+  }
+
+  &__dashboard-stat-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(0, 0, 0, 0.35);
+    margin-top: 4px;
+  }
+
+  // ── Distribution Charts ──
+  &__dashboard-divider {
+    height: auto;
+    margin: 0;
+    border-color: #f0f0f0;
+  }
+
+  &__dashboard-distributions {
+    display: flex;
+    flex: 1;
+    padding: 12px 8px;
+    gap: 0;
+  }
+
+  &__dist {
+    flex: 1;
+    padding: 4px 16px;
+    border-right: 1px solid #f5f5f5;
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+
+  &__dist-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgba(0, 0, 0, 0.4);
+    margin-bottom: 8px;
+
+    span[nz-icon] {
+      font-size: 13px;
+    }
+  }
+
+  &__dist-bar {
+    display: flex;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #f5f5f5;
+    margin-bottom: 6px;
+  }
+
+  &__dist-segment {
+    transition: all 0.2s ease;
+    cursor: default;
+
+    &:hover {
+      filter: brightness(1.1);
+      transform: scaleY(1.3);
+    }
+  }
+
+  &__dist-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 10px;
+  }
+
+  &__dist-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.55);
+    cursor: default;
+
+    strong {
+      font-weight: 600;
+      color: rgba(0, 0, 0, 0.75);
+    }
+  }
+
+  &__dist-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  // ── Table ──
+  &__table-card {
+    margin-bottom: 16px;
+  }
+
+  // ── Details Card ──
+  &__details-card {
+    margin-bottom: 16px;
+  }
+}
+
+// ── Responsive ──
+@media (max-width: 992px) {
+  .rc__dashboard-top {
+    flex-direction: column;
+  }
+
+  .rc__dashboard-total {
+    min-width: unset;
+  }
+
+  .rc__dashboard-stats {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .rc__dashboard-distributions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rc__dist {
+    border-right: none;
+    border-bottom: 1px solid #f5f5f5;
+    padding: 8px 16px;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+

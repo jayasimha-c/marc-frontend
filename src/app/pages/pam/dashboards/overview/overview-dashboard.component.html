@@ -1,0 +1,50 @@
+<app-page-panel header="Overview Dashboard">
+
+    <!-- KPI Cards -->
+    <div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+            <app-statistics-card title="Total Privileged Access Requests" [value]="totalRequests"
+                [loading]="loading" description="Last 30 days" icon="audit" color="#1890ff">
+            </app-statistics-card>
+        </div>
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+            <app-statistics-card title="Active Privileged IDs" [value]="activePrivilegedIds"
+                [loading]="loading" description="Real-time count" icon="safety" color="#52c41a">
+            </app-statistics-card>
+        </div>
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+            <app-statistics-card title="Pending Approvals" [value]="pendingApprovals"
+                [loading]="loading" description="Awaiting review" icon="clock-circle" color="#faad14">
+            </app-statistics-card>
+        </div>
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+            <app-statistics-card title="SoD Risks Detected" [value]="sodRisks.critical"
+                [loading]="loading" description="Critical risks" icon="warning" color="#ff4d4f">
+            </app-statistics-card>
+        </div>
+    </div>
+
+    <!-- Charts — 2 per row -->
+    <div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+        <div nz-col [nzXs]="24" [nzMd]="12">
+            <common-apx-chart #requestsChart [loading]="loading" [chartOptions]="requestsChartOptions"
+                size="lg"></common-apx-chart>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+            <common-apx-chart #sodRisksChart [loading]="loading" [chartOptions]="sodRisksChartOptions"
+                size="lg"></common-apx-chart>
+        </div>
+    </div>
+
+    <div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+        <div nz-col [nzXs]="24" [nzMd]="12">
+            <common-apx-chart #topUsersChart [loading]="loading" [chartOptions]="topUsersChartOptions"
+                size="lg"></common-apx-chart>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+            <common-apx-chart #topRolesChart [loading]="loading" [chartOptions]="topRolesChartOptions"
+                size="lg"></common-apx-chart>
+        </div>
+    </div>
+
+</app-page-panel>

@@ -1,0 +1,12 @@
+<app-advanced-table
+  title="Sync Schedulers"
+  [data]="data"
+  [columns]="columns"
+  [actions]="tableActions"
+  [loading]="loading"
+  [showSearch]="true"
+  [showPagination]="false"
+  size="middle"
+  (rowClick)="onRowClick($event)"
+  (refresh)="loadSchedulers()">
+</app-advanced-table>

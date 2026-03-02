@@ -1,0 +1,58 @@
+<nz-spin [nzSpinning]="loading">
+  <div style="padding: 0 16px; max-height: 65vh; overflow: auto;">
+    <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" style="margin-bottom: 16px;">
+      <nz-descriptions-item nzTitle="Role Name">{{ roleName }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Description">{{ roleDescription }}</nz-descriptions-item>
+    </nz-descriptions>
+
+    <nz-tabset>
+      <nz-tab nzTitle="Users">
+        <nz-table #usersTable [nzData]="users" nzSize="small" [nzShowPagination]="false"
+                  nzTableLayout="fixed" [nzScroll]="{ y: '40vh' }">
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of usersTable.data">
+              <td>{{ row.bname }}</td>
+              <td>{{ row.firstName }}</td>
+              <td>{{ row.lastName }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </nz-tab>
+      <nz-tab nzTitle="Authorizations">
+        <nz-table #authTable [nzData]="authorizations" nzSize="small" [nzShowPagination]="false"
+                  nzTableLayout="fixed" [nzScroll]="{ y: '40vh' }">
+          <thead>
+            <tr>
+              <th>Profile</th>
+              <th>Auth</th>
+              <th>Object</th>
+              <th>Field</th>
+              <th>Von</th>
+              <th>Bis</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of authTable.data">
+              <td>{{ row.profile }}</td>
+              <td>{{ row.auth }}</td>
+              <td>{{ row.object }}</td>
+              <td>{{ row.field }}</td>
+              <td>{{ row.von }}</td>
+              <td>{{ row.bis }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </nz-tab>
+    </nz-tabset>
+  </div>
+</nz-spin>
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+</div>

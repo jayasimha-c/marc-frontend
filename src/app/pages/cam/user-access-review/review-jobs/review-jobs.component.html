@@ -1,0 +1,34 @@
+<!-- Dashboard Metrics -->
+<div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Total Jobs" [value]="dashboardMetrics.totalJobs" icon="audit" color="#1890ff" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Total Users" [value]="dashboardMetrics.totalUsers" icon="team" color="#52c41a" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Active Jobs" [value]="dashboardMetrics.activeJobs" icon="play-circle" color="#faad14" [loading]="loading"></app-statistics-card>
+  </div>
+  <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">
+    <app-statistics-card title="Pending Reviews" [value]="dashboardMetrics.pendingReviews" icon="field-time" color="#722ed1" [loading]="loading"></app-statistics-card>
+  </div>
+</div>
+
+<!-- Jobs Table -->
+<app-advanced-table
+  title="Access Review Jobs"
+  subtitle="Manage and monitor access review processes across systems"
+  [data]="data"
+  [columns]="columns"
+  [actions]="actions"
+  [loading]="loading"
+  [serverSide]="true"
+  [totalRecords]="totalRecords"
+  [showSearch]="true"
+  [showSelection]="true"
+  [showPagination]="true"
+  rowKey="batchID"
+  size="middle"
+  (queryParamsChange)="onQueryChange($event)"
+  (selectionChange)="onSelectionChange($event)"
+></app-advanced-table>

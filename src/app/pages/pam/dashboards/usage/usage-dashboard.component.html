@@ -1,0 +1,43 @@
+<app-page-panel header="Usage Dashboard">
+
+    <!-- Charts — 2 per row -->
+    <div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+        <div nz-col [nzXs]="24" [nzMd]="12">
+            <common-apx-chart #transactionsByUserChart [loading]="loading"
+                [chartOptions]="transactionsByUserChartOptions" size="lg">
+            </common-apx-chart>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+            <common-apx-chart #transactionsByRoleChart [loading]="loading"
+                [chartOptions]="transactionsByRoleChartOptions" size="lg">
+            </common-apx-chart>
+        </div>
+    </div>
+
+    <!-- Most Used Transactions — full width -->
+    <div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+        <div nz-col [nzXs]="24">
+            <common-apx-chart #topTransactionsChart [loading]="loading"
+                [chartOptions]="topTransactionsChartOptions" size="lg">
+            </common-apx-chart>
+        </div>
+    </div>
+
+    <!-- Changes Table -->
+    <nz-card class="mt-4">
+        <app-advanced-table
+            title="Changes Made by Privileged Users"
+            [data]="tableData"
+            [columns]="tableColumns"
+            [totalRecords]="totalRecord"
+            [loading]="loading"
+            [showPagination]="true"
+            [serverSide]="true"
+            [showSearch]="true"
+            size="middle"
+            scrollY="40vh"
+            (queryParamsChange)="loadTableData($event)"
+        ></app-advanced-table>
+    </nz-card>
+
+</app-page-panel>

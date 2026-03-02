@@ -1,0 +1,111 @@
+<nz-layout class="id-hub">
+  <nz-sider [nzWidth]="224" style="background: #fff; border-right: 1px solid #f0f0f0;">
+    <div class="id-hub__sidebar-header">
+      <span nz-typography><strong>Identity Hub</strong></span>
+      <br>
+      <span nz-typography nzType="secondary">Manage identities &amp; accounts</span>
+    </div>
+
+    <ul nz-menu nzMode="inline" nzTheme="light" [nzSelectable]="false" class="id-hub__menu">
+      <li nz-menu-group nzTitle="Identities">
+        <ul>
+          <li nz-menu-item [nzSelected]="currentView === 'all'" (click)="setViewMode('all')">
+            <span nz-icon nzType="team" nzTheme="outline"></span>
+            All Identities
+            <nz-badge class="id-hub__nav-count" [nzCount]="stats.totalIdentities" [nzOverflowCount]="9999"
+              [nzShowZero]="true" [nzStyle]="badgeStyle"></nz-badge>
+          </li>
+          <li nz-menu-item [nzSelected]="currentView === 'fullyLinked'" (click)="setViewMode('fullyLinked')">
+            <span nz-icon nzType="check-circle" nzTheme="outline" class="id-hub__icon-green"></span>
+            Fully Linked
+            <nz-badge class="id-hub__nav-count" [nzCount]="stats.fullyLinked" [nzOverflowCount]="9999"
+              [nzShowZero]="true" [nzStyle]="badgeStyle"></nz-badge>
+          </li>
+          <li nz-menu-item [nzSelected]="currentView === 'partiallyLinked'" (click)="setViewMode('partiallyLinked')">
+            <span nz-icon nzType="minus-circle" nzTheme="outline" class="id-hub__icon-orange"></span>
+            Partially Linked
+            <nz-badge class="id-hub__nav-count" [nzCount]="stats.partiallyLinked" [nzOverflowCount]="9999"
+              [nzShowZero]="true" [nzStyle]="badgeStyle"></nz-badge>
+          </li>
+          <li nz-menu-item [nzSelected]="currentView === 'unlinked'" (click)="setViewMode('unlinked')">
+            <span nz-icon nzType="close-circle" nzTheme="outline" class="id-hub__icon-red"></span>
+            Unlinked
+            <nz-badge class="id-hub__nav-count" [nzCount]="stats.unlinked" [nzOverflowCount]="9999"
+              [nzShowZero]="true" [nzStyle]="badgeStyle"></nz-badge>
+          </li>
+        </ul>
+      </li>
+
+      <li nz-menu-group nzTitle="Accounts">
+        <ul>
+          <li nz-menu-item [nzSelected]="currentView === 'orphaned'" (click)="setViewMode('orphaned')">
+            <span nz-icon nzType="user-delete" nzTheme="outline" class="id-hub__icon-purple"></span>
+            Orphaned
+            <nz-badge class="id-hub__nav-count" [nzCount]="stats.orphanedAccounts" [nzOverflowCount]="9999"
+              [nzShowZero]="true" [nzStyle]="stats.orphanedAccounts > 0 ? warningBadgeStyle : badgeStyle"></nz-badge>
+          </li>
+        </ul>
+      </li>
+
+      <li nz-menu-group nzTitle="Exceptions">
+        <ul>
+          <li nz-menu-item [nzSelected]="currentView === 'exceptions'" (click)="setViewMode('exceptions')">
+            <span nz-icon nzType="warning" nzTheme="outline" class="id-hub__icon-orange"></span>
+            Exceptions
+            <nz-badge class="id-hub__nav-count" [nzCount]="exceptionStats.totalUnresolved" [nzOverflowCount]="9999"
+              [nzShowZero]="true" [nzStyle]="exceptionStats.totalUnresolved > 0 ? warningBadgeStyle : badgeStyle"></nz-badge>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </nz-sider>
+
+  <nz-content class="id-hub__content">
+    <ng-container *ngIf="currentView !== 'orphaned' && currentView !== 'exceptions'">
+      <app-advanced-table
+        [title]="getPageTitle()"
+        [columns]="identityColumns"
+        [data]="identityData"
+        [loading]="loading"
+        [total]="identityTotal"
+        [serverSide]="true"
+        [actions]="identityActions"
+        [showSearch]="true"
+        (queryParamsChange)="onIdentityQueryChange($event)"
+        (refresh)="refreshData()"
+        (rowClick)="onRowClick($event)"
+        (rowDoubleClick)="onRowDoubleClick($event)">
+      </app-advanced-table>
+    </ng-container>
+
+    <ng-container *ngIf="currentView === 'orphaned'">
+      <app-advanced-table
+        title="Orphaned Accounts"
+        [columns]="orphanedColumns"
+        [data]="orphanedData"
+        [loading]="loading"
+        [total]="orphanedTotal"
+        [serverSide]="true"
+        [showSearch]="true"
+        (queryParamsChange)="onOrphanedQueryChange($event)"
+        (refresh)="refreshData()">
+      </app-advanced-table>
+    </ng-container>
+
+    <ng-container *ngIf="currentView === 'exceptions'">
+      <app-advanced-table
+        title="Identity Exceptions"
+        [columns]="exceptionColumns"
+        [data]="exceptionData"
+        [loading]="loading"
+        [total]="exceptionTotal"
+        [serverSide]="true"
+        [actions]="exceptionActions"
+        [showSearch]="true"
+        (queryParamsChange)="onExceptionQueryChange($event)"
+        (refresh)="refreshData()"
+        (rowClick)="onRowClick($event)">
+      </app-advanced-table>
+    </ng-container>
+  </nz-content>
+</nz-layout>

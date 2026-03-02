@@ -1,0 +1,19 @@
+<nz-spin [nzSpinning]="loading">
+  <nz-transfer
+    [nzDataSource]="transferList"
+    nzShowSearch
+    [nzTitles]="['Available', 'Selected']"
+    [nzListStyle]="{ height: '320px' }"
+    [nzRender]="renderItem"
+    (nzChange)="$event"
+  ></nz-transfer>
+
+  <ng-template #renderItem let-item>
+    {{ item.title }}
+  </ng-template>
+</nz-spin>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+  <button nz-button nzType="primary" (click)="saveUserRoles()">Save</button>
+</div>

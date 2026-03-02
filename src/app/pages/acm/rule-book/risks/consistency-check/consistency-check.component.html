@@ -1,0 +1,22 @@
+<nz-spin [nzSpinning]="loading">
+  <div style="padding: 16px;">
+    <nz-table #table [nzData]="data" nzSize="small" [nzShowPagination]="data.length > 20"
+      [nzPageSize]="20" nzTableLayout="fixed" [nzFrontPagination]="true"
+      [nzScroll]="{ y: '500px' }">
+      <thead>
+        <tr>
+          <th *ngFor="let col of columns" [nzWidth]="col.width || null">{{col.header}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of table.data">
+          <td *ngFor="let col of columns">{{row[col.field]}}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+
+    <nz-empty *ngIf="!loading && !data.length"
+      nzNotFoundContent="No inconsistencies found" [nzNotFoundImage]="'simple'">
+    </nz-empty>
+  </div>
+</nz-spin>

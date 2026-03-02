@@ -1,0 +1,14 @@
+<app-advanced-table
+  title="Sync Job History"
+  [data]="data"
+  [columns]="columns"
+  [actions]="tableActions"
+  [loading]="loading"
+  [serverSide]="true"
+  [total]="total"
+  [showPagination]="true"
+  size="middle"
+  (queryParamsChange)="onQueryChange($event)"
+  (rowClick)="onRowClick($event)"
+  (refresh)="loadJobs()">
+</app-advanced-table>

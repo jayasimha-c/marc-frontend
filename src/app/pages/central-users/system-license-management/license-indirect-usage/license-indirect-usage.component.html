@@ -1,0 +1,116 @@
+<app-page-panel header="License Indirect Usage">
+    <!-- Usage Table -->
+    <nz-card nzSize="small" style="margin-bottom: 16px;">
+        <div nz-row nzJustify="end" style="margin-bottom: 12px;">
+            <nz-space>
+                <button *nzSpaceItem nz-button nzType="primary" (click)="addUsage()">
+                    <span nz-icon nzType="plus-circle"></span> Add
+                </button>
+                <button *nzSpaceItem nz-button (click)="editUsage()">
+                    <span nz-icon nzType="edit"></span> Edit
+                </button>
+                <button *nzSpaceItem nz-button nzDanger (click)="deleteUsage()">
+                    <span nz-icon nzType="delete"></span> Delete
+                </button>
+            </nz-space>
+        </div>
+
+        <nz-table #usageTable [nzData]="usageData" nzSize="small" [nzFrontPagination]="false"
+            [nzShowPagination]="false" [nzLoading]="loading" nzBordered
+            [nzScroll]="{ y: '300px' }">
+            <thead>
+                <tr>
+                    <th>Application</th>
+                    <th>App User ID</th>
+                    <th>System</th>
+                    <th>No of Users</th>
+                    <th>License Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let row of usageTable.data" (click)="onUsageRowClick(row)"
+                    [style.background]="selectedUsage === row ? '#e6f7ff' : ''"
+                    style="cursor: pointer;">
+                    <td>{{ row.application }}</td>
+                    <td>{{ row.userId }}</td>
+                    <td>{{ row.system }}</td>
+                    <td>{{ row.users }}</td>
+                    <td>{{ row.licenseDesc }}</td>
+                </tr>
+            </tbody>
+        </nz-table>
+    </nz-card>
+
+    <!-- Users Table -->
+    <nz-card nzTitle="Indirect Usage Users" [nzExtra]="usersSubtitle" nzSize="small">
+        <ng-template #usersSubtitle>
+            <span nz-typography nzType="secondary" *ngIf="!selectedUsage">
+                Please select a row from the above table to view details here.
+            </span>
+        </ng-template>
+
+        <div nz-row nzJustify="end" style="margin-bottom: 12px;">
+            <nz-space>
+                <button *nzSpaceItem nz-button nzType="primary" (click)="saveUsers()" [disabled]="!editMode">
+                    <span nz-icon nzType="save"></span> Save
+                </button>
+                <button *nzSpaceItem nz-button (click)="toggleEditUsers()">
+                    <span nz-icon nzType="edit"></span> Edit
+                </button>
+                <button *nzSpaceItem nz-button (click)="cancelEditUsers()">
+                    <span nz-icon nzType="close-circle"></span> Cancel
+                </button>
+                <button *nzSpaceItem nz-button (click)="addUserRow()">
+                    <span nz-icon nzType="plus-circle"></span> Add Row
+                </button>
+            </nz-space>
+        </div>
+
+        <nz-table #usersTable [nzData]="usersData" nzSize="small" [nzFrontPagination]="false"
+            [nzShowPagination]="false" nzBordered [nzScroll]="{ y: '300px' }">
+            <thead>
+                <tr>
+                    <th>Application ID</th>
+                    <th>SAP ID</th>
+                    <th>Name</th>
+                    <th>E-Mail</th>
+                    <th>User Group</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let row of usersTable.data">
+                    <td>
+                        <ng-container *ngIf="editMode; else appIdView">
+                            <input nz-input [(ngModel)]="row.applicationId" />
+                        </ng-container>
+                        <ng-template #appIdView>{{ row.applicationId }}</ng-template>
+                    </td>
+                    <td>
+                        <ng-container *ngIf="editMode; else bnameView">
+                            <input nz-input [(ngModel)]="row.bname" />
+                        </ng-container>
+                        <ng-template #bnameView>{{ row.bname }}</ng-template>
+                    </td>
+                    <td>
+                        <ng-container *ngIf="editMode; else nameView">
+                            <input nz-input [(ngModel)]="row.userName" />
+                        </ng-container>
+                        <ng-template #nameView>{{ row.userName }}</ng-template>
+                    </td>
+                    <td>
+                        <ng-container *ngIf="editMode; else emailView">
+                            <input nz-input [(ngModel)]="row.email" />
+                        </ng-container>
+                        <ng-template #emailView>{{ row.email }}</ng-template>
+                    </td>
+                    <td>
+                        <ng-container *ngIf="editMode; else groupView">
+                            <input nz-input [(ngModel)]="row.userGroup" />
+                        </ng-container>
+                        <ng-template #groupView>{{ row.userGroup }}</ng-template>
+                    </td>
+                </tr>
+            </tbody>
+        </nz-table>
+    </nz-card>
+</app-page-panel>

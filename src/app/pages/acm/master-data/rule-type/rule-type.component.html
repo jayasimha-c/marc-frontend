@@ -1,0 +1,14 @@
+<app-advanced-table
+  title="Rule Types"
+  [data]="data"
+  [columns]="columns"
+  [actions]="tableActions"
+  [loading]="loading"
+  [showSelection]="true"
+  [showSearch]="true"
+  size="middle"
+  rowKey="id"
+  [defaultPageSize]="10"
+  (refresh)="loadData()"
+  (selectionChange)="onSelectionChange($event)"
+></app-advanced-table>

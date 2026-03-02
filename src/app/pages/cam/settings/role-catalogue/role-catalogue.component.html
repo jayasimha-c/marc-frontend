@@ -1,0 +1,195 @@
+<div class="rc">
+  <!-- Dashboard Metrics -->
+  <nz-card nzSize="small" nzBorderless class="rc__dashboard">
+    <div class="rc__dashboard-top">
+      <div class="rc__dashboard-total">
+        <span nz-icon nzType="book" nzTheme="outline" class="rc__dashboard-total-icon"></span>
+        <div class="rc__dashboard-total-content">
+          <span class="rc__dashboard-total-value">{{ metrics.totalRoles }}</span>
+          <span class="rc__dashboard-total-label">Total Roles</span>
+          <div class="rc__dashboard-total-tags" *ngIf="systemTags.length">
+            <span *ngFor="let tag of systemTags" class="rc__dashboard-total-tag"
+              [nz-tooltip]="tag.label + ': ' + tag.value + ' roles'">
+              <span nz-icon nzType="database" nzTheme="outline"></span>
+              {{ tag.label }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="rc__dashboard-stats">
+        <div class="rc__dashboard-stat">
+          <span class="rc__dashboard-stat-value">{{ metrics.jobProfiles }}</span>
+          <span class="rc__dashboard-stat-label">Job Profiles</span>
+        </div>
+        <div class="rc__dashboard-stat">
+          <span class="rc__dashboard-stat-value">{{ metrics.systems }}</span>
+          <span class="rc__dashboard-stat-label">Systems</span>
+        </div>
+        <div class="rc__dashboard-stat">
+          <span class="rc__dashboard-stat-value rc__dashboard-stat-value--warn" *ngIf="metrics.violations > 0">{{ metrics.violations }}</span>
+          <span class="rc__dashboard-stat-value" *ngIf="metrics.violations === 0">0</span>
+          <span class="rc__dashboard-stat-label">Violations</span>
+        </div>
+        <div class="rc__dashboard-stat">
+          <span class="rc__dashboard-stat-value">{{ metrics.riskCompletePct }}%</span>
+          <span class="rc__dashboard-stat-label">Risk Complete</span>
+        </div>
+      </div>
+
+      <nz-divider nzType="vertical" class="rc__dashboard-divider" *ngIf="distributions.length"></nz-divider>
+
+      <!-- Distribution Charts -->
+      <div class="rc__dashboard-distributions" *ngIf="distributions.length">
+        <div class="rc__dist" *ngFor="let chart of distributions">
+          <div class="rc__dist-title">
+            <span nz-icon [nzType]="chart.icon" nzTheme="outline"></span>
+            {{ chart.title }}
+          </div>
+          <div class="rc__dist-bar">
+            <div *ngFor="let item of chart.data"
+              class="rc__dist-segment"
+              [style.width.%]="item.percentage"
+              [style.background-color]="item.color"
+              [nz-tooltip]="item.label + ': ' + item.value + ' (' + item.percentage + '%)'">
+            </div>
+          </div>
+          <div class="rc__dist-legend">
+            <span *ngFor="let item of chart.data" class="rc__dist-legend-item"
+              [nz-tooltip]="item.label + ': ' + item.value">
+              <span class="rc__dist-dot" [style.background-color]="item.color"></span>
+              {{ item.label }} <strong>{{ item.value }}</strong>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Main Table Card -->
+  <nz-card nzSize="small" class="rc__table-card">
+    <app-inline-table
+      #inlineTable
+      title="Role Catalogue"
+      [data]="data"
+      [columns]="inlineColumns"
+      [actions]="tableActions"
+      [loading]="loading"
+      [editMode]="'toggle'"
+      [showSearch]="true"
+      [showSelection]="true"
+      [serverSide]="true"
+      [totalRecords]="totalRecords"
+      scrollX="1400px"
+      scrollY="450px"
+      size="small"
+      rowKey="id"
+      [maxVisibleActions]="3"
+      (save)="onInlineSave($event)"
+      (searchChange)="onSearchChange($event)"
+      (queryParamsChange)="onQueryChange($event)"
+      (selectionChange)="onSelectionChange($event)"
+      (rowClick)="onRowClick($event)">
+    </app-inline-table>
+  </nz-card>
+
+  <!-- Secondary Tables -->
+  <nz-card nzSize="small" class="rc__details-card" *ngIf="selectedRow">
+    <nz-tabset>
+      <!-- Roles Tab -->
+      <nz-tab nzTitle="Roles">
+        <nz-spin [nzSpinning]="rolesLoading">
+          <nz-table #rolesTable [nzData]="rolesData" nzSize="small" [nzShowPagination]="false"
+            [nzFrontPagination]="false" [nzScroll]="{ y: '250px' }">
+            <thead>
+              <tr>
+                <th>Role Name</th>
+                <th>Role Description</th>
+                <th nzWidth="100px">Active Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of rolesTable.data">
+                <td>{{ row.rolename }}</td>
+                <td>{{ row.description }}</td>
+                <td>{{ row.activeRole }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+          <nz-empty *ngIf="!rolesLoading && !rolesData.length"
+            nzNotFoundContent="No roles found" [nzNotFoundImage]="'simple'"></nz-empty>
+        </nz-spin>
+      </nz-tab>
+
+      <!-- Risks Tab -->
+      <nz-tab nzTitle="Risks">
+        <nz-spin [nzSpinning]="risksLoading">
+          <nz-table #risksTable [nzData]="risksData" nzSize="small" [nzShowPagination]="false"
+            [nzFrontPagination]="false" [nzScroll]="{ y: '250px' }">
+            <thead>
+              <tr>
+                <th>Risk Name</th>
+                <th>Risk Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of risksTable.data">
+                <td>{{ row.name }}</td>
+                <td>{{ row.description }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+          <nz-empty *ngIf="!risksLoading && !risksData.length"
+            nzNotFoundContent="No risks found" [nzNotFoundImage]="'simple'"></nz-empty>
+        </nz-spin>
+      </nz-tab>
+
+      <!-- Role Owners Tab -->
+      <nz-tab nzTitle="Role Owners">
+        <div style="margin-bottom: 8px; display: flex; gap: 8px;">
+          <button nz-button nzSize="small" (click)="addOwnerRow()">
+            <span nz-icon nzType="plus" nzTheme="outline"></span> Add Row
+          </button>
+          <button nz-button nzSize="small" nzType="primary" [disabled]="!ownersDirty" (click)="saveOwners()">
+            <span nz-icon nzType="save" nzTheme="outline"></span> Save
+          </button>
+          <nz-tag *ngIf="ownersDirty" nzColor="orange">Unsaved</nz-tag>
+        </div>
+        <nz-spin [nzSpinning]="ownersLoading">
+          <nz-table #ownersTable [nzData]="ownersData" nzSize="small" [nzShowPagination]="false"
+            [nzFrontPagination]="false" [nzScroll]="{ y: '250px' }">
+            <thead>
+              <tr>
+                <th nzWidth="40px" nzAlign="center">#</th>
+                <th>User Id</th>
+                <th>User Name</th>
+                <th nzWidth="60px" nzAlign="center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of ownersTable.data; let i = index">
+                <td nzAlign="center">{{ i + 1 }}</td>
+                <td>
+                  <nz-select nzSize="small" [(ngModel)]="row.userId" style="width: 100%;"
+                    nzShowSearch nzAllowClear (ngModelChange)="onOwnerUserIdChange(row)">
+                    <nz-option *ngFor="let uid of getAvailableUserIds(row.userId)"
+                      [nzValue]="uid" [nzLabel]="uid"></nz-option>
+                  </nz-select>
+                </td>
+                <td>{{ row.userName }}</td>
+                <td nzAlign="center">
+                  <button nz-button nzType="text" nzSize="small" nzDanger (click)="deleteOwnerRow(i)" nz-tooltip="Delete">
+                    <span nz-icon nzType="delete" nzTheme="outline"></span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </nz-table>
+          <nz-empty *ngIf="!ownersLoading && !ownersData.length"
+            nzNotFoundContent="No owners — click Add Row" [nzNotFoundImage]="'simple'"></nz-empty>
+        </nz-spin>
+      </nz-tab>
+    </nz-tabset>
+  </nz-card>
+</div>

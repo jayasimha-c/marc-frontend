@@ -1,0 +1,55 @@
+<div style="margin-bottom: 12px;">
+    <span nz-typography nzType="secondary">
+        Job #{{ data.job.id }} &mdash; {{ data.job.status }}
+        <span *ngIf="data.job.currentStage"> &mdash; Stage: {{ data.job.currentStage }}</span>
+    </span>
+</div>
+
+<div style="max-height: 60vh; overflow: auto;">
+    <nz-spin *ngIf="loading" nzSimple style="display: block; text-align: center; padding: 48px 0;"></nz-spin>
+
+    <nz-result *ngIf="error && !loading" nzStatus="error" [nzTitle]="error">
+        <div nz-result-extra>
+            <button nz-button nzType="default" (click)="loadLogs()">Retry</button>
+        </div>
+    </nz-result>
+
+    <nz-empty *ngIf="!loading && !error && logs.length === 0"
+        nzNotFoundContent="No log entries for this job."></nz-empty>
+
+    <nz-list *ngIf="!loading && !error && logs.length > 0" nzSize="small" nzBordered>
+        <nz-list-item *ngFor="let log of logs">
+            <div style="width: 100%;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <nz-tag [nzColor]="getStageColor(log.stage)">{{ log.stage }}</nz-tag>
+                    <span *ngIf="log.systemName" nz-typography nzType="secondary"
+                        style="font-size: 12px;">{{ log.systemName }}</span>
+                    <span nz-typography nzType="secondary"
+                        style="font-size: 11px; margin-left: auto;">{{ log.createdOn }}</span>
+                </div>
+                <div style="font-size: 13px; white-space: pre-wrap; word-break: break-word;">
+                    {{ log.message }}
+                </div>
+                <div *ngIf="log.batchNumber > 0"
+                    style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                    <nz-progress
+                        [nzPercent]="getProgressPercent(log)"
+                        [nzShowInfo]="false"
+                        nzSize="small"
+                        style="flex: 1; max-width: 200px;">
+                    </nz-progress>
+                    <span nz-typography nzType="secondary" style="font-size: 11px;">
+                        {{ log.processedCount }}/{{ log.totalCount }}
+                    </span>
+                </div>
+            </div>
+        </nz-list-item>
+    </nz-list>
+</div>
+
+<div class="modal-footer">
+    <button nz-button nzType="default" (click)="loadLogs()">
+        <span nz-icon nzType="reload"></span> Refresh
+    </button>
+    <button nz-button nzType="default" (click)="modal.close()">Close</button>
+</div>

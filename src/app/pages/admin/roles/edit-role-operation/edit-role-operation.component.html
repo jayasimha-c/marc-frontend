@@ -1,0 +1,47 @@
+<ng-container *ngIf="form$ | async; else loadingTpl">
+  <form [formGroup]="form">
+    <nz-form-item>
+      <nz-form-control>
+        <div class="nz-float-label has-value">
+          <input nz-input placeholder=" " formControlName="roleName" />
+          <label>Role Name</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; margin-bottom: 8px; font-weight: 500;">Select Operations</label>
+      <nz-transfer
+        [nzDataSource]="transferList"
+        [nzShowSearch]="true"
+        [nzTitles]="['Available', 'Selected']"
+        [nzListStyle]="{ height: '320px' }"
+        [nzRenderList]="[renderItem, renderItem]">
+      </nz-transfer>
+      <ng-template #renderItem let-items>
+        <nz-list [nzDataSource]="items" [nzNoResult]="'No data'" [nzRenderItem]="listItem">
+          <ng-template #listItem let-item>
+            <nz-list-item [nzContent]="item.title">
+              <ul nz-list-item-actions>
+                <nz-list-item-action>
+                  <label nz-checkbox [ngModel]="item.checked" (ngModelChange)="item.checked = $event"
+                    [disabled]="item.disabled"></label>
+                </nz-list-item-action>
+              </ul>
+            </nz-list-item>
+          </ng-template>
+        </nz-list>
+      </ng-template>
+    </div>
+  </form>
+</ng-container>
+<ng-template #loadingTpl>
+  <div style="text-align: center; padding: 24px;">
+    <nz-spin nzSimple></nz-spin>
+  </div>
+</ng-template>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+  <button nz-button nzType="primary" [nzLoading]="loading" (click)="save()">Save</button>
+</div>

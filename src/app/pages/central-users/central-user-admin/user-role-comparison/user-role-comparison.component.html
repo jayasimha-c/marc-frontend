@@ -1,0 +1,102 @@
+<!-- Data Source Toggle -->
+<div nz-row nzJustify="space-between" nzAlign="middle"
+     style="margin-bottom: 16px; padding: 12px; background: #fafafa; border-radius: 4px;">
+    <div nz-col>
+        <nz-space nzAlign="center">
+            <span *nzSpaceItem nz-icon nzType="database" nzTheme="outline"></span>
+            <span *nzSpaceItem nz-typography nzType="secondary">Data Source:</span>
+        </nz-space>
+    </div>
+    <div nz-col>
+        <nz-radio-group [(ngModel)]="dataSource" (ngModelChange)="onDataSourceChange()"
+            [nzDisabled]="loading" nzButtonStyle="solid" nzSize="small">
+            <label nz-radio-button nzValue="local">
+                <span nz-icon nzType="folder" nzTheme="outline"></span> Local
+            </label>
+            <label nz-radio-button nzValue="realtime">
+                <span nz-icon nzType="cloud-sync" nzTheme="outline"></span> Real-Time
+            </label>
+        </nz-radio-group>
+    </div>
+    <div nz-col>
+        <small nz-typography nzType="secondary">
+            <ng-container *ngIf="dataSource === 'local'">Using cached data from database</ng-container>
+            <ng-container *ngIf="dataSource === 'realtime'">Fetching live data from SAP</ng-container>
+        </small>
+    </div>
+</div>
+
+<!-- Loading -->
+<div *ngIf="loading" style="display: flex; align-items: center; justify-content: center; padding: 32px;">
+    <nz-spin nzSimple></nz-spin>
+    <span *ngIf="dataSource === 'realtime'" nz-typography nzType="secondary" style="margin-left: 12px;">
+        Connecting to SAP systems...
+    </span>
+</div>
+
+<ng-container *ngIf="!loading">
+    <!-- Filters -->
+    <div nz-row [nzGutter]="12" nzAlign="middle" style="margin-bottom: 12px;">
+        <div nz-col nzFlex="180px">
+            <nz-select [(ngModel)]="selectedSystem" nzPlaceHolder="All Systems" nzShowSearch nzAllowClear
+                (ngModelChange)="onFilterChange()" style="width: 100%;">
+                <nz-option *ngFor="let sys of systems" [nzValue]="sys" [nzLabel]="sys"></nz-option>
+            </nz-select>
+        </div>
+        <div nz-col nzFlex="auto">
+            <nz-input-group [nzPrefix]="searchIcon" [nzSuffix]="clearSuffix">
+                <ng-template #searchIcon>
+                    <span nz-icon nzType="search"></span>
+                </ng-template>
+                <input nz-input placeholder="Search roles..." [(ngModel)]="searchTerm"
+                    (ngModelChange)="onSearchChange()">
+            </nz-input-group>
+            <ng-template #clearSuffix>
+                <span *ngIf="searchTerm" nz-icon nzType="close-circle" nzTheme="fill"
+                    style="cursor: pointer;" (click)="clearSearch()"></span>
+            </ng-template>
+        </div>
+        <div nz-col>
+            <label nz-checkbox [(ngModel)]="showDifferencesOnly" (ngModelChange)="onFilterChange()">
+                Differences only
+            </label>
+        </div>
+        <div nz-col>
+            <span nz-typography nzType="secondary">{{ filteredData.length }} roles</span>
+        </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <nz-table #compareTable [nzData]="filteredData" [nzFrontPagination]="true"
+        [nzPageSize]="50" nzSize="small" [nzScroll]="{ x: (300 + userFields.length * 120) + 'px', y: '400px' }">
+        <thead>
+            <tr>
+                <th nzWidth="120px" nzLeft>System</th>
+                <th nzWidth="250px" nzLeft>Role Name</th>
+                <th *ngFor="let user of userFields" nzWidth="120px" style="text-align: center;">{{ user }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of compareTable.data">
+                <td nzLeft><nz-tag>{{ row.system }}</nz-tag></td>
+                <td nzLeft>{{ row.roleName }}</td>
+                <td *ngFor="let field of userFields" style="text-align: center;">
+                    <nz-tag [nzColor]="isAssigned(row[field]) ? 'green' : 'red'">
+                        {{ isAssigned(row[field]) ? 'Y' : 'N' }}
+                    </nz-tag>
+                </td>
+            </tr>
+        </tbody>
+    </nz-table>
+
+    <nz-empty *ngIf="filteredData.length === 0" nzNotFoundContent="No roles to display"></nz-empty>
+</ng-container>
+
+<!-- Footer -->
+<div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+    <button nz-button nzType="default" (click)="copyDifferencesToClipboard()">
+        <span nz-icon nzType="copy" nzTheme="outline"></span>
+        Copy Differences
+    </button>
+    <button nz-button nzType="default" (click)="modal.close()">Close</button>
+</div>

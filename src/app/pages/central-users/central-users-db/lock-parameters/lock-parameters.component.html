@@ -1,0 +1,64 @@
+<app-page-panel header="Lock Parameters">
+    <div nz-row nzJustify="end" style="margin-bottom: 12px;">
+        <nz-space>
+            <button *nzSpaceItem nz-button nzType="primary" (click)="save()" [disabled]="!editMode">
+                <span nz-icon nzType="save"></span> Save
+            </button>
+            <button *nzSpaceItem nz-button (click)="toggleEdit()">
+                <span nz-icon nzType="edit"></span> {{ editMode ? 'Stop Editing' : 'Edit' }}
+            </button>
+            <button *nzSpaceItem nz-button (click)="cancel()" [disabled]="!editMode">
+                <span nz-icon nzType="close-circle"></span> Cancel
+            </button>
+            <button *nzSpaceItem nz-button (click)="addRow()">
+                <span nz-icon nzType="plus-circle"></span> Add Row
+            </button>
+            <button *nzSpaceItem nz-button (click)="initializeDefaults()">
+                <span nz-icon nzType="reload"></span> Initialize Defaults
+            </button>
+        </nz-space>
+    </div>
+
+    <nz-table #paramTable [nzData]="data" nzSize="small" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <thead>
+            <tr>
+                <th>Select Parameter</th>
+                <th>Value</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of paramTable.data; let i = index">
+                <td>
+                    <ng-container *ngIf="editMode; else descView">
+                        <nz-select [(ngModel)]="row.description" style="width: 100%;" nzShowSearch nzAllowClear
+                            nzPlaceHolder="Select...">
+                            <nz-option *ngFor="let opt of paramDescriptions" [nzValue]="opt"
+                                [nzLabel]="opt"></nz-option>
+                        </nz-select>
+                    </ng-container>
+                    <ng-template #descView>{{ row.description }}</ng-template>
+                </td>
+                <td>
+                    <ng-container *ngIf="editMode; else valView">
+                        <nz-select *ngIf="isBooleanParam(row.description); else textVal" [(ngModel)]="row.value"
+                            style="width: 100%;">
+                            <nz-option nzValue="YES" nzLabel="YES"></nz-option>
+                            <nz-option nzValue="NO" nzLabel="NO"></nz-option>
+                        </nz-select>
+                        <ng-template #textVal>
+                            <input nz-input [(ngModel)]="row.value" />
+                        </ng-template>
+                    </ng-container>
+                    <ng-template #valView>{{ row.value }}</ng-template>
+                </td>
+                <td>
+                    <ng-container *ngIf="editMode; else paramDescView">
+                        <input nz-input [(ngModel)]="row.paramDescription" />
+                    </ng-container>
+                    <ng-template #paramDescView>{{ row.paramDescription }}</ng-template>
+                </td>
+            </tr>
+        </tbody>
+    </nz-table>
+</app-page-panel>

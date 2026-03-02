@@ -1,0 +1,68 @@
+<nz-spin [nzSpinning]="loading">
+  <div nz-row [nzGutter]="16">
+    <!-- LEFT: Available ICM Controls -->
+    <div nz-col [nzSpan]="12">
+      <nz-card nzSize="small" nzTitle="Available ICM Controls" style="min-height: 400px;">
+        <nz-table #availTable [nzData]="availableControls" nzSize="small"
+          [nzShowPagination]="availableControls.length > 15" [nzPageSize]="15"
+          nzTableLayout="fixed" [nzFrontPagination]="true" [nzScroll]="{ y: '300px' }">
+          <thead>
+            <tr>
+              <th nzWidth="40px" [nzChecked]="availableCheckAll" [nzIndeterminate]="availableIndeterminate"
+                (nzCheckedChange)="onAvailableAllChecked($event)"></th>
+              <th>Name</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of availTable.data">
+              <td [nzChecked]="checkedAvailable.has(row.id)"
+                (nzCheckedChange)="onAvailableItemChecked(row.id, $event)"></td>
+              <td>{{ row.name }}</td>
+              <td>{{ row.description }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+        <button nz-button nzType="primary" nzSize="small" style="margin-top: 8px;"
+          [disabled]="checkedAvailable.size === 0" (click)="addSelected()">
+          <span nz-icon nzType="double-right" nzTheme="outline"></span> Add Selected ({{ checkedAvailable.size }})
+        </button>
+      </nz-card>
+    </div>
+
+    <!-- RIGHT: Selected ICM Controls -->
+    <div nz-col [nzSpan]="12">
+      <nz-card nzSize="small" nzTitle="Selected ICM Controls" style="min-height: 400px;">
+        <nz-table #selTable [nzData]="selectedControls" nzSize="small"
+          [nzShowPagination]="selectedControls.length > 15" [nzPageSize]="15"
+          nzTableLayout="fixed" [nzFrontPagination]="true" [nzScroll]="{ y: '300px' }">
+          <thead>
+            <tr>
+              <th nzWidth="40px" [nzChecked]="selectedCheckAll" [nzIndeterminate]="selectedIndeterminate"
+                (nzCheckedChange)="onSelectedAllChecked($event)"></th>
+              <th>Name</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of selTable.data">
+              <td [nzChecked]="checkedSelected.has(row.id)"
+                (nzCheckedChange)="onSelectedItemChecked(row.id, $event)"></td>
+              <td>{{ row.name }}</td>
+              <td>{{ row.description }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+        <button nz-button nzDanger nzSize="small" style="margin-top: 8px;"
+          [disabled]="checkedSelected.size === 0" (click)="removeSelected()">
+          <span nz-icon nzType="double-left" nzTheme="outline"></span> Remove Selected ({{ checkedSelected.size }})
+        </button>
+      </nz-card>
+    </div>
+  </div>
+</nz-spin>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modalRef.close()">Close</button>
+  <button nz-button nzType="primary" (click)="save()">Save</button>
+</div>

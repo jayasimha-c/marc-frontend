@@ -1,0 +1,62 @@
+<form nz-form nzLayout="vertical" [formGroup]="form">
+  <nz-form-item *ngIf="isAdmin">
+    <nz-form-label nzRequired>Delegator</nz-form-label>
+    <nz-form-control nzErrorTip="Please select a delegator">
+      <nz-select formControlName="delegator" nzPlaceHolder="Select Delegator" nzShowSearch>
+        <nz-option *ngFor="let item of userList" [nzValue]="item[0]" [nzLabel]="item[1]"></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-label nzRequired>Assign To</nz-form-label>
+    <nz-form-control nzErrorTip="Please select an assignee">
+      <nz-select formControlName="assignTo" nzPlaceHolder="Select Assignee" nzShowSearch>
+        <nz-option *ngFor="let item of userList" [nzValue]="item[0]" [nzLabel]="item[1]"></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div nz-row [nzGutter]="16">
+    <div nz-col [nzSpan]="12">
+      <nz-form-item>
+        <nz-form-label nzRequired>Valid From</nz-form-label>
+        <nz-form-control nzErrorTip="Please select valid from date">
+          <nz-date-picker formControlName="validFrom" nzShowTime nzFormat="dd/MM/yyyy HH:mm:ss"
+            style="width: 100%"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+    <div nz-col [nzSpan]="12">
+      <nz-form-item>
+        <nz-form-label nzRequired>Valid To</nz-form-label>
+        <nz-form-control nzErrorTip="Please select valid to date">
+          <nz-date-picker formControlName="validTo" nzShowTime nzFormat="dd/MM/yyyy HH:mm:ss"
+            style="width: 100%"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+  </div>
+
+  <nz-divider nzText="Permissions" nzOrientation="left" style="margin: 8px 0 16px;"></nz-divider>
+
+  <div nz-row [nzGutter]="[16, 8]">
+    <div nz-col [nzSpan]="12">
+      <label nz-checkbox formControlName="isCAMApprover">Is CAM Approver?</label>
+    </div>
+    <div nz-col [nzSpan]="12">
+      <label nz-checkbox formControlName="isPAMApprover">Is PAM Approver?</label>
+    </div>
+    <div nz-col [nzSpan]="12">
+      <label nz-checkbox formControlName="isPAMReviewer">Is PAM Reviewer?</label>
+    </div>
+    <div nz-col [nzSpan]="12">
+      <label nz-checkbox formControlName="isActive">Is Active?</label>
+    </div>
+  </div>
+</form>
+
+<div nz-row nzJustify="end" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+  <button nz-button nzType="default" (click)="modalRef.close()" style="margin-right: 8px;">Close</button>
+  <button nz-button nzType="primary" (click)="save()">Save</button>
+</div>

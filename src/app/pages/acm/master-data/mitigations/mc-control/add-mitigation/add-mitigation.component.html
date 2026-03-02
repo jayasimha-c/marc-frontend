@@ -1,0 +1,77 @@
+<form [formGroup]="form">
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <!-- SAP System -->
+    <nz-form-item>
+      <nz-form-control>
+        <div class="nz-float-label" [class.has-value]="form.get('sapSystem')?.value">
+          <nz-select formControlName="sapSystem" nzPlaceHolder=" ">
+            <nz-option *ngFor="let sys of sapSystemList" [nzValue]="sys.id" [nzLabel]="sys.destinationName"></nz-option>
+          </nz-select>
+          <label>SAP System</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Name -->
+    <nz-form-item>
+      <nz-form-control>
+        <div class="nz-float-label" [class.has-value]="form.get('name')?.value">
+          <input nz-input placeholder=" " formControlName="name" />
+          <label>Name</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Description -->
+    <nz-form-item>
+      <nz-form-control>
+        <div class="nz-float-label" [class.has-value]="form.get('description')?.value">
+          <input nz-input placeholder=" " formControlName="description" />
+          <label>Description</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Risk Name with autocomplete -->
+    <nz-form-item>
+      <nz-form-control>
+        <div class="nz-float-label" [class.has-value]="form.get('risk')?.value">
+          <input nz-input placeholder=" " formControlName="risk" [nzAutocomplete]="riskAuto" />
+          <label>Risk Name</label>
+        </div>
+        <nz-autocomplete #riskAuto>
+          <nz-auto-option *ngFor="let risk of filteredRisks$ | async" [nzValue]="risk" [nzLabel]="risk">
+            {{ risk }}
+          </nz-auto-option>
+        </nz-autocomplete>
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Notification -->
+    <nz-form-item>
+      <nz-form-control>
+        <div class="nz-float-label" [class.has-value]="form.get('notification')?.value">
+          <nz-select formControlName="notification" nzPlaceHolder=" ">
+            <nz-option nzValue="false" nzLabel="No"></nz-option>
+            <nz-option nzValue="true" nzLabel="Yes"></nz-option>
+          </nz-select>
+          <label>Notification</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Attach File -->
+    <div>
+      <button nz-button nzType="default" type="button" (click)="upload.click()">
+        <span nz-icon [nzType]="uploading ? 'loading' : 'upload'" nzTheme="outline"></span>
+        {{ selectedFile ? selectedFile.name : 'Attach File' }}
+      </button>
+      <input #upload type="file" style="display: none;" (change)="onFileSelected($event.target.files)" />
+    </div>
+  </div>
+</form>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modalRef.close()">Close</button>
+  <button nz-button nzType="primary" (click)="save()">Save</button>
+</div>

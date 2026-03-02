@@ -1,0 +1,22 @@
+<div class="stat-card" [class.stat-card--selected]="selected" [class.stat-card--clickable]="clickable">
+  <!-- Title with Icon -->
+  <div class="stat-card__header">
+    <span *ngIf="icon" nz-icon [nzType]="icon" nzTheme="outline" class="stat-card__icon" [style.color]="color"></span>
+    <span class="stat-card__title">{{ title }}</span>
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="loading" class="stat-card__skeleton">
+    <div class="stat-card__skeleton-bar stat-card__skeleton-bar--lg"></div>
+    <div class="stat-card__skeleton-bar stat-card__skeleton-bar--sm"></div>
+  </div>
+
+  <!-- Value & Description -->
+  <div *ngIf="!loading" class="stat-card__body">
+    <div class="stat-card__value" [style.color]="color">{{ value || 0 }}</div>
+    <div *ngIf="description" class="stat-card__desc" [style.color]="color">{{ description }}</div>
+  </div>
+
+  <!-- Optional projected content (charts, etc.) -->
+  <ng-content></ng-content>
+</div>

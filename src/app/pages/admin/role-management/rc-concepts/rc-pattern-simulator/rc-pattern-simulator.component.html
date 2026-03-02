@@ -1,0 +1,90 @@
+<div class="rps">
+  <nz-card nzSize="small" [nzTitle]="'Pattern Simulator: ' + conceptName" [nzExtra]="cardExtra">
+    <ng-template #cardExtra>
+      <nz-space>
+        <button *nzSpaceItem nz-button nzSize="small" nzType="default" (click)="goBack()">
+          <span nz-icon nzType="arrow-left" nzTheme="outline"></span> Back
+        </button>
+        <button *nzSpaceItem nz-button nzSize="small" nzType="primary"
+                (click)="simulate()" [disabled]="roleNames.length === 0 || simulating" [nzLoading]="simulating">
+          <span nz-icon nzType="thunderbolt" nzTheme="outline"></span> Simulate
+        </button>
+      </nz-space>
+    </ng-template>
+
+    <nz-spin [nzSpinning]="loading">
+      <div class="rps__grid">
+        <!-- Left: Input -->
+        <div class="rps__input">
+          <div class="rps__section-title">
+            Role Names
+            <nz-tag>{{ roleNames.length }}</nz-tag>
+          </div>
+          <div class="rps__input-area">
+            <textarea nz-input nzSize="small" [(ngModel)]="roleInput"
+                      placeholder="Enter role names (one per line, or comma separated)"
+                      [nzAutosize]="{ minRows: 4, maxRows: 8 }"></textarea>
+            <div class="rps__input-actions">
+              <button nz-button nzSize="small" nzType="primary" (click)="addRoles()" [disabled]="!roleInput.trim()">
+                <span nz-icon nzType="plus" nzTheme="outline"></span> Add
+              </button>
+              <button nz-button nzSize="small" nzType="default" (click)="clearRoles()" [disabled]="roleNames.length === 0">
+                Clear All
+              </button>
+            </div>
+          </div>
+
+          <div class="rps__role-list" *ngIf="roleNames.length > 0">
+            <div *ngFor="let role of roleNames; let i = index" class="rps__role-item">
+              <span>{{ role }}</span>
+              <button nz-button nzType="link" nzSize="small" nzDanger (click)="removeRole(i)">
+                <span nz-icon nzType="close" nzTheme="outline"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Results -->
+        <div class="rps__results">
+          <div *ngIf="!simulationResult && !simulating" class="rps__empty">
+            <span nz-icon nzType="experiment" nzTheme="outline" style="font-size: 28px; color: #bfbfbf;"></span>
+            <p>Add role names and click Simulate</p>
+          </div>
+
+          <div *ngIf="simulationResult">
+            <div class="rps__stats">
+              <nz-tag nzColor="success">{{ matchedCount }} matched</nz-tag>
+              <nz-tag nzColor="warning">{{ conflictCount }} conflicts</nz-tag>
+              <nz-tag nzColor="default">{{ unmatchedCount }} no match</nz-tag>
+            </div>
+
+            <nz-table #resultTable [nzData]="simulationResult.results" nzSize="small"
+                      [nzShowPagination]="simulationResult.results.length > 20" [nzPageSize]="20"
+                      nzFrontPagination>
+              <thead>
+                <tr>
+                  <th>Role Name</th>
+                  <th nzWidth="100px">Status</th>
+                  <th>Matched Pattern</th>
+                  <th>Business Process</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of resultTable.data">
+                  <td><strong>{{ r.roleName }}</strong></td>
+                  <td>
+                    <nz-tag [nzColor]="getStatusColor(r.status)">
+                      {{ r.status }}
+                    </nz-tag>
+                  </td>
+                  <td>{{ r.matchedPattern || '-' }}</td>
+                  <td>{{ r.businessProcess || '-' }}</td>
+                </tr>
+              </tbody>
+            </nz-table>
+          </div>
+        </div>
+      </div>
+    </nz-spin>
+  </nz-card>
+</div>

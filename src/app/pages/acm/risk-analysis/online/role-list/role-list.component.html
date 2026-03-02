@@ -1,0 +1,46 @@
+<nz-card [nzTitle]="header" nzSize="small" [nzExtra]="roleActions">
+  <ng-template #roleActions>
+    <nz-button-group>
+      <button nz-button nzSize="small" nz-tooltip nzTooltipTitle="Remove Selected" [disabled]="selectedItems.length === 0" (click)="remove()">
+        <span nz-icon nzType="delete" nzTheme="outline"></span>
+      </button>
+      <button nz-button nzSize="small" nz-tooltip nzTooltipTitle="Remove All" (click)="removeAll()">
+        <span nz-icon nzType="close-circle" nzTheme="outline"></span>
+      </button>
+      <button nz-button nzSize="small" nzType="primary" nz-tooltip nzTooltipTitle="Select Roles" (click)="openRoleSelectDialog()">
+        <span nz-icon nzType="plus" nzTheme="outline"></span> Select
+      </button>
+    </nz-button-group>
+  </ng-template>
+
+  <nz-input-group nzSize="small" [nzSuffix]="roleSearchIcon" style="margin-bottom: 8px; max-width: 280px;">
+    <input nz-input placeholder="Search roles..." [(ngModel)]="searchText" (keyup.enter)="onSearch()" />
+  </nz-input-group>
+  <ng-template #roleSearchIcon>
+    <span nz-icon nzType="search" style="cursor: pointer;" (click)="onSearch()"></span>
+  </ng-template>
+
+  <nz-table #roleTable [nzData]="items" nzSize="small"
+            [nzFrontPagination]="false"
+            [nzTotal]="totalRecords"
+            [nzPageIndex]="currentPage"
+            [nzPageSize]="pageSize"
+            (nzPageIndexChange)="onPageChange($event)"
+            nzTableLayout="fixed"
+            [nzScroll]="{ y: '50vh' }">
+    <thead>
+      <tr>
+        <th nzWidth="40px" [nzChecked]="allChecked" (nzCheckedChange)="onAllChecked($event)"></th>
+        <th>Role Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of roleTable.data">
+        <td [nzChecked]="isChecked(row)" (nzCheckedChange)="onItemChecked(row, $event)"></td>
+        <td style="color: #1890ff; cursor: pointer;" (click)="openDetail(row)">{{ row.name }}</td>
+        <td>{{ row.description }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>

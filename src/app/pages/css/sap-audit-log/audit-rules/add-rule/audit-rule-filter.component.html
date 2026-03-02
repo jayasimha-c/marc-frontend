@@ -1,0 +1,75 @@
+<nz-collapse>
+  <nz-collapse-panel nzHeader="Filter" [nzExtra]="filterDesc" [nzActive]="false">
+    <ng-template #filterDesc>
+      <span class="text-gray-500 text-sm">General audit log filters</span>
+    </ng-template>
+
+    <form [formGroup]="form" class="flex flex-col gap-2 mt-2">
+      <section class="flex gap-5">
+        <nz-form-item class="w-1/2">
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="form.get('event')?.value">
+              <input nz-input placeholder=" " formControlName="event" [nzAutocomplete]="auto" />
+              <label>Event</label>
+            </div>
+            <nz-autocomplete #auto>
+              @for (option of filteredOptions | async; track option) {
+                <nz-auto-option [nzValue]="option" [nzLabel]="option">{{ option }}</nz-auto-option>
+              }
+            </nz-autocomplete>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item class="w-1/2">
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="form.get('client')?.value">
+              <nz-select formControlName="client" nzPlaceHolder=" " nzShowSearch>
+                <nz-option *ngFor="let client of clients" [nzValue]="client.id"
+                  [nzLabel]="client.name + ' (' + client.clientNo + ')'"></nz-option>
+              </nz-select>
+              <label>Client</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </section>
+
+      <section class="flex gap-5">
+        <nz-form-item class="w-1/2">
+          <nz-form-control>
+            <div class="nz-float-label" [class.has-value]="form.get('message')?.value">
+              <input nz-input placeholder=" " formControlName="message" />
+              <label>Audit Message Contains</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+        <div style="display: flex; gap: 5px;">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label"
+                [class.has-value]="form.get('fromHour')?.value !== null && form.get('fromHour')?.value !== ''">
+                <nz-select formControlName="fromHour" nzPlaceHolder=" ">
+                  <nz-option *ngFor="let entry of hourOptions" [nzValue]="entry.value"
+                    [nzLabel]="entry.name"></nz-option>
+                </nz-select>
+                <label>From Business Hour</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+          <div style="align-self: center;">-</div>
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label"
+                [class.has-value]="form.get('toHour')?.value !== null && form.get('toHour')?.value !== ''">
+                <nz-select formControlName="toHour" nzPlaceHolder=" ">
+                  <nz-option *ngFor="let entry of hourOptions" [nzValue]="entry.value"
+                    [nzLabel]="entry.name"></nz-option>
+                </nz-select>
+                <label>To Business Hour</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </section>
+    </form>
+  </nz-collapse-panel>
+</nz-collapse>

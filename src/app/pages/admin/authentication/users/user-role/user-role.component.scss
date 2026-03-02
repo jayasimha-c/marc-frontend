@@ -1,0 +1,12 @@
+:host {
+  display: block;
+}
+
+::ng-deep .ant-transfer {
+  justify-content: center;
+}
+
+::ng-deep .ant-transfer-list {
+  flex: 1;
+  max-width: 280px;
+}

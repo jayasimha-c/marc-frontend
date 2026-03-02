@@ -1,0 +1,326 @@
+@use "ng-zorro-antd/ng-zorro-antd.min.css";
+@import "ng-zorro-antd/ng-zorro-antd.compact.min.css";
+
+:root {
+  --primary-color: #1890ff;
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --error-color: #f5222d;
+  --font-size-base: 14px;
+  --heading-color: rgba(0, 0, 0, 0.85);
+  --text-color: rgba(0, 0, 0, 0.65);
+  --text-color-secondary: rgba(0, 0, 0, 0.45);
+  --border-radius-base: 4px;
+  --border-color-base: #d9d9d9;
+  --box-shadow-base: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.app-layout {
+  min-height: 100vh;
+}
+
+.sidebar {
+  overflow: hidden;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+
+  // NG-ZORRO wraps content in .ant-layout-sider-children — make it flex
+  .ant-layout-sider-children {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .logo {
+    height: 64px;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    background: rgba(255, 255, 255, 0.05);
+
+    h2 {
+      color: #fff;
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .logo-collapsed {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+  }
+
+  // Menu scrolls independently below the fixed logo
+  ul[nz-menu] {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}
+
+.inner-layout {
+  transition: margin-left 0.2s;
+}
+
+.inner-content {
+  margin: 16px;
+  padding: 24px;
+  background: #fff;
+  min-height: calc(100vh - 64px - 70px - 32px);
+  border-radius: 4px;
+}
+
+.app-header {
+  background: #fff !important;
+  padding: 0 24px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  z-index: 5;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-trigger {
+    font-size: 18px;
+    cursor: pointer;
+    transition: color 0.3s;
+    padding: 0 12px;
+
+    &:hover {
+      color: var(--primary-color);
+    }
+  }
+}
+
+.app-footer {
+  text-align: center;
+  color: var(--text-color-secondary);
+  font-size: 12px;
+}
+
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  .auth-card {
+    width: 420px;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 32px;
+
+      h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--heading-color);
+        margin-bottom: 8px;
+      }
+
+      p {
+        color: var(--text-color-secondary);
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+// ─── Dashboard Layout System ───────────────────────────────────────
+// Reusable grid presets for 30+ dashboard pages.
+// Sizes: sm (4/row), md (3/row), lg (2/row), full (1/row)
+//
+// Usage in templates:
+//   <div nz-row [nzGutter]="[16, 16]" class="dashboard-row">
+//     <div nz-col class="dashboard-col-md">
+//       <common-apx-chart size="md" ...></common-apx-chart>
+//     </div>
+//   </div>
+
+.dashboard-row {
+  margin-bottom: 16px;
+}
+
+// Column presets — responsive breakpoints for chart grid
+.dashboard-col-sm  { flex: 0 0 25%;  max-width: 25%;  }  // 4 per row
+.dashboard-col-md  { flex: 0 0 33.333%; max-width: 33.333%; } // 3 per row
+.dashboard-col-lg  { flex: 0 0 50%;  max-width: 50%;  }  // 2 per row
+.dashboard-col-full { flex: 0 0 100%; max-width: 100%; } // 1 per row
+
+@media (max-width: 991px) {
+  .dashboard-col-sm  { flex: 0 0 50%;  max-width: 50%;  }
+  .dashboard-col-md  { flex: 0 0 50%;  max-width: 50%;  }
+}
+
+@media (max-width: 575px) {
+  .dashboard-col-sm,
+  .dashboard-col-md,
+  .dashboard-col-lg  { flex: 0 0 100%; max-width: 100%; }
+}
+
+// Dashboard card base — used by common-apx-chart component css
+.dashboard-card {
+  border-radius: var(--border-radius-base);
+}
+
+// Remove default nz-card body padding when used inside dashboard charts
+.dashboard-card .ant-card-body {
+  padding: 0;
+}
+
+.page-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+  }
+}
+
+.table-actions {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.module-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: var(--text-color-secondary);
+
+  .placeholder-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    color: #d9d9d9;
+  }
+
+  h3 {
+    font-size: 20px;
+    color: var(--heading-color);
+    margin-bottom: 8px;
+  }
+}
+
+.ant-table {
+  font-size: 13px;
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: var(--primary-color) !important;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.text-center { text-align: center; }
+.mt-16 { margin-top: 16px; }
+.mb-16 { margin-bottom: 16px; }
+.mr-8 { margin-right: 8px; }
+.full-width { width: 100%; }
+
+// Float label pattern for form inputs
+.nz-float-label {
+  position: relative;
+
+  label {
+    position: absolute;
+    top: 50%;
+    left: 11px;
+    transform: translateY(-50%);
+    transition: all 0.2s ease;
+    color: rgba(0, 0, 0, 0.45);
+    font-size: 14px;
+    pointer-events: none;
+    background: #fff;
+    padding: 0 4px;
+    line-height: 1;
+    z-index: 1;
+  }
+
+  &.has-value label,
+  &:focus-within label {
+    top: 0;
+    font-size: 11px;
+    color: var(--primary-color);
+  }
+}
+
+// Modal styling for consistent look
+.updated-modal {
+  .ant-modal-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .ant-modal-body {
+    padding: 24px;
+  }
+}
+
+// Modal form footer pattern
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+// Role concept template editor — enum set dropdown overlay
+.rce__enum-dropdown {
+  min-width: 400px !important;
+}

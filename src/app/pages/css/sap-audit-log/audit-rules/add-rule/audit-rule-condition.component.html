@@ -1,0 +1,42 @@
+<nz-collapse>
+  <nz-collapse-panel nzHeader="Condition" [nzExtra]="condDesc" [nzActive]="false">
+    <ng-template #condDesc>
+      <span class="text-gray-500 text-sm">When the rule will raise an alert</span>
+    </ng-template>
+
+    <form [formGroup]="form" class="flex flex-col gap-2 mt-2">
+      <section class="flex gap-5">
+        <nz-form-item style="flex-grow: 1;">
+          <nz-form-control [nzErrorTip]="'Threshold is required'">
+            <div class="nz-float-label" [class.has-value]="form.get('threshhold')?.value">
+              <input nz-input placeholder=" " formControlName="threshhold" />
+              <label>Threshold amount</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="flex-grow: 1;">
+          <nz-form-control [nzErrorTip]="'Interval is required'">
+            <div class="nz-float-label" [class.has-value]="form.get('interval')?.value">
+              <input nz-input placeholder=" " formControlName="interval" />
+              <label>Interval</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="flex-grow: 1;">
+          <nz-form-control [nzErrorTip]="'Time Unit is required'">
+            <div class="nz-float-label" [class.has-value]="form.get('timeUnit')?.value">
+              <nz-select formControlName="timeUnit" nzPlaceHolder=" ">
+                <nz-option nzValue="minutes" nzLabel="Minutes"></nz-option>
+                <nz-option nzValue="hours" nzLabel="Hours"></nz-option>
+                <nz-option nzValue="days" nzLabel="Days"></nz-option>
+              </nz-select>
+              <label>Time Unit</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </section>
+    </form>
+  </nz-collapse-panel>
+</nz-collapse>

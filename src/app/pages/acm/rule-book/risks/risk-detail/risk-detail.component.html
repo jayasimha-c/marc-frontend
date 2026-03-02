@@ -1,0 +1,94 @@
+<nz-spin [nzSpinning]="loading">
+  <div style="padding: 16px;">
+    <form [formGroup]="form">
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label has-value">
+                <input nz-input placeholder=" " formControlName="riskName" />
+                <label>Risk Name</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label has-value">
+                <textarea nz-input placeholder=" " formControlName="description" [nzAutosize]="{minRows: 1, maxRows: 3}"></textarea>
+                <label>Description</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label has-value">
+                <textarea nz-input placeholder=" " formControlName="riskCondition" [nzAutosize]="{minRows: 1, maxRows: 3}"></textarea>
+                <label>Risk Condition</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label has-value">
+                <textarea nz-input placeholder=" " formControlName="detailDescription" [nzAutosize]="{minRows: 1, maxRows: 3}"></textarea>
+                <label>Detail Description</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+
+    <!-- Rules table -->
+    <nz-table #rulesTable [nzData]="rulesData" nzSize="small" [nzShowPagination]="rulesData.length > 10"
+      [nzPageSize]="10" nzTableLayout="fixed" [nzFrontPagination]="true">
+      <thead>
+        <tr>
+          <th nzWidth="120px">Rule Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rulesTable.data" (click)="onRuleClick(row)" class="rd__row"
+          [class.rd__row--selected]="selectedRule?.id === row.id">
+          <td>{{row.ruleName}}</td>
+          <td>{{row.ruleDescription}}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+
+    <!-- Rule objects detail -->
+    <div *ngIf="selectedRule" style="margin-top: 12px;">
+      <h5 style="margin-bottom: 8px; font-size: 13px; color: rgba(0,0,0,0.65);">
+        Objects for {{selectedRule.ruleName}}
+      </h5>
+      <nz-table #objectsTable [nzData]="ruleObjects" nzSize="small" [nzShowPagination]="false"
+        nzTableLayout="fixed" [nzFrontPagination]="false">
+        <thead>
+          <tr>
+            <th>Object</th>
+            <th>Field</th>
+            <th>Value</th>
+            <th nzWidth="80px">Join AND</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let obj of objectsTable.data">
+            <td>{{obj.name}}</td>
+            <td>{{obj.fieldName}}</td>
+            <td>{{obj.fieldValue}}</td>
+            <td>{{obj.joinByAnd}}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+  </div>
+</nz-spin>

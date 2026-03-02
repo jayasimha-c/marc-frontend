@@ -1,0 +1,950 @@
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:30:
+      52 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../../core/services/confirmation.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:4:36:
+      4 │ ...mationService } from '../../../core/services/confirmation.service';
+        ╵                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-992003: No suitable injection token for parameter 'confirmation' of class 'RoleConceptTemplateComponent'.
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:58:16:
+      58 │         private confirmation: ConfirmationService
+         ╵                 ~~~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:58:30:
+      58 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator.
+ [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:20:8:
+      20 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:21:8:
+      21 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateEditorComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:22:8:
+      22 │         RoleConceptTemplateEditorComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateEditorComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:30:8:
+      30 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:31:8:
+      31 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateEditorComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:32:8:
+      32 │         RoleConceptTemplateEditorComponent
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Application bundle generation failed. [0.543 seconds]
+
+X [ERROR] TS-992008: Could not find template file './data-sync.component.html'. [plugin angular-compiler]
+
+    src/app/pages/admin/data-synchronization/data-sync.component.ts:7:15:
+      7 │   templateUrl: './data-sync.component.html',
+        ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../../core/services/confirmation.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:4:36:
+      4 │ ...mationService } from '../../../core/services/confirmation.service';
+        ╵                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-992003: No suitable injection token for parameter 'confirmation' of class 'RoleConceptTemplateEditorComponent'.      
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:16:
+      52 │         private confirmation: ConfirmationService
+         ╵                 ~~~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:30:
+      52 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../../core/services/confirmation.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:4:36:
+      4 │ ...mationService } from '../../../core/services/confirmation.service';
+        ╵                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-992003: No suitable injection token for parameter 'confirmation' of class 'RoleConceptTemplateComponent'.
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:58:16:
+      58 │         private confirmation: ConfirmationService
+         ╵                 ~~~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:58:30:
+      58 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator.
+ [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:20:8:
+      20 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:21:8:
+      21 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateEditorComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:22:8:
+      22 │         RoleConceptTemplateEditorComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateEditorComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:30:8:
+      30 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:31:8:
+      31 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateEditorComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:32:8:
+      32 │         RoleConceptTemplateEditorComponent
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Application bundle generation failed. [0.621 seconds]
+
+X [ERROR] TS-992008: Could not find template file './data-sync.component.html'. [plugin angular-compiler]
+
+    src/app/pages/admin/data-synchronization/data-sync.component.ts:7:15:
+      7 │   templateUrl: './data-sync.component.html',
+        ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../../core/services/confirmation.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:4:36:
+      4 │ ...mationService } from '../../../core/services/confirmation.service';
+        ╵                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-992003: No suitable injection token for parameter 'confirmation' of class 'RoleConceptTemplateEditorComponent'.      
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:16:
+      52 │         private confirmation: ConfirmationService
+         ╵                 ~~~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:30:
+      52 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../../core/services/confirmation.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:4:36:
+      4 │ ...mationService } from '../../../core/services/confirmation.service';
+        ╵                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-992003: No suitable injection token for parameter 'confirmation' of class 'RoleConceptTemplateComponent'.
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:58:16:
+      58 │         private confirmation: ConfirmationService
+         ╵                 ~~~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:58:30:
+      58 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator.
+ [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:20:8:
+      20 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:21:8:
+      21 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateEditorComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:22:8:
+      22 │         RoleConceptTemplateEditorComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateEditorComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:30:8:
+      30 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:31:8:
+      31 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateEditorComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:32:8:
+      32 │         RoleConceptTemplateEditorComponent
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Application bundle generation failed. [0.568 seconds]
+
+X [ERROR] TS-992008: Could not find template file './data-sync.component.html'. [plugin angular-compiler]
+
+    src/app/pages/admin/data-synchronization/data-sync.component.ts:7:15:
+      7 │   templateUrl: './data-sync.component.html',
+        ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../../core/services/confirmation.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:4:36:
+      4 │ ...mationService } from '../../../core/services/confirmation.service';
+        ╵                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-992003: No suitable injection token for parameter 'confirmation' of class 'RoleConceptTemplateEditorComponent'.      
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:16:
+      52 │         private confirmation: ConfirmationService
+         ╵                 ~~~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:30:
+      52 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../../core/services/confirmation.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:4:36:
+      4 │ ...mationService } from '../../../core/services/confirmation.service';
+        ╵                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-992003: No suitable injection token for parameter 'confirmation' of class 'RoleConceptTemplateComponent'.
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:58:16:
+      58 │         private confirmation: ConfirmationService
+         ╵                 ~~~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:58:30:
+      58 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator.
+ [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:20:8:
+      20 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:21:8:
+      21 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateEditorComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:22:8:
+      22 │         RoleConceptTemplateEditorComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateEditorComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:30:8:
+      30 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:31:8:
+      31 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateEditorComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:32:8:
+      32 │         RoleConceptTemplateEditorComponent
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Application bundle generation failed. [0.775 seconds]
+
+X [ERROR] TS-992008: Could not find template file './data-sync.component.html'. [plugin angular-compiler]
+
+    src/app/pages/admin/data-synchronization/data-sync.component.ts:7:15:
+      7 │   templateUrl: './data-sync.component.html',
+        ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-992003: No suitable injection token for parameter 'confirmation' of class 'RoleConceptTemplateEditorComponent'.      
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:16:
+      52 │         private confirmation: ConfirmationService
+         ╵                 ~~~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:30:
+      52 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2552: Cannot find name 'ConfirmationService'. Did you mean 'ConfirmDialogService'? [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:30:
+      52 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module '../../../core/services/confirmation.service' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:4:36:
+      4 │ ...mationService } from '../../../core/services/confirmation.service';
+        ╵                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-992003: No suitable injection token for parameter 'confirmation' of class 'RoleConceptTemplateComponent'.
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:58:16:
+      58 │         private confirmation: ConfirmationService
+         ╵                 ~~~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:58:30:
+      58 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator.
+ [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:20:8:
+      20 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:21:8:
+      21 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateEditorComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:22:8:
+      22 │         RoleConceptTemplateEditorComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateEditorComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:30:8:
+      30 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:31:8:
+      31 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateEditorComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:32:8:
+      32 │         RoleConceptTemplateEditorComponent
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Application bundle generation failed. [0.713 seconds]
+
+X [ERROR] TS-992008: Could not find template file './data-sync.component.html'. [plugin angular-compiler]
+
+    src/app/pages/admin/data-synchronization/data-sync.component.ts:7:15:
+      7 │   templateUrl: './data-sync.component.html',
+        ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-992003: No suitable injection token for parameter 'confirmation' of class 'RoleConceptTemplateEditorComponent'.      
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:16:
+      52 │         private confirmation: ConfirmationService
+         ╵                 ~~~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:30:
+      52 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2552: Cannot find name 'ConfirmationService'. Did you mean 'ConfirmDialogService'? [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:30:
+      52 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-992003: No suitable injection token for parameter 'confirmation' of class 'RoleConceptTemplateComponent'.
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:58:16:
+      58 │         private confirmation: ConfirmationService
+         ╵                 ~~~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:58:30:
+      58 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2552: Cannot find name 'ConfirmationService'. Did you mean 'ConfirmDialogService'? [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:58:30:
+      58 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator.
+ [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:20:8:
+      20 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:21:8:
+      21 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateEditorComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:22:8:
+      22 │         RoleConceptTemplateEditorComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateEditorComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:30:8:
+      30 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:31:8:
+      31 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateEditorComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:32:8:
+      32 │         RoleConceptTemplateEditorComponent
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Application bundle generation failed. [0.731 seconds]
+
+X [ERROR] TS-992008: Could not find template file './data-sync.component.html'. [plugin angular-compiler]
+
+    src/app/pages/admin/data-synchronization/data-sync.component.ts:7:15:
+      7 │   templateUrl: './data-sync.component.html',
+        ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-992003: No suitable injection token for parameter 'confirmation' of class 'RoleConceptTemplateEditorComponent'.      
+  Consider using the @Inject decorator to specify an injection token. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:16:
+      52 │         private confirmation: ConfirmationService
+         ╵                 ~~~~~~~~~~~~
+
+  This type does not have a value, so it cannot be used as injection token.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:30:
+      52 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2552: Cannot find name 'ConfirmationService'. Did you mean 'ConfirmDialogService'? [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:52:30:
+      52 │         private confirmation: ConfirmationService
+         ╵                               ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator.
+ [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:20:8:
+      20 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:21:8:
+      21 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateEditorComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:22:8:
+      22 │         RoleConceptTemplateEditorComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateEditorComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:30:8:
+      30 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:31:8:
+      31 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateEditorComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:32:8:
+      32 │         RoleConceptTemplateEditorComponent
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Application bundle generation failed. [1.137 seconds]
+
+X [ERROR] TS-992008: Could not find template file './data-sync.component.html'. [plugin angular-compiler]
+
+    src/app/pages/admin/data-synchronization/data-sync.component.ts:7:15:
+      7 │   templateUrl: './data-sync.component.html',
+        ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator.
+ [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:20:8:
+      20 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:21:8:
+      21 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996001: The class 'RoleConceptTemplateEditorComponent' is listed in the declarations of the NgModule 'RoleConceptModule', but is not a directive, a component, or a pipe. Either remove it from the NgModule's declarations, or add an appropriate Angular decorator. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:22:8:
+      22 │         RoleConceptTemplateEditorComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  'RoleConceptTemplateEditorComponent' is declared here.
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:30:8:
+      30 │         RoleConceptComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept.component.ts:16:13:
+      16 │ export class RoleConceptComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:31:8:
+      31 │         RoleConceptTemplateComponent,
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template.component.ts:16:13:
+      16 │ export class RoleConceptTemplateComponent implements OnInit {
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-996003: 'RoleConceptTemplateEditorComponent' does not appear to be an NgModule, Component, Directive, or Pipe class. [plugin angular-compiler]
+
+    src/app/pages/admin/role-concept/role-concept.module.ts:32:8:
+      32 │         RoleConceptTemplateEditorComponent
+         ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Is it missing an Angular annotation?
+
+    src/app/pages/admin/role-concept/role-concept-template-editor.component.ts:14:13:
+      14 │ export class RoleConceptTemplateEditorComponent implements OnInit,...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

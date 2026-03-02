@@ -1,0 +1,26 @@
+<p style="color: rgba(0,0,0,0.45); font-size: 13px; margin-bottom: 16px;">
+  Select a SAP system to run this rule book against.
+</p>
+
+<nz-form-item>
+  <nz-form-control>
+    <div class="nz-float-label" [class.has-value]="selectedSystemId">
+      <nz-select [(ngModel)]="selectedSystemId" nzPlaceHolder=" " nzShowSearch
+                 [nzDisabled]="loading || submitting">
+        <nz-option *ngFor="let sys of systems" [nzValue]="sys.id"
+                   [nzLabel]="sys.destinationName || sys.name"></nz-option>
+      </nz-select>
+      <label>SAP System</label>
+    </div>
+    <small *ngIf="loading" style="color: rgba(0,0,0,0.45); font-size: 12px;">Loading systems...</small>
+  </nz-form-control>
+</nz-form-item>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()" [disabled]="submitting">Cancel</button>
+  <button nz-button nzType="primary" (click)="onRun()"
+          [disabled]="!selectedSystemId || submitting || loading">
+    <span *ngIf="!submitting" nz-icon nzType="caret-right" nzTheme="outline"></span>
+    {{ submitting ? 'Starting...' : 'Run Now' }}
+  </button>
+</div>

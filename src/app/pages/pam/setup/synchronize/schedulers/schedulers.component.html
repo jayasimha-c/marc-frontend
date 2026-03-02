@@ -1,0 +1,24 @@
+<div class="w-full">
+    <app-advanced-table title="Schedulers" [columns]="columns" [data]="data" [loading]="loading" [showSearch]="false"
+        [showPagination]="true" [totalRecords]="totalRecords" [pageSize]="pageSize" [pageIndex]="pageIndex"
+        [actions]="tableActions" (pageIndexChange)="onPageIndexChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)">
+    </app-advanced-table>
+</div>
+
+<ng-template #sapNamesTpl let-row="row">
+    <nz-tag nzColor="blue" *ngFor="let name of (row.sapNames ? row.sapNames.split(', ') : [])">
+        {{ name }}
+    </nz-tag>
+</ng-template>
+
+<ng-template #operationsTpl let-row="row">
+    <div class="flex gap-3">
+        <a (click)="openDetail('edit', row)" nzTooltipTitle="Edit Scheduler" nzTooltipPlacement="top" nz-tooltip>
+            <span nz-icon nzType="edit" nzTheme="outline" class="text-blue-500"></span>
+        </a>
+        <a (click)="openDetail('delete', row)" nzTooltipTitle="Delete Scheduler" nzTooltipPlacement="top" nz-tooltip>
+            <span nz-icon nzType="delete" nzTheme="outline" class="text-red-500"></span>
+        </a>
+    </div>
+</ng-template>

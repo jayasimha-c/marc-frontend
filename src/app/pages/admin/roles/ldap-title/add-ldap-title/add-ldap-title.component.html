@@ -1,0 +1,32 @@
+<ng-container *ngIf="form$ | async; else loadingTpl">
+  <form [formGroup]="form">
+    <nz-form-item>
+      <nz-form-control nzErrorTip="LDAP Title is required">
+        <div class="nz-float-label" [class.has-value]="form.get('ldapTitle')?.value">
+          <input nz-input placeholder=" " formControlName="ldapTitle" />
+          <label>LDAP Title</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; margin-bottom: 8px; font-weight: 500;">Select Roles</label>
+      <nz-transfer
+        [nzDataSource]="transferList"
+        [nzShowSearch]="true"
+        [nzTitles]="['Available', 'Selected']"
+        [nzListStyle]="{ height: '320px' }">
+      </nz-transfer>
+    </div>
+  </form>
+</ng-container>
+<ng-template #loadingTpl>
+  <div style="text-align: center; padding: 24px;">
+    <nz-spin nzSimple></nz-spin>
+  </div>
+</ng-template>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+  <button nz-button nzType="primary" [nzLoading]="loading" (click)="save()">Save</button>
+</div>

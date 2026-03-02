@@ -1,0 +1,254 @@
+<div class="add-audit-rule-container">
+  <nz-card>
+    <div class="page-header">
+      <span class="page-title">{{ formType === 'edit' ? 'Edit' : 'Add' }} Audit Rule</span>
+    </div>
+
+    <form [formGroup]="form">
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-control [nzErrorTip]="'Name is required'">
+              <div class="nz-float-label" [class.has-value]="form.get('name')?.value">
+                <input nz-input placeholder=" " formControlName="name" />
+                <label>Name</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-control [nzErrorTip]="'Severity is required'">
+              <div class="nz-float-label" [class.has-value]="form.get('severity')?.value">
+                <nz-select formControlName="severity" nzPlaceHolder=" ">
+                  <nz-option *ngFor="let entry of severityOptions" [nzValue]="entry[0]"
+                    [nzLabel]="entry[1]"></nz-option>
+                </nz-select>
+                <label>Severity</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <nz-form-item>
+        <nz-form-control [nzErrorTip]="'Description is required'">
+          <div class="nz-float-label" [class.has-value]="form.get('description')?.value">
+            <textarea nz-input placeholder=" " formControlName="description"
+              [nzAutosize]="{ minRows: 3, maxRows: 5 }"></textarea>
+            <label>Description</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+
+      <parameter-rule-tag-component [selectedTags]="tags" [addDefaultTag]="addDefaultTag"
+        (selectedTagsChanged)="onTagsChanged($event)"></parameter-rule-tag-component>
+
+      <nz-tabset [(nzSelectedIndex)]="selectedTabIndex">
+        <nz-tab nzTitle="Filter">
+          <div class="tab-content">
+            <app-audit-rule-filter [clients]="clients" [filters]="filters['filter']"
+              (filtersChanged)="onFiltersChanged($event, 'filter')" [events]="events">
+            </app-audit-rule-filter>
+
+            <app-audit-rule-grouping [grouping]="grouping"
+              (groupingChanged)="onGroupingChanged($event)">
+            </app-audit-rule-grouping>
+
+            <app-audit-rule-condition [conditions]="condition"
+              (conditionChanged)="onConditionChanged($event)" (exposeForm)="onExposeForm($event)">
+            </app-audit-rule-condition>
+          </div>
+        </nz-tab>
+
+        <nz-tab nzTitle="Advanced Filter">
+          <div class="tab-content">
+            <app-audit-rule-filter-advanced [clients]="clients" [matchMode]="MatchMode.NORMAL"
+              [filters]="filters['normal']" (filtersChanged)="onFiltersChanged($event, 'normal')"
+              [events]="events">
+            </app-audit-rule-filter-advanced>
+
+            <app-audit-rule-filter-advanced [clients]="clients" [matchMode]="MatchMode.WHITELIST"
+              [filters]="filters['whitelist']" (filtersChanged)="onFiltersChanged($event, 'whitelist')"
+              [events]="events">
+            </app-audit-rule-filter-advanced>
+
+            <app-audit-rule-filter-advanced [clients]="clients" [matchMode]="MatchMode.BLACKLIST"
+              [filters]="filters['blacklist']" (filtersChanged)="onFiltersChanged($event, 'blacklist')">
+            </app-audit-rule-filter-advanced>
+
+            <app-audit-rule-filter-advanced [clients]="clients" [matchMode]="MatchMode.RESET"
+              [filters]="filters['reset']" (filtersChanged)="onFiltersChanged($event, 'reset')">
+            </app-audit-rule-filter-advanced>
+          </div>
+        </nz-tab>
+
+        <nz-tab>
+          <ng-template nz-tab-label>
+            <span nz-icon nzType="robot" nzTheme="outline" style="margin-right: 8px;"></span>
+            AI Assistant
+          </ng-template>
+          <div class="ai-assistant-container">
+            <!-- Instructions -->
+            <div class="ai-instructions">
+              <div class="instruction-header">
+                <span nz-icon nzType="bulb" nzTheme="outline"></span>
+                <span>How to use AI to generate audit rules:</span>
+              </div>
+              <ol class="instruction-steps">
+                <li>Click <strong>"Copy AI Prompt"</strong> to copy the MARC schema to clipboard</li>
+                <li>Open <strong>ChatGPT, Claude, or any AI assistant</strong></li>
+                <li>Paste the prompt and <strong>describe your rule requirement</strong></li>
+                <li>Copy the <strong>JSON response</strong> from AI</li>
+                <li>Paste it below and click <strong>"Validate & Import"</strong></li>
+              </ol>
+              <button nz-button nzType="primary" (click)="copyAIPrompt()" class="copy-prompt-btn">
+                <span nz-icon nzType="copy" nzTheme="outline"></span>
+                Copy AI Prompt
+              </button>
+              <span *ngIf="promptCopied" class="copy-success">
+                <span nz-icon nzType="check-circle" nzTheme="outline"></span>
+                Copied to clipboard!
+              </span>
+            </div>
+
+            <!-- Example Prompts -->
+            <div class="example-prompts">
+              <div class="example-header">
+                <span nz-icon nzType="question-circle" nzTheme="outline"></span>
+                <span>Example prompts you can ask AI:</span>
+              </div>
+              <div class="example-chips">
+                <span *ngFor="let example of examplePrompts" class="example-chip"
+                  (click)="copyExamplePrompt(example)" nz-tooltip nzTooltipTitle="Click to copy">
+                  {{ example }}
+                </span>
+              </div>
+            </div>
+
+            <!-- JSON Input -->
+            <div class="json-input-section">
+              <label class="json-label">Paste AI-generated JSON:</label>
+              <textarea class="json-textarea" [(ngModel)]="aiJsonInput"
+                [ngModelOptions]="{ standalone: true }" placeholder='{
+  "name": "Rule Name",
+  "description": "Description",
+  "severity": "HIGH",
+  "groupedBy": ["USER", "IP"],
+  "threshhold": 5,
+  "interval": 900000,
+  "conditions": [
+    {
+      "field": "EVENT",
+      "conditionType": "IN",
+      "values": ["AU2", "AU6"],
+      "matchMode": "NORMAL"
+    }
+  ]
+}' rows="15">
+              </textarea>
+            </div>
+
+            <!-- Validation Results -->
+            <div *ngIf="validationResult" class="validation-results">
+              <div *ngIf="validationResult.errors.length > 0" class="validation-errors">
+                <div class="validation-header error">
+                  <span nz-icon nzType="exclamation-circle" nzTheme="outline"></span>
+                  <span>Validation Errors ({{ validationResult.errors.length }})</span>
+                </div>
+                <ul>
+                  <li *ngFor="let error of validationResult.errors">{{ error }}</li>
+                </ul>
+              </div>
+              <div *ngIf="validationResult.warnings.length > 0" class="validation-warnings">
+                <div class="validation-header warning">
+                  <span nz-icon nzType="warning" nzTheme="outline"></span>
+                  <span>Warnings ({{ validationResult.warnings.length }})</span>
+                </div>
+                <ul>
+                  <li *ngFor="let warning of validationResult.warnings">{{ warning }}</li>
+                </ul>
+              </div>
+              <div *ngIf="validationResult.valid" class="validation-success">
+                <div class="validation-header success">
+                  <span nz-icon nzType="check-circle" nzTheme="outline"></span>
+                  <span>JSON is valid!</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <div *ngIf="validationResult?.parsedRule" class="rule-preview">
+              <div class="preview-header">
+                <span nz-icon nzType="eye" nzTheme="outline"></span>
+                <span>Rule Preview</span>
+              </div>
+              <div class="preview-content">
+                <div class="preview-row">
+                  <span class="preview-label">Name:</span>
+                  <span class="preview-value">{{ validationResult.parsedRule.name }}</span>
+                </div>
+                <div class="preview-row">
+                  <span class="preview-label">Severity:</span>
+                  <span class="preview-value severity-badge"
+                    [ngClass]="'severity-' + validationResult.parsedRule.severity.toLowerCase()">
+                    {{ validationResult.parsedRule.severity }}
+                  </span>
+                </div>
+                <div class="preview-row" *ngIf="validationResult.parsedRule.description">
+                  <span class="preview-label">Description:</span>
+                  <span class="preview-value">{{ validationResult.parsedRule.description }}</span>
+                </div>
+                <div class="preview-row">
+                  <span class="preview-label">Threshold:</span>
+                  <span class="preview-value">{{ validationResult.parsedRule.threshhold }} events</span>
+                </div>
+                <div class="preview-row">
+                  <span class="preview-label">Time Window:</span>
+                  <span class="preview-value">{{ formatInterval(validationResult.parsedRule.interval) }}</span>
+                </div>
+                <div class="preview-row" *ngIf="validationResult.parsedRule.groupedBy?.length">
+                  <span class="preview-label">Group By:</span>
+                  <span class="preview-value">{{ validationResult.parsedRule.groupedBy.join(', ') }}</span>
+                </div>
+                <div class="preview-section">
+                  <span class="preview-label">Conditions ({{ validationResult.parsedRule.conditions.length }}):</span>
+                  <div class="condition-list">
+                    <div *ngFor="let cond of validationResult.parsedRule.conditions" class="condition-item">
+                      <span class="condition-field">{{ cond.field }}</span>
+                      <span class="condition-type">{{ cond.conditionType }}</span>
+                      <span class="condition-values">[{{ cond.values.join(', ') }}]</span>
+                      <span class="condition-mode" *ngIf="cond.matchMode !== 'NORMAL'">({{ cond.matchMode }})</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="ai-actions">
+              <button nz-button nzType="default" (click)="validateJson()">
+                <span nz-icon nzType="check" nzTheme="outline"></span>
+                Validate JSON
+              </button>
+              <button nz-button nzType="primary" [disabled]="!validationResult?.valid"
+                (click)="importFromJson()">
+                <span nz-icon nzType="download" nzTheme="outline"></span>
+                Import to Form
+              </button>
+              <button nz-button nzType="default" (click)="clearJsonInput()">
+                <span nz-icon nzType="close" nzTheme="outline"></span>
+                Clear
+              </button>
+            </div>
+          </div>
+        </nz-tab>
+      </nz-tabset>
+    </form>
+
+    <div class="step-actions">
+      <button nz-button nzType="default" (click)="onBack()">Back</button>
+      <button nz-button nzType="primary" (click)="onSave()">Save</button>
+    </div>
+  </nz-card>
+</div>

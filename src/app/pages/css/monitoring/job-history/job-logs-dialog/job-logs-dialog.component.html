@@ -1,0 +1,47 @@
+<!-- Job summary -->
+<nz-descriptions nzBordered [nzColumn]="4" nzSize="small" style="margin-bottom: 12px;">
+  <nz-descriptions-item nzTitle="Job ID">#{{ data.job.id }}</nz-descriptions-item>
+  <nz-descriptions-item nzTitle="Started On">{{ data.job.startedOnStr || 'N/A' }}</nz-descriptions-item>
+  <nz-descriptions-item nzTitle="SAP System">{{ data.job.sapSystem || 'N/A' }}</nz-descriptions-item>
+  <nz-descriptions-item nzTitle="Status">
+    <nz-tag>{{ data.job.statusDisplay || data.job.status || 'N/A' }}</nz-tag>
+  </nz-descriptions-item>
+</nz-descriptions>
+
+<!-- Loading -->
+<div *ngIf="loading" style="text-align: center; padding: 48px 0;">
+  <nz-spin nzSimple></nz-spin>
+  <p style="color: rgba(0,0,0,0.45); margin-top: 12px;">Loading logs...</p>
+</div>
+
+<!-- Error -->
+<nz-result *ngIf="error && !loading"
+  nzStatus="error"
+  nzTitle="Error"
+  [nzSubTitle]="error">
+  <div nz-result-extra>
+    <button nz-button nzType="default" (click)="loadLogs()">Retry</button>
+  </div>
+</nz-result>
+
+<!-- Empty -->
+<nz-empty *ngIf="!loading && !error && logs.length === 0"
+  nzNotFoundContent="No log entries for this job"
+  [nzNotFoundImage]="'simple'">
+</nz-empty>
+
+<!-- Log entries -->
+<div *ngIf="!loading && !error && logs.length > 0" class="log-list">
+  <div *ngFor="let log of logs" class="log-entry" [ngClass]="getLevelClass(log.level)">
+    <div class="log-meta">
+      <nz-tag [nzColor]="getLevelColor(log.level)" class="log-level-tag">{{ log.level }}</nz-tag>
+      <span class="log-timestamp">{{ log.createdAt }}</span>
+    </div>
+    <div class="log-message">{{ log.message }}</div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+</div>
