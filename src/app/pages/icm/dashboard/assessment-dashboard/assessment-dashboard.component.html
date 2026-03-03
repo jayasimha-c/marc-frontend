@@ -1,0 +1,223 @@
+<div style="padding: 16px;">
+  <!-- Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button nz-button nzType="text" nzShape="circle" (click)="goBack()"
+        nz-tooltip nzTooltipTitle="Back to Dashboard">
+        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+      </button>
+      <div>
+        <h3 style="margin: 0;">Control Assessment</h3>
+        <small>Testing coverage and effectiveness analysis</small>
+      </div>
+    </div>
+
+    <nz-space>
+      <nz-form-item *nzSpaceItem style="margin-bottom: 0; width: 160px;">
+        <nz-form-control>
+          <div class="nz-float-label" [class.has-value]="selectedSystemId !== null">
+            <nz-select [(ngModel)]="selectedSystemId" nzPlaceHolder=" " nzShowSearch nzAllowClear
+              (ngModelChange)="onSystemChange()">
+              <nz-option *ngFor="let sys of systems" [nzValue]="sys.id" [nzLabel]="sys.name || sys.sid"></nz-option>
+            </nz-select>
+            <label>System</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+      <button *nzSpaceItem nz-button nzType="text" nzShape="circle" (click)="refresh()"
+        nz-tooltip nzTooltipTitle="Refresh">
+        <span nz-icon nzType="reload" nzTheme="outline"></span>
+      </button>
+    </nz-space>
+  </div>
+
+  <!-- KPI Cards -->
+  <div nz-row [nzGutter]="[16, 16]" style="margin-bottom: 16px;">
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Total" [value]="loading ? '-' : (summary?.totalControls || 0)"
+        description="Controls" [loading]="loading" icon="safety-certificate" color="#1890ff">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Tested" [value]="loading ? '-' : (summary?.testedControls || 0)"
+        description="Assessed" [loading]="loading" icon="file-done" color="#52c41a"
+        [clickable]="true" (click)="viewControls('tested')">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Not Tested" [value]="loading ? '-' : (summary?.notTestedControls || 0)"
+        description="Pending" [loading]="loading" icon="question-circle"
+        [color]="(summary?.notTestedControls || 0) > 0 ? '#faad14' : '#d9d9d9'"
+        [clickable]="true" (click)="viewControls('not-tested')">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Effective" [value]="loading ? '-' : (summary?.effectiveControls || 0)"
+        description="Passed" [loading]="loading" icon="check-circle" color="#52c41a"
+        [clickable]="true" (click)="viewControls('effective')">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Ineffective" [value]="loading ? '-' : (summary?.ineffectiveControls || 0)"
+        description="Failed" [loading]="loading" icon="close-circle"
+        [color]="(summary?.ineffectiveControls || 0) > 0 ? '#ff4d4f' : '#d9d9d9'"
+        [clickable]="true" (click)="viewControls('ineffective')">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Effectiveness" [value]="loading ? '-' : (summary?.effectivenessRate || 0) + '%'"
+        description="Rate" [loading]="loading" icon="dashboard"
+        [color]="getEffectivenessColor(summary?.effectivenessRate || 0)">
+      </app-statistics-card>
+    </div>
+  </div>
+
+  <!-- Charts Row 1: Progress + Criticality + Effectiveness Breakdown -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+    <div nz-col [nzXs]="24" [nzLg]="8">
+      <common-apx-chart #progressChart [loading]="loading" [chartOptions]="progressChartOptions"></common-apx-chart>
+      <nz-card *ngIf="!loading && summary" [nzBordered]="false" style="margin-top: -1px;">
+        <div nz-row [nzGutter]="12">
+          <div nz-col [nzSpan]="12" style="text-align: center;">
+            <nz-statistic nzTitle="Tested" [nzValue]="summary.testedControls || 0"
+              [nzValueStyle]="{ color: '#52c41a' }"></nz-statistic>
+          </div>
+          <div nz-col [nzSpan]="12" style="text-align: center;">
+            <nz-statistic nzTitle="Not Tested" [nzValue]="summary.notTestedControls || 0"></nz-statistic>
+          </div>
+        </div>
+      </nz-card>
+    </div>
+    <div nz-col [nzXs]="24" [nzLg]="8">
+      <common-apx-chart #byCritChart [loading]="loadingByCrit" [chartOptions]="byCritChartOptions"></common-apx-chart>
+    </div>
+    <div nz-col [nzXs]="24" [nzLg]="8">
+      <nz-card nzTitle="Effectiveness Breakdown" [nzLoading]="loading">
+        <div *ngIf="summary" class="breakdown-list">
+          <div class="breakdown-item">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <span><nz-badge nzColor="#52c41a"></nz-badge> Effective</span>
+              <strong>{{ summary.effectiveControls || 0 }}</strong>
+            </div>
+            <nz-progress [nzPercent]="summary.totalControls ? ((summary.effectiveControls || 0) / summary.totalControls * 100) : 0"
+              nzStrokeColor="#52c41a" [nzShowInfo]="false" nzSize="small"></nz-progress>
+          </div>
+          <div class="breakdown-item">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <span><nz-badge nzColor="#faad14"></nz-badge> Partially Effective</span>
+              <strong>{{ summary.partiallyEffectiveControls || 0 }}</strong>
+            </div>
+            <nz-progress [nzPercent]="summary.totalControls ? ((summary.partiallyEffectiveControls || 0) / summary.totalControls * 100) : 0"
+              nzStrokeColor="#faad14" [nzShowInfo]="false" nzSize="small"></nz-progress>
+          </div>
+          <div class="breakdown-item">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <span><nz-badge nzColor="#ff4d4f"></nz-badge> Ineffective</span>
+              <strong>{{ summary.ineffectiveControls || 0 }}</strong>
+            </div>
+            <nz-progress [nzPercent]="summary.totalControls ? ((summary.ineffectiveControls || 0) / summary.totalControls * 100) : 0"
+              nzStrokeColor="#ff4d4f" [nzShowInfo]="false" nzSize="small"></nz-progress>
+          </div>
+          <div class="breakdown-item">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <span><nz-badge nzColor="#d9d9d9"></nz-badge> Not Tested</span>
+              <strong>{{ summary.notTestedControls || 0 }}</strong>
+            </div>
+            <nz-progress [nzPercent]="summary.totalControls ? ((summary.notTestedControls || 0) / summary.totalControls * 100) : 0"
+              nzStrokeColor="#d9d9d9" [nzShowInfo]="false" nzSize="small"></nz-progress>
+          </div>
+        </div>
+      </nz-card>
+    </div>
+  </div>
+
+  <!-- Charts Row 2: By Business Process + Trend -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+    <div nz-col [nzXs]="24" [nzLg]="12">
+      <common-apx-chart #byBpChart [loading]="loadingByBp" [chartOptions]="byBpChartOptions"></common-apx-chart>
+    </div>
+    <div nz-col [nzXs]="24" [nzLg]="12">
+      <nz-card [nzExtra]="periodButtons">
+        <common-apx-chart #trendChart [loading]="loadingTrend" [chartOptions]="trendChartOptions"></common-apx-chart>
+      </nz-card>
+      <ng-template #periodButtons>
+        <nz-radio-group [(ngModel)]="selectedPeriod" nzButtonStyle="solid" nzSize="small"
+          (ngModelChange)="onPeriodChange()">
+          <label *ngFor="let opt of periodOptions" nz-radio-button [nzValue]="opt.period">{{ opt.label }}</label>
+        </nz-radio-group>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Business Process Details Table -->
+  <nz-card *ngIf="!loadingByBp && byBusinessProcess?.groups?.length" nzTitle="Assessment by Business Process"
+    style="margin-bottom: 16px;">
+    <nz-table #bpTable [nzData]="byBusinessProcess.groups" [nzShowPagination]="false"
+      nzSize="small" [nzScroll]="{ x: '700px' }">
+      <thead>
+        <tr>
+          <th>Business Process</th>
+          <th nzAlign="center">Total</th>
+          <th nzAlign="center">Tested</th>
+          <th nzAlign="center">Coverage</th>
+          <th nzAlign="center">Effective</th>
+          <th nzAlign="center">Effectiveness</th>
+          <th nzAlign="center">Deficiencies</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let group of bpTable.data">
+          <td><strong>{{ group.groupName }}</strong></td>
+          <td nzAlign="center">{{ group.totalControls }}</td>
+          <td nzAlign="center" class="text-success">{{ group.testedControls }}</td>
+          <td nzAlign="center">
+            <nz-progress [nzPercent]="getTestedPercentage(group)" nzSize="small"
+              [nzStrokeColor]="getProgressColor(getTestedPercentage(group))"
+              [nzFormat]="percentFormat" style="width: 100px; display: inline-block;"></nz-progress>
+          </td>
+          <td nzAlign="center" class="text-success">{{ group.effectiveControls }}</td>
+          <td nzAlign="center">
+            <strong [style.color]="getEffectivenessColor(group.effectivenessRate)">
+              {{ group.effectivenessRate || 0 }}%
+            </strong>
+          </td>
+          <td nzAlign="center">
+            <span [style.color]="group.openDeficiencies > 0 ? '#ff4d4f' : 'inherit'">
+              {{ group.openDeficiencies || 0 }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td><strong>Total</strong></td>
+          <td nzAlign="center"><strong>{{ byBusinessProcess.totalControls }}</strong></td>
+          <td nzAlign="center"><strong class="text-success">{{ byBusinessProcess.totalEffective }}</strong></td>
+          <td nzAlign="center">-</td>
+          <td nzAlign="center"><strong class="text-success">{{ byBusinessProcess.totalEffective }}</strong></td>
+          <td nzAlign="center">
+            <strong [style.color]="getEffectivenessColor(byBusinessProcess.overallEffectivenessRate)">
+              {{ byBusinessProcess.overallEffectivenessRate || 0 }}%
+            </strong>
+          </td>
+          <td nzAlign="center"><strong>{{ byBusinessProcess.totalDeficiencies }}</strong></td>
+        </tr>
+      </tfoot>
+    </nz-table>
+  </nz-card>
+
+  <!-- Action Bar -->
+  <nz-card style="text-align: center;">
+    <nz-space>
+      <button *nzSpaceItem nz-button nzType="primary" (click)="viewControls()">
+        <span nz-icon nzType="safety-certificate" nzTheme="outline"></span> View All Controls
+      </button>
+      <button *nzSpaceItem nz-button (click)="viewControls('not-tested')">
+        <span nz-icon nzType="question-circle" nzTheme="outline"></span> Not Tested
+      </button>
+      <button *nzSpaceItem nz-button (click)="viewControls('ineffective')">
+        <span nz-icon nzType="close-circle" nzTheme="outline"></span> Ineffective
+      </button>
+    </nz-space>
+  </nz-card>
+</div>

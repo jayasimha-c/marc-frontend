@@ -1,0 +1,172 @@
+<div style="padding: 16px;">
+  <!-- Search Panel -->
+  <nz-card style="margin-bottom: 16px;" nzSize="small">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <span style="font-weight: 600;">Search Filters</span>
+      <button nz-button nzType="text" nzSize="small" (click)="searchExpanded = !searchExpanded">
+        <span nz-icon [nzType]="searchExpanded ? 'up' : 'down'" nzTheme="outline"></span>
+        {{ searchExpanded ? 'Collapse' : 'Expand' }}
+      </button>
+    </div>
+
+    <div *ngIf="searchExpanded">
+      <form [formGroup]="form" nz-form>
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="6">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('controlName')?.value">
+                  <input nz-input placeholder=" " formControlName="controlName" />
+                  <label>Control Name</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="6">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('ruleName')?.value">
+                  <input nz-input placeholder=" " formControlName="ruleName" />
+                  <label>Rule Name</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="6">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('scriptName')?.value">
+                  <input nz-input placeholder=" " formControlName="scriptName" />
+                  <label>Script Name</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="6">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('sapSystem')?.value">
+                  <nz-select formControlName="sapSystem" nzPlaceHolder=" " nzShowSearch nzAllowClear>
+                    <nz-option *ngFor="let s of dropdownData.sapSystemList"
+                      [nzValue]="s.id" [nzLabel]="s.destinationName"></nz-option>
+                  </nz-select>
+                  <label>SAP System</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="6">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('businessProcess')?.value">
+                  <nz-select formControlName="businessProcess" nzPlaceHolder=" " nzShowSearch nzAllowClear>
+                    <nz-option *ngFor="let bp of dropdownData.bpList"
+                      [nzValue]="bp.id" [nzLabel]="bp.name"></nz-option>
+                  </nz-select>
+                  <label>Business Process</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="6">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('businessSubProcess')?.value">
+                  <nz-select formControlName="businessSubProcess" nzPlaceHolder=" " nzShowSearch nzAllowClear>
+                    <nz-option *ngFor="let sbp of dropdownData.sbpList"
+                      [nzValue]="sbp.id" [nzLabel]="sbp.name"></nz-option>
+                  </nz-select>
+                  <label>Business Sub-Process</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="6">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('createdFrom')?.value">
+                  <nz-date-picker formControlName="createdFrom" nzPlaceHolder=" " style="width: 100%;"></nz-date-picker>
+                  <label>Created From</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="6">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('createdTo')?.value">
+                  <nz-date-picker formControlName="createdTo" nzPlaceHolder=" " style="width: 100%;"></nz-date-picker>
+                  <label>Created To</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="6">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('executedFrom')?.value">
+                  <nz-date-picker formControlName="executedFrom" nzPlaceHolder=" " style="width: 100%;"></nz-date-picker>
+                  <label>Executed From</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="6">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('executedTo')?.value">
+                  <nz-date-picker formControlName="executedTo" nzPlaceHolder=" " style="width: 100%;"></nz-date-picker>
+                  <label>Executed To</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="6">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label" [class.has-value]="form.get('status')?.value">
+                  <nz-select formControlName="status" nzPlaceHolder=" " nzAllowClear>
+                    <nz-option *ngFor="let s of deficiencyStatusOptions"
+                      [nzValue]="s.value" [nzLabel]="s.label"></nz-option>
+                  </nz-select>
+                  <label>Status</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div style="text-align: right; margin-top: 8px;">
+          <button nz-button nzType="default" style="margin-right: 8px;" (click)="resetFilters()">
+            <span nz-icon nzType="clear" nzTheme="outline"></span> Reset
+          </button>
+          <button nz-button nzType="primary" (click)="search()">
+            <span nz-icon nzType="search" nzTheme="outline"></span> Search
+          </button>
+        </div>
+      </form>
+    </div>
+  </nz-card>
+
+  <!-- Deficiency Table -->
+  <app-advanced-table
+    title="ICM Deficiencies"
+    [columns]="columns"
+    [data]="data"
+    [loading]="loading"
+    [totalRecords]="totalRecords"
+    [serverSide]="true"
+    [pageIndex]="pageIndex"
+    [pageSize]="pageSize"
+    [actions]="tableActions"
+    (queryParamsChange)="onQueryParamsChange($event)"
+    (rowClick)="onRowClick($event)"
+    emptyText="No deficiencies found">
+  </app-advanced-table>
+</div>

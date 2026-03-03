@@ -1,0 +1,133 @@
+<!-- Statistics -->
+<nz-row [nzGutter]="16" class="mb-md">
+    <nz-col [nzSpan]="4" *ngFor="let card of statCards">
+        <app-statistics-card [title]="card.title" [value]="card.value" [icon]="card.icon"
+            [color]="card.color" [description]="card.desc" [loading]="statsLoading">
+        </app-statistics-card>
+    </nz-col>
+</nz-row>
+
+<!-- Privileges Table -->
+<app-advanced-table title="Privileges" [columns]="columns" [data]="data" [loading]="loading"
+    [showPagination]="true" [serverSide]="true" [totalRecords]="totalRecords"
+    [pageSize]="pageSize" [pageIndex]="pageIndex" [actions]="tableActions"
+    (queryParamsChange)="onPageIndexChange($event.pageIndex)">
+</app-advanced-table>
+
+<ng-template #statusTpl let-row="row">
+    <nz-tag [nzColor]="row.active ? 'success' : 'default'">{{ row.active ? 'Active' : 'Inactive' }}</nz-tag>
+</ng-template>
+
+<ng-template #operationsTpl let-row="row">
+    <nz-space [nzSize]="4">
+        <button *nzSpaceItem nz-button nzType="link" nzSize="small" nz-tooltip="Approvers" (click)="openUserManagement(row, 'APPROVER')">
+            <span nz-icon nzType="user-switch"></span>
+        </button>
+        <button *nzSpaceItem nz-button nzType="link" nzSize="small" nz-tooltip="Reviewers" (click)="openUserManagement(row, 'REVIEWER')">
+            <span nz-icon nzType="audit"></span>
+        </button>
+        <button *nzSpaceItem nz-button nzType="link" nzSize="small" nz-tooltip="Requesters" (click)="openUserManagement(row, 'REQUESTER')">
+            <span nz-icon nzType="user-add"></span>
+        </button>
+        <ng-container *nzSpaceItem>
+            <a nz-dropdown [nzDropdownMenu]="moreMenu" nzTrigger="click">
+                <button nz-button nzType="text" nzSize="small">
+                    <span nz-icon nzType="more"></span>
+                </button>
+            </a>
+            <nz-dropdown-menu #moreMenu="nzDropdownMenu">
+                <ul nz-menu>
+                    <li nz-menu-item (click)="openSapMapping(row)">
+                        <span nz-icon nzType="api"></span> SAP Mapping
+                    </li>
+                    <li nz-menu-item (click)="openSettings(row)">
+                        <span nz-icon nzType="setting"></span> Settings
+                    </li>
+                    <li nz-menu-divider></li>
+                    <li nz-menu-item (click)="editWizard(row)">
+                        <span nz-icon nzType="form"></span> Edit Wizard
+                    </li>
+                    <li nz-menu-item (click)="editDescription(row)">
+                        <span nz-icon nzType="edit"></span> Edit Description
+                    </li>
+                    <li nz-menu-item (click)="viewHistory(row)">
+                        <span nz-icon nzType="history"></span> History
+                    </li>
+                    <li nz-menu-divider></li>
+                    <li nz-menu-item (click)="switchStatus(row)">
+                        <span nz-icon [nzType]="row.active ? 'pause-circle' : 'play-circle'"></span>
+                        {{ row.active ? 'Deactivate' : 'Activate' }}
+                    </li>
+                    <li nz-menu-item nzDanger (click)="deletePrivilege(row)">
+                        <span nz-icon nzType="delete"></span> Delete
+                    </li>
+                </ul>
+            </nz-dropdown-menu>
+        </ng-container>
+    </nz-space>
+</ng-template>
+
+<!-- History Side Panel -->
+<app-side-panel #historyPanel [title]="'Privilege History'" [subtitle]="historyPrivilegeId"
+    icon="history" width="560px" [showFooter]="false">
+
+    <ng-container *ngIf="!selectedHistoryRow">
+        <div nz-row nzJustify="space-between" nzAlign="middle" class="mb-sm">
+            <span nz-typography nzType="secondary">{{ historyData.length }} entries</span>
+            <button *ngIf="historyData.length" nz-button nzType="text" nzSize="small" nz-tooltip="Copy all"
+                (click)="copyHistoryToClipboard()">
+                <span nz-icon nzType="copy"></span>
+            </button>
+        </div>
+
+        <nz-spin [nzSpinning]="historyLoading">
+            <nz-empty *ngIf="historyData.length === 0 && !historyLoading" nzNotFoundContent="No history records">
+            </nz-empty>
+
+            <nz-list nzSize="small" nzBordered>
+                <nz-list-item *ngFor="let row of historyData" (click)="onHistoryRowClick(row)"
+                    style="cursor:pointer">
+                    <nz-list-item-meta [nzTitle]="row.action" [nzDescription]="'by ' + row.updatedBy">
+                    </nz-list-item-meta>
+                    <span nz-typography nzType="secondary" style="font-size:12px">{{ formatDate(row.updateTime) }}</span>
+                </nz-list-item>
+            </nz-list>
+        </nz-spin>
+    </ng-container>
+
+    <ng-container *ngIf="selectedHistoryRow">
+        <nz-page-header nzBackIcon (nzBack)="backToHistoryList()" [nzTitle]="selectedHistoryRow.action"
+            [nzSubtitle]="formatDate(selectedHistoryRow.updateTime) + ' by ' + selectedHistoryRow.updatedBy"
+            style="padding:0 0 12px">
+            <nz-page-header-extra>
+                <button *ngIf="historyDetails.length" nz-button nzType="text" nzSize="small"
+                    nz-tooltip="Copy details" (click)="copyDetailsToClipboard()">
+                    <span nz-icon nzType="copy"></span>
+                </button>
+            </nz-page-header-extra>
+        </nz-page-header>
+
+        <nz-spin [nzSpinning]="historyDetailsLoading">
+            <nz-empty *ngIf="historyDetails.length === 0 && !historyDetailsLoading"
+                nzNotFoundContent="No change details"></nz-empty>
+
+            <nz-table #detailTable [nzData]="historyDetails" nzSize="small" [nzShowPagination]="false"
+                nzBordered [nzFrontPagination]="false">
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of detailTable.data">
+                        <td><strong>{{ item.property }}</strong></td>
+                        <td><span nz-typography nzType="danger">{{ item.oldValue || '-' }}</span></td>
+                        <td><span nz-typography nzType="success">{{ item.newValue || '-' }}</span></td>
+                    </tr>
+                </tbody>
+            </nz-table>
+        </nz-spin>
+    </ng-container>
+</app-side-panel>

@@ -1,6 +1,8 @@
 import { Component, Inject, OnInit, Optional } from '@angular/core';
 import { NZ_MODAL_DATA, NzModalRef } from 'ng-zorro-antd/modal';
 import { RiskAnalysisOnlineService } from '../../risk-analysis-online.service';
+import { GridRequestBuilder } from '../../../../../core/utils/grid-request.builder';
+import { TableQueryParams } from '../../../../../shared/components/advanced-table/advanced-table.models';
 
 @Component({
   standalone: false,
@@ -28,7 +30,8 @@ export class RoleSelectModalComponent implements OnInit {
   }
 
   loadData(): void {
-    const event = { first: (this.currentPage - 1) * this.pageSize, rows: this.pageSize, sortOrder: 1, sortField: '', filters: {}, globalFilter: this.searchText ? { value: this.searchText } : null };
+    const params: TableQueryParams = { pageIndex: this.currentPage, pageSize: this.pageSize, filters: {}, globalSearch: this.searchText || '' };
+    const event = GridRequestBuilder.toLegacy(params);
     const selectedRoles = this.preSelection.formType === 'simulation' ? this.preSelection.selectedRoles : this.preSelection.selectedusers;
     const payload: any = {
       lazyEvent: event,
@@ -68,7 +71,7 @@ export class RoleSelectModalComponent implements OnInit {
   }
 
   saveAll(): void {
-    const event = { first: 0, rows: this.pageSize, sortOrder: 1, sortField: '', filters: {} };
+    const event = GridRequestBuilder.defaultLegacy(this.pageSize);
     const payload: any = {
       lazyEvent: event,
       selectedSAP: this.preSelection.selectedSAP,

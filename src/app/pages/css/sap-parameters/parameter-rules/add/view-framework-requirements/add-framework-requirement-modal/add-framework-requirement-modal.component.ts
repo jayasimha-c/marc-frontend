@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { NZ_MODAL_DATA, NzModalRef } from 'ng-zorro-antd/modal';
 import { SapParameterService } from '../../../../sap-parameters.service';
 import { TableColumn } from '../../../../../../../shared/components/advanced-table/advanced-table.models';
+import { GridRequestBuilder } from '../../../../../../../core/utils/grid-request.builder';
 
 @Component({
   standalone: false,
@@ -28,7 +29,7 @@ export class AddFrameworkRequirementModalComponent implements OnInit {
 
   ngOnInit(): void {
     this.selection = [...(this.dialogData.selectedRequirements || [])];
-    this.loadRequirements({ first: 0, rows: 10, page: 0, sortOrder: 0, sortField: '', filters: {} });
+    this.loadRequirements(GridRequestBuilder.defaultLegacy());
   }
 
   loadRequirements(event: any): void {

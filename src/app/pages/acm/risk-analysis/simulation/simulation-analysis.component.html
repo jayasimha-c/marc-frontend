@@ -1,0 +1,147 @@
+<div style="padding: 16px;">
+  <!-- Step Headers -->
+  <nz-steps [nzCurrent]="currentStep" style="margin-bottom: 24px;">
+    <nz-step nzTitle="Users"></nz-step>
+    <nz-step nzTitle="Risks"></nz-step>
+    <nz-step nzTitle="Roles"></nz-step>
+    <ng-container *ngIf="preSelection?.options?.rolesStep">
+      <nz-step nzTitle="User Roles"></nz-step>
+      <nz-step nzTitle="Excluded Roles"></nz-step>
+    </ng-container>
+    <nz-step nzTitle="Results"></nz-step>
+  </nz-steps>
+
+  <!-- Step 0: Users -->
+  <div [hidden]="currentStep !== 0">
+    <app-online-users [header]="'Selected Users'" [preSelection]="preSelection"
+                      [simulationType]="'online'">
+    </app-online-users>
+    <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+      <button nz-button nzType="primary" (click)="onStepChange(1); currentStep = 1">Next</button>
+    </div>
+  </div>
+
+  <!-- Step 1: Risks -->
+  <div [hidden]="currentStep !== 1">
+    <app-online-risk-list [header]="'Selected Risks'" [preSelection]="preSelection">
+    </app-online-risk-list>
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+      <button nz-button nzType="default" (click)="currentStep = 0">Back</button>
+      <button nz-button nzType="primary" (click)="onStepChange(2); currentStep = 2">Next</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Roles -->
+  <div [hidden]="currentStep !== 2">
+    <app-online-roles [header]="'Selected Roles'" [preSelection]="preSelection"
+                      [simulationType]="'online'">
+    </app-online-roles>
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+      <button nz-button nzType="default" (click)="currentStep = 1">Back</button>
+      <button nz-button nzType="primary"
+              (click)="onStepChange(preSelection?.options?.rolesStep ? 3 : resultsStepIndex)">
+        Next
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 3: User Roles (conditional) -->
+  <div [hidden]="currentStep !== 3" *ngIf="preSelection?.options?.rolesStep">
+    <app-title-panel title="User Roles">
+      <div style="margin-bottom: 8px;">
+        <button nz-button nzType="primary" nzSize="small" (click)="excludeUserRoles()"
+                [disabled]="userRolesSelected.length === 0">
+          <span nz-icon nzType="minus-circle" nzTheme="outline"></span> Exclude Selected
+        </button>
+      </div>
+      <nz-table #userRolesTable [nzData]="userRolesData" nzSize="small" [nzShowPagination]="false"
+                [nzScroll]="{ y: '40vh' }">
+        <thead>
+          <tr>
+            <th nzWidth="40px">
+              <label nz-checkbox [ngModel]="allUserRolesChecked" (ngModelChange)="onAllUserRolesChecked($event)"></label>
+            </th>
+            <th *ngFor="let col of userRolesCols">{{ col.header }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of userRolesTable.data">
+            <td>
+              <label nz-checkbox [ngModel]="isUserRoleChecked(item)" (ngModelChange)="onUserRoleChecked(item, $event)"></label>
+            </td>
+            <td *ngFor="let col of userRolesCols">{{ item[col.field] }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </app-title-panel>
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+      <button nz-button nzType="default" (click)="currentStep = 2">Back</button>
+      <button nz-button nzType="primary" (click)="onStepChange(4); currentStep = 4">Next</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Excluded Roles (conditional) -->
+  <div [hidden]="currentStep !== 4" *ngIf="preSelection?.options?.rolesStep">
+    <app-title-panel title="Excluded Roles">
+      <div style="margin-bottom: 8px; display: flex; gap: 8px;">
+        <button nz-button nzType="default" nzSize="small" (click)="removeExcludedRoles()"
+                [disabled]="excludedRolesSelected.length === 0">
+          <span nz-icon nzType="rollback" nzTheme="outline"></span> Remove Selected
+        </button>
+        <button nz-button nzType="default" nzSize="small" (click)="removeAllExcludedRoles()"
+                [disabled]="excludedRolesData.length === 0">
+          <span nz-icon nzType="delete" nzTheme="outline"></span> Remove All
+        </button>
+      </div>
+      <nz-table #excludedRolesTable [nzData]="excludedRolesData" nzSize="small" [nzShowPagination]="false"
+                [nzScroll]="{ y: '40vh' }">
+        <thead>
+          <tr>
+            <th nzWidth="40px">
+              <label nz-checkbox [ngModel]="allExcludedRolesChecked" (ngModelChange)="onAllExcludedRolesChecked($event)"></label>
+            </th>
+            <th *ngFor="let col of excludedRolesCols">{{ col.header }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of excludedRolesTable.data">
+            <td>
+              <label nz-checkbox [ngModel]="isExcludedRoleChecked(item)" (ngModelChange)="onExcludedRoleChecked(item, $event)"></label>
+            </td>
+            <td *ngFor="let col of excludedRolesCols">{{ item[col.field] }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </app-title-panel>
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+      <button nz-button nzType="default" (click)="currentStep = 3">Back</button>
+      <button nz-button nzType="primary" (click)="onStepChange(resultsStepIndex)">Next</button>
+    </div>
+  </div>
+
+  <!-- Results step (index depends on rolesStep) -->
+  <div [hidden]="currentStep !== resultsStepIndex">
+    <app-analysis-result
+      [analysisMenuList]="analysisMenuList"
+      [analysisComplete]="analysisComplete"
+      [violationsData]="violationsData"
+      [violationsTotal]="violationsTotal"
+      [violationsCols]="violationsCols"
+      [summaryData]="summaryData"
+      [summaryTotal]="summaryTotal"
+      [summaryCols]="summaryCols"
+      [detailedData]="detailedData"
+      [detailedTotal]="detailedTotal"
+      [detailedCols]="detailedCols"
+      [onViolationsPageChange]="onViolationsPageChange"
+      [onSummaryPageChange]="onSummaryPageChange"
+      [onDetailedPageChange]="onDetailedPageChange"
+      [onSummaryRowSelect]="onSummaryRowSelect">
+    </app-analysis-result>
+
+    <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+      <button nz-button nzType="default"
+              (click)="currentStep = preSelection?.options?.rolesStep ? 4 : 2">Back</button>
+    </div>
+  </div>
+</div>

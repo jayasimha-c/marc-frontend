@@ -1,163 +1,217 @@
-<div class="modal-header">
-    <h3 nz-typography>{{ getPageTitle() }}</h3>
-</div>
+<nz-page-header nzBackIcon (nzBack)="navigateBack()">
+    <nz-page-header-title>{{ getPageTitle() }}</nz-page-header-title>
+    <nz-page-header-extra>
+        <nz-space>
+            <ng-container *nzSpaceItem>
+                <button *ngIf="action === 'approval-view'" nz-button nzDanger
+                    (click)="rejectRequest()">Reject</button>
+            </ng-container>
+            <ng-container *nzSpaceItem>
+                <button *ngIf="action === 'approval-view'" nz-button nzType="primary"
+                    (click)="approveRequest()">Approve</button>
+            </ng-container>
+            <ng-container *nzSpaceItem>
+                <button *ngIf="!isReadOnly()" nz-button nzType="primary"
+                    [nzLoading]="isSubmitting" [disabled]="!form.valid || isSubmitting"
+                    (click)="sendRequest()">
+                    {{ action === 'edit' ? 'Update Request' : 'Submit Request' }}
+                </button>
+            </ng-container>
+        </nz-space>
+    </nz-page-header-extra>
+</nz-page-header>
 
-<form nz-form [formGroup]="form" class="modal-form-content">
-    <div nz-row [nzGutter]="24">
-        <!-- SAP System -->
-        <div nz-col [nzSpan]="12">
-            <nz-form-item>
-                <nz-form-control>
-                    <nz-select formControlName="sapSystem" nzPlaceHolder="SAP System"
-                        [nzDisabled]="action === 'view' || action === 'approval-view'">
-                        <nz-option *ngFor="let s of sapSystemList" [nzValue]="s[0]" [nzLabel]="s[1]"></nz-option>
-                    </nz-select>
-                </nz-form-control>
-            </nz-form-item>
-        </div>
+<form nz-form [formGroup]="form" nzLayout="vertical">
+    <div nz-row [nzGutter]="16">
 
-        <!-- Privilege ID -->
-        <div nz-col [nzSpan]="12">
-            <nz-form-item>
-                <nz-form-control>
-                    <nz-select formControlName="privID" nzPlaceHolder="Privilege ID"
-                        [nzDisabled]="action === 'view' || action === 'approval-view'">
-                        <nz-option *ngFor="let p of privIDList" [nzValue]="p.id"
-                            [nzLabel]="p.id + ' - ' + p.description"></nz-option>
-                    </nz-select>
-                </nz-form-control>
-            </nz-form-item>
-        </div>
+        <!-- ═══ LEFT COLUMN: Input fields ═══ -->
+        <div nz-col [nzSpan]="14">
+            <nz-card nzTitle="Request Details" nzSize="small">
+                <div nz-row [nzGutter]="12">
 
-        <div nz-col [nzSpan]="12" *ngIf="action !== 'new'">
-            <nz-form-item>
-                <nz-form-control>
-                    <input nz-input formControlName="requesterName" [disabled]="true" placeholder="Requester Name" />
-                </nz-form-control>
-            </nz-form-item>
-        </div>
+                    <!-- SAP System -->
+                    <div nz-col [nzSpan]="12">
+                        <nz-form-item>
+                            <nz-form-label nzRequired>SAP System</nz-form-label>
+                            <nz-form-control nzErrorTip="Required">
+                                <nz-select formControlName="sapSystem" nzPlaceHolder="Select SAP System"
+                                    [nzDisabled]="isReadOnly()">
+                                    <nz-option *ngFor="let s of sapSystemList" [nzValue]="s[0]"
+                                        [nzLabel]="s[1]"></nz-option>
+                                </nz-select>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
 
-        <div nz-col [nzSpan]="12" *ngIf="action !== 'new'">
-            <nz-form-item>
-                <nz-form-control>
-                    <nz-date-picker formControlName="requestDate" [nzDisabled]="true" nzFormat="yyyy-MM-dd HH:mm"
-                        nzPlaceHolder="Request Date"></nz-date-picker>
-                </nz-form-control>
-            </nz-form-item>
-        </div>
+                    <!-- Privilege ID -->
+                    <div nz-col [nzSpan]="12">
+                        <nz-form-item>
+                            <nz-form-label nzRequired>Privilege ID</nz-form-label>
+                            <nz-form-control nzErrorTip="Required">
+                                <nz-select formControlName="privID" nzPlaceHolder="Select Privilege"
+                                    [nzDisabled]="isReadOnly()" nzShowSearch>
+                                    <nz-option *ngFor="let p of privIDList" [nzValue]="p.id"
+                                        [nzLabel]="p.id + ' - ' + p.description"></nz-option>
+                                </nz-select>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
 
-        <!-- Valid From -->
-        <div nz-col [nzSpan]="12">
-            <nz-form-item>
-                <nz-form-control>
-                    <nz-date-picker nzShowTime formControlName="validFrom" nzFormat="yyyy-MM-dd HH:mm"
-                        nzPlaceHolder="Valid From"
-                        [nzDisabled]="action === 'view' || action === 'approval-view'"></nz-date-picker>
-                </nz-form-control>
-            </nz-form-item>
-        </div>
+                    <!-- Valid From | Duration | Valid To — same row -->
+                    <div nz-col [nzSpan]="8">
+                        <nz-form-item>
+                            <nz-form-label nzRequired>Valid From</nz-form-label>
+                            <nz-form-control nzErrorTip="Required">
+                                <nz-date-picker nzShowTime formControlName="validFrom"
+                                    nzFormat="yyyy-MM-dd HH:mm" nzPlaceHolder="Valid From"
+                                    [nzDisabled]="isReadOnly()" style="width:100%"></nz-date-picker>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
+                    <div nz-col [nzSpan]="8">
+                        <nz-form-item>
+                            <nz-form-label nzRequired>Duration</nz-form-label>
+                            <nz-form-control nzErrorTip="Required">
+                                <nz-select formControlName="duration" nzPlaceHolder="Duration"
+                                    [nzDisabled]="isReadOnly()">
+                                    <nz-option *ngFor="let d of durationOptions" [nzValue]="d.value"
+                                        [nzLabel]="d.label"></nz-option>
+                                </nz-select>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
+                    <div nz-col [nzSpan]="8">
+                        <nz-form-item>
+                            <nz-form-label>Valid To</nz-form-label>
+                            <nz-form-control>
+                                <nz-date-picker nzShowTime formControlName="validTo"
+                                    nzFormat="yyyy-MM-dd HH:mm" nzPlaceHolder="Auto-calculated"
+                                    style="width:100%"></nz-date-picker>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
 
-        <!-- Duration -->
-        <div nz-col [nzSpan]="12">
-            <nz-form-item>
-                <nz-form-control>
-                    <nz-select formControlName="duration" nzPlaceHolder="Duration"
-                        [nzDisabled]="action === 'view' || action === 'approval-view'">
-                        <nz-option *ngFor="let d of durationOptions" [nzValue]="d.value"
-                            [nzLabel]="d.label"></nz-option>
-                    </nz-select>
-                </nz-form-control>
-            </nz-form-item>
-        </div>
+                    <!-- Reason -->
+                    <div nz-col [nzSpan]="24">
+                        <nz-form-item>
+                            <nz-form-label nzRequired>Reason</nz-form-label>
+                            <nz-form-control nzErrorTip="Required">
+                                <nz-select formControlName="reason" nzPlaceHolder="Select Reason"
+                                    [nzDisabled]="isReadOnly()">
+                                    <nz-option *ngFor="let r of reasonList" [nzValue]="r.id"
+                                        [nzLabel]="r.description"></nz-option>
+                                </nz-select>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
 
-        <!-- Valid To -->
-        <div nz-col [nzSpan]="12" *ngIf="isCustomDuration() || action === 'view' || action === 'approval-view'">
-            <nz-form-item>
-                <nz-form-control>
-                    <nz-date-picker nzShowTime formControlName="validTo" nzFormat="yyyy-MM-dd HH:mm"
-                        nzPlaceHolder="Valid To"
-                        [nzDisabled]="action === 'view' || action === 'approval-view'"></nz-date-picker>
-                </nz-form-control>
-            </nz-form-item>
-        </div>
+                    <!-- Ticket Number (conditional) -->
+                    <div nz-col [nzSpan]="24" *ngIf="ticketIntegrationEnabled">
+                        <nz-form-item>
+                            <nz-form-label nzRequired>Ticket Number</nz-form-label>
+                            <nz-form-control nzErrorTip="Required">
+                                <nz-input-group [nzSuffix]="ticketSuffix">
+                                    <input nz-input formControlName="ticketNumber"
+                                        placeholder="Enter ticket number" />
+                                </nz-input-group>
+                                <ng-template #ticketSuffix>
+                                    <span *ngIf="ticketValidated" nz-icon nzType="check-circle"
+                                        nzTheme="twotone" [nzTwotoneColor]="'#52c41a'"></span>
+                                    <span *ngIf="ticketValidating" nz-icon nzType="loading"></span>
+                                </ng-template>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
 
-        <!-- Ticket Number -->
-        <div nz-col [nzSpan]="12" *ngIf="ticketIntegrationEnabled">
-            <nz-form-item>
-                <nz-form-control>
-                    <input nz-input formControlName="ticketNumber" placeholder="Ticket Number"
-                        [disabled]="action === 'view' || action === 'approval-view'" />
-                </nz-form-control>
-            </nz-form-item>
-        </div>
-
-        <!-- Reason -->
-        <div nz-col [nzSpan]="24">
-            <nz-form-item>
-                <nz-form-control>
-                    <nz-select formControlName="reason" nzPlaceHolder="Reason"
-                        [nzDisabled]="action === 'view' || action === 'approval-view'">
-                        <nz-option *ngFor="let r of reasonList" [nzValue]="r.id" [nzLabel]="r.description"></nz-option>
-                    </nz-select>
-                </nz-form-control>
-            </nz-form-item>
-        </div>
-
-        <!-- Justification -->
-        <div nz-col [nzSpan]="24">
-            <nz-form-item>
-                <nz-form-control nzErrorTip="Justification is required">
-                    <textarea nz-input formControlName="justification" rows="4" placeholder="Justification"
-                        [disabled]="action === 'view' || action === 'approval-view'"></textarea>
-                </nz-form-control>
-            </nz-form-item>
-        </div>
-    </div>
-
-    <div class="mt-4 mb-4" *ngIf="action !== 'view' && action !== 'approval-view'">
-        <button nz-button nzType="dashed" (click)="addNewRow()"
-            [disabled]="action === 'view' || action === 'approval-view'">
-            <span nz-icon nzType="plus"></span> Add Transaction Row
-        </button>
-    </div>
-
-    <div class="mb-4">
-        <app-advanced-table #txnGrid [columns]="table2.column" [data]="table2.data">
-        </app-advanced-table>
-    </div>
-
-    <div nz-row [nzGutter]="24" class="mt-4" *ngIf="fileName">
-        <div nz-col [nzSpan]="24">
-            <div class="attachment-box p-3 border rounded shadow-sm flex items-center justify-between">
-                <div>
-                    <span nz-icon nzType="file" nzTheme="outline" class="mr-2"></span>
-                    <span>{{ fileName }}</span>
+                    <!-- Requester + Request Date (edit/view only) -->
+                    <div nz-col [nzSpan]="12" *ngIf="action !== 'new'">
+                        <nz-form-item>
+                            <nz-form-label>Requester</nz-form-label>
+                            <nz-form-control>
+                                <input nz-input formControlName="requesterName" readonly />
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
+                    <div nz-col [nzSpan]="12" *ngIf="action !== 'new'">
+                        <nz-form-item>
+                            <nz-form-label>Request Date</nz-form-label>
+                            <nz-form-control>
+                                <nz-date-picker formControlName="requestDate" [nzDisabled]="true"
+                                    nzFormat="yyyy-MM-dd HH:mm" style="width:100%"></nz-date-picker>
+                            </nz-form-control>
+                        </nz-form-item>
+                    </div>
                 </div>
-                <div>
-                    <button nz-button nzType="link" (click)="downloadAttachment()">Download</button>
-                    <button *ngIf="action !== 'view' && action !== 'approval-view'" nz-button nzType="text" nzDanger
-                        (click)="removeAttachment()"><span nz-icon nzType="delete"></span></button>
-                </div>
-            </div>
+            </nz-card>
         </div>
-    </div>
 
-    <!-- Note: We are mocking standard hidden file upload to match NG-ZORRO styles. -->
-    <div nz-row [nzGutter]="24" class="mt-4" *ngIf="action !== 'approval-view' && action !== 'view'">
-        <div nz-col [nzSpan]="24">
-            <label for="file_upload" class="ant-btn ant-btn-default ant-btn-dashed w-full text-center">
-                <span nz-icon nzType="upload"></span> Add New Attachment
-            </label>
-            <input id="file_upload" type="file" (change)="onFileSelected($event)" style="display:none;" />
+        <!-- ═══ RIGHT COLUMN: Justification + Attachment ═══ -->
+        <div nz-col [nzSpan]="10">
+            <nz-card nzTitle="Justification" nzSize="small">
+                <nz-form-item style="margin-bottom:0">
+                    <nz-form-control nzErrorTip="Justification is required">
+                        <textarea nz-input formControlName="justification" rows="8"
+                            placeholder="Describe why this privileged access is needed..."></textarea>
+                    </nz-form-control>
+                </nz-form-item>
+
+                <nz-divider style="margin:12px 0"></nz-divider>
+
+                <!-- Existing attachment -->
+                <div *ngIf="fileName"
+                    style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                    <span>
+                        <span nz-icon nzType="paper-clip" style="margin-right:4px"></span>
+                        {{ fileName }}
+                    </span>
+                    <nz-space [nzSize]="4">
+                        <button *nzSpaceItem nz-button nzType="link" nzSize="small"
+                            (click)="downloadAttachment()">
+                            <span nz-icon nzType="download"></span>
+                        </button>
+                        <ng-container *nzSpaceItem>
+                            <button *ngIf="!isReadOnly()" nz-button nzType="link" nzSize="small" nzDanger
+                                (click)="removeAttachment()">
+                                <span nz-icon nzType="delete"></span>
+                            </button>
+                        </ng-container>
+                    </nz-space>
+                </div>
+
+                <!-- Upload -->
+                <div *ngIf="!isReadOnly()">
+                    <button nz-button nzType="dashed" nzSize="small" nzBlock
+                        (click)="fileInput.click()">
+                        <span nz-icon nzType="upload"></span> Attach File
+                    </button>
+                    <input #fileInput type="file" (change)="onFileSelected($event)"
+                        style="display:none" />
+                </div>
+            </nz-card>
         </div>
     </div>
 </form>
 
-<div class="modal-footer flex justify-end gap-3 mt-4 pt-4 border-t">
-    <button nz-button nzType="default" (click)="navigateBack()">Close</button>
-    <button *ngIf="action === 'approval-view'" nz-button nzType="primary" nzDanger
-        (click)="rejectRequest()">Reject</button>
-    <button *ngIf="action === 'approval-view'" nz-button nzType="primary" (click)="approveRequest()">Approve</button>
-    <button *ngIf="action !== 'view' && action !== 'approval-view'" nz-button nzType="primary"
-        [disabled]="!form.valid || isSubmitting" (click)="sendRequest()">Save Request</button>
-</div>
+<!-- ═══ Transactions Table ═══ -->
+<nz-card nzTitle="Requested Transactions" nzSize="small" style="margin-top:16px">
+    <app-advanced-table [columns]="txnColumns" [data]="txnData" [actions]="txnActions"
+        [showSearch]="false" [showPagination]="false"
+        [showSelection]="!isReadOnly()"
+        (selectionChange)="onTxnSelectionChange($event)">
+    </app-advanced-table>
+</nz-card>
+
+<!-- TXN inline edit templates -->
+<ng-template #txnTpl let-row="row">
+    <input *ngIf="!isReadOnly()" type="text" nz-input nzSize="small"
+        [(ngModel)]="row.txn" (ngModelChange)="markModified(row)"
+        (paste)="onTxnPaste($event)" />
+    <span *ngIf="isReadOnly()">{{ row.txn }}</span>
+</ng-template>
+
+<ng-template #noteTpl let-row="row">
+    <input *ngIf="!isReadOnly()" type="text" nz-input nzSize="small"
+        [(ngModel)]="row.note" (ngModelChange)="markModified(row)"
+        (paste)="onTxnPaste($event)" />
+    <span *ngIf="isReadOnly()">{{ row.note }}</span>
+</ng-template>

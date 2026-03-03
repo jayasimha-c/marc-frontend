@@ -2,6 +2,8 @@ import { Component, Inject, OnInit, Optional } from '@angular/core';
 import { NZ_MODAL_DATA, NzModalRef } from 'ng-zorro-antd/modal';
 import { Observable } from 'rxjs';
 import { RiskAnalysisOnlineService } from '../../risk-analysis-online.service';
+import { GridRequestBuilder } from '../../../../../core/utils/grid-request.builder';
+import { TableQueryParams } from '../../../../../shared/components/advanced-table/advanced-table.models';
 
 @Component({
   standalone: false,
@@ -17,6 +19,12 @@ export class UserSelectModalComponent implements OnInit {
   pageSize = 10;
   searchText = '';
 
+  // Filter panel state
+  bulkUserIdsText = '';
+  bulkUserIds: string[] = [];
+  filterGroup = '';
+  filterType = '';
+
   constructor(
     @Optional() @Inject(NZ_MODAL_DATA) public dialogData: any,
     @Optional() public modal: NzModalRef,
@@ -29,7 +37,23 @@ export class UserSelectModalComponent implements OnInit {
   }
 
   loadData(): void {
-    const event = { first: (this.currentPage - 1) * this.pageSize, rows: this.pageSize, sortOrder: 1, sortField: '', filters: {}, globalFilter: this.searchText ? { value: this.searchText } : null };
+    const filters: Record<string, string | string[]> = {};
+    if (this.bulkUserIds.length > 0) {
+      filters['bname'] = this.bulkUserIds;
+    }
+    if (this.filterGroup?.trim()) {
+      filters['class'] = this.filterGroup.trim();
+    }
+    if (this.filterType?.trim()) {
+      filters['ustyp'] = this.filterType.trim();
+    }
+    const params: TableQueryParams = {
+      pageIndex: this.currentPage,
+      pageSize: this.pageSize,
+      filters,
+      globalSearch: this.searchText || '',
+    };
+    const event = GridRequestBuilder.toLegacy(params);
     const payload: any = {
       lazyEvent: event,
       selectedSAP: this.preSelection.selectedSAP,
@@ -58,6 +82,29 @@ export class UserSelectModalComponent implements OnInit {
     });
   }
 
+  onBulkUserIdsChange(): void {
+    if (!this.bulkUserIdsText.trim()) {
+      this.bulkUserIds = [];
+      return;
+    }
+    const items = this.bulkUserIdsText.split(/[\n,;\t]+/).map(s => s.trim().toUpperCase()).filter(Boolean);
+    this.bulkUserIds = [...new Set(items)];
+  }
+
+  applyFilters(): void {
+    this.currentPage = 1;
+    this.loadData();
+  }
+
+  clearFilters(): void {
+    this.bulkUserIdsText = '';
+    this.bulkUserIds = [];
+    this.filterGroup = '';
+    this.filterType = '';
+    this.currentPage = 1;
+    this.loadData();
+  }
+
   onPageChange(page: number): void {
     this.currentPage = page;
     this.loadData();
@@ -80,7 +127,7 @@ export class UserSelectModalComponent implements OnInit {
 
   saveAll(): void {
     const payload = {
-      lazyEvent: { first: 0, rows: this.pageSize, sortOrder: 1, sortField: '', filters: {} },
+      lazyEvent: GridRequestBuilder.defaultLegacy(this.pageSize),
       selectedSAP: this.preSelection?.selectedSAP,
       options: this.preSelection?.options,
     };

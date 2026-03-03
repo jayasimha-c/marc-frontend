@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { TableColumn } from '../../../../../shared/components/advanced-table/advanced-table.models';
 import { BtpService } from '../../btp.service';
+import { GridRequestBuilder } from '../../../../../core/utils/grid-request.builder';
 
 @Component({
   standalone: false,
@@ -36,7 +37,7 @@ export class ExecutionLogComponent implements OnInit, OnDestroy {
 
   loadData(): void {
     this.loading = true;
-    const params = { first: 0, rows: 20, sortOrder: -1, sortField: 'createdDate', filters: {} };
+    const params = GridRequestBuilder.defaultLegacy(20);
     this.btpService
       .getCommandExecutionLog(params)
       .pipe(takeUntil(this.destroy$))

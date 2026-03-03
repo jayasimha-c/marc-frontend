@@ -1,0 +1,27 @@
+<form nz-form [formGroup]="form" nzLayout="vertical">
+    <nz-form-item>
+        <nz-form-label nzRequired nzFor="privilegeId">Privilege ID</nz-form-label>
+        <nz-form-control nzHasFeedback nzErrorTip="Privilege ID is required (3-50 alphanumeric, dash, underscore)">
+            <input nz-input formControlName="privilegeId" id="privilegeId"
+                placeholder="Enter Privilege ID" style="text-transform: uppercase" />
+        </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+        <nz-form-label nzRequired nzFor="description">Description</nz-form-label>
+        <nz-form-control nzHasFeedback nzErrorTip="Description is required">
+            <textarea nz-input formControlName="description" id="description"
+                placeholder="Enter description" [nzAutosize]="{ minRows: 3, maxRows: 6 }"></textarea>
+        </nz-form-control>
+    </nz-form-item>
+</form>
+
+<nz-divider></nz-divider>
+<div nz-row nzJustify="end">
+    <nz-space>
+        <button *nzSpaceItem nz-button (click)="modal.close()">Cancel</button>
+        <button *nzSpaceItem nz-button nzType="primary" [nzLoading]="loading" (click)="save()">
+            {{ formType === 'Edit' ? 'Update' : 'Create' }}
+        </button>
+    </nz-space>
+</div>

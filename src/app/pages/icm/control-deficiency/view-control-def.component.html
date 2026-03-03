@@ -1,0 +1,275 @@
+<div style="padding: 16px;">
+  <!-- Header Card -->
+  <nz-card style="margin-bottom: 16px;" [nzLoading]="loading">
+    <div *ngIf="dfcData" style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()">
+          <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+        </button>
+        <span style="font-weight: 600; font-size: 18px;">ICM Deficiency #{{ dfcData.id }}</span>
+        <nz-tag [nzColor]="getStatusColor(dfcData.deficiencyStatus?.id)">
+          {{ getStatusLabel(dfcData.deficiencyStatus?.id) }}
+        </nz-tag>
+      </div>
+      <nz-space>
+        <button *nzSpaceItem nz-button nzType="text" nzShape="circle" nz-dropdown [nzDropdownMenu]="menu">
+          <span nz-icon nzType="more" nzTheme="outline"></span>
+        </button>
+        <nz-dropdown-menu #menu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item (click)="navigateBack()">
+              <span nz-icon nzType="unordered-list" nzTheme="outline"></span> Deficiencies List
+            </li>
+            <li nz-menu-item (click)="toggleEdit()">
+              <span nz-icon [nzType]="isEditing ? 'close' : 'edit'" nzTheme="outline"></span>
+              {{ isEditing ? 'Cancel Edit' : 'Edit' }}
+            </li>
+            <li nz-menu-item [nzDisabled]="!isEditing" (click)="saveDeficiency()">
+              <span nz-icon nzType="save" nzTheme="outline"></span> Save
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </nz-space>
+    </div>
+  </nz-card>
+
+  <!-- Tabs Card -->
+  <nz-card *ngIf="!loading && dfcData">
+    <nz-tabset>
+
+      <!-- Tab 1: Control Details -->
+      <nz-tab nzTitle="Control Details">
+        <div style="padding: 16px 0;">
+          <!-- Control Attributes -->
+          <div class="section-block">
+            <div class="section-header">
+              <span nz-icon nzType="control" nzTheme="outline"></span> Control Attributes
+            </div>
+            <nz-descriptions nzBordered nzSize="small" [nzColumn]="3">
+              <nz-descriptions-item nzTitle="Control Name">{{ control?.name || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Criticality">{{ control?.criticality?.name || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="SAP System">{{ getSapSystemName() }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Business Process">{{ control?.businessProcess?.name || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Sub-Process">{{ control?.businessSubProcess?.name || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Control Type">{{ control?.controlType?.name || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Description" [nzSpan]="3">{{ control?.description || '-' }}</nz-descriptions-item>
+            </nz-descriptions>
+          </div>
+
+          <!-- Deficiency Info -->
+          <div class="section-block">
+            <div class="section-header">
+              <span nz-icon nzType="exclamation-circle" nzTheme="outline"></span> Deficiency Information
+            </div>
+            <nz-descriptions nzBordered nzSize="small" [nzColumn]="3">
+              <nz-descriptions-item nzTitle="Deficiency ID">{{ dfcData.id || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Status">
+                <nz-tag [nzColor]="getStatusColor(dfcData.deficiencyStatus?.id)">
+                  {{ dfcData.deficiencyStatus?.caption || '-' }}
+                </nz-tag>
+              </nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Created">{{ dfcData.created | date:'MM/dd/yyyy HH:mm' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Rule Name" *ngIf="icmRule" [nzSpan]="3">{{ icmRule.name || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Script Name" *ngIf="icmScript" [nzSpan]="3">{{ icmScript.scriptName || '-' }}</nz-descriptions-item>
+            </nz-descriptions>
+          </div>
+        </div>
+      </nz-tab>
+
+      <!-- Tab 2: Rule / Script -->
+      <nz-tab [nzTitle]="icmScript ? 'Manual Script' : 'Rule Details'">
+        <div style="padding: 16px 0;">
+
+          <!-- Manual Script Section -->
+          <ng-container *ngIf="icmScript">
+            <div class="section-block">
+              <div class="section-header">
+                <span nz-icon nzType="file-text" nzTheme="outline"></span> Script Information
+              </div>
+              <nz-descriptions nzBordered nzSize="small" [nzColumn]="2">
+                <nz-descriptions-item nzTitle="Script Name">{{ icmScript.scriptName || '-' }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Description">{{ icmScript.scriptDescription || '-' }}</nz-descriptions-item>
+              </nz-descriptions>
+            </div>
+
+            <div class="section-block">
+              <div class="section-header">
+                <span nz-icon nzType="ordered-list" nzTheme="outline"></span> Manual Script Steps
+              </div>
+              <app-advanced-table
+                [columns]="scriptStepColumns"
+                [data]="manualScriptSteps"
+                [totalRecords]="manualScriptSteps.length"
+                [showSearch]="false"
+                [showRefresh]="false"
+                [showPagination]="manualScriptSteps.length > 10"
+                emptyText="No script steps">
+              </app-advanced-table>
+            </div>
+          </ng-container>
+
+          <!-- Automated Rule Section -->
+          <ng-container *ngIf="icmRule">
+            <div class="section-block">
+              <div class="section-header">
+                <span nz-icon nzType="audit" nzTheme="outline"></span> Control Rule
+              </div>
+              <nz-descriptions nzBordered nzSize="small" [nzColumn]="2">
+                <nz-descriptions-item nzTitle="Rule Name">{{ icmRule.name || '-' }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Table Name">{{ icmRule.icmTable?.formattedTableName || '-' }}</nz-descriptions-item>
+              </nz-descriptions>
+            </div>
+
+            <!-- Rule Join -->
+            <div class="section-block" *ngIf="isTableJoinEnabled && joinData">
+              <div class="section-header">
+                <span nz-icon nzType="link" nzTheme="outline"></span> Rule Join
+              </div>
+              <nz-descriptions nzBordered nzSize="small" [nzColumn]="2">
+                <nz-descriptions-item nzTitle="Source Table">{{ joinData.srcTable?.formattedTableName || '-' }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Source Field">{{ joinData.srcField?.formattedFieldName || '-' }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Target Table">{{ joinData.targetTable?.formattedTableName || '-' }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Target Field">{{ joinData.targetField?.formattedFieldName || '-' }}</nz-descriptions-item>
+              </nz-descriptions>
+              <div class="field-list" *ngIf="targetFieldList.length > 0">
+                <span class="field-list-label">Target Fields:</span>
+                <nz-tag *ngFor="let field of targetFieldList"
+                  [nzColor]="isJoinFieldSelected(field.id) ? 'blue' : 'default'">
+                  {{ field.formattedFieldName }}
+                </nz-tag>
+              </div>
+            </div>
+
+            <!-- Selected Fields -->
+            <div class="section-block" *ngIf="ruleFields.length > 0">
+              <div class="section-header">
+                <span nz-icon nzType="check-square" nzTheme="outline"></span> Selected Fields
+              </div>
+              <div class="field-list">
+                <nz-tag *ngFor="let field of ruleFields"
+                  [nzColor]="isFieldSelected(field.id) ? 'blue' : 'default'">
+                  {{ field.formattedFieldName }}
+                </nz-tag>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Empty state -->
+          <nz-empty *ngIf="!icmScript && !icmRule"
+            nzNotFoundContent="No rule or script associated with this deficiency">
+          </nz-empty>
+        </div>
+      </nz-tab>
+
+      <!-- Tab 3: Results -->
+      <nz-tab nzTitle="Results">
+        <div style="padding: 16px 0;">
+          <!-- Manual Results -->
+          <div class="section-block" *ngIf="icmScript">
+            <div class="section-header">
+              <span nz-icon nzType="file-done" nzTheme="outline"></span> Manual Script Results
+            </div>
+            <app-advanced-table
+              [columns]="manualResultColumns"
+              [data]="manualResults"
+              [totalRecords]="manualResults.length"
+              [showSearch]="false"
+              [showRefresh]="false"
+              [showPagination]="manualResults.length > 10"
+              (rowClick)="onManualResultRowClick($event)"
+              emptyText="No manual results">
+            </app-advanced-table>
+          </div>
+
+          <!-- Automated Results -->
+          <div class="section-block" *ngIf="icmRule">
+            <div class="section-header">
+              <span nz-icon nzType="bar-chart" nzTheme="outline"></span> Automated Rule Results
+            </div>
+            <app-advanced-table
+              [columns]="automatedResultColumns"
+              [data]="automatedResults"
+              [totalRecords]="automatedResults.length"
+              [showSearch]="false"
+              [showRefresh]="false"
+              [showPagination]="automatedResults.length > 10"
+              emptyText="No automated results">
+            </app-advanced-table>
+          </div>
+
+          <nz-empty *ngIf="!icmScript && !icmRule"
+            nzNotFoundContent="No results available">
+          </nz-empty>
+        </div>
+      </nz-tab>
+
+      <!-- Tab 4: Deficiency -->
+      <nz-tab nzTitle="Deficiency">
+        <div style="padding: 16px 0;">
+          <div class="section-block">
+            <div class="section-header">
+              <span nz-icon nzType="exclamation-circle" nzTheme="outline"></span> Deficiency Status & Comments
+            </div>
+            <div style="padding: 16px;">
+              <form [formGroup]="deficiencyForm">
+                <!-- Status Dropdown -->
+                <nz-form-item style="max-width: 300px;">
+                  <nz-form-control>
+                    <div class="nz-float-label" [class.has-value]="deficiencyForm.get('deficiencyStatus')?.value">
+                      <nz-select formControlName="deficiencyStatus" nzPlaceHolder=" ">
+                        <nz-option *ngFor="let s of deficiencyStatusList"
+                          [nzValue]="s.id" [nzLabel]="s.caption"></nz-option>
+                      </nz-select>
+                      <label>Deficiency Status</label>
+                    </div>
+                  </nz-form-control>
+                </nz-form-item>
+
+                <!-- Comments -->
+                <div formArrayName="comments" style="margin-top: 16px;">
+                  <div *ngFor="let comment of comments.controls; let i = index"
+                    [formGroupName]="i" class="comment-row">
+                    <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                      <nz-form-item style="flex: 1; margin-bottom: 0;">
+                        <nz-form-control>
+                          <div class="nz-float-label" [class.has-value]="comment.get('commentText')?.value">
+                            <input nz-input placeholder=" " formControlName="commentText" />
+                            <label>Comment</label>
+                          </div>
+                        </nz-form-control>
+                      </nz-form-item>
+
+                      <ng-container *ngIf="isEditing">
+                        <button nz-button nzType="default" nzSize="small" (click)="fileInput.click()">
+                          <span nz-icon nzType="paper-clip" nzTheme="outline"></span> Attach
+                        </button>
+                        <input type="file" #fileInput (change)="uploadAttachment($event, i)" style="display: none;" />
+                      </ng-container>
+
+                      <span *ngIf="comment.get('attachmentName')?.value" style="font-size: 12px; color: #888;">
+                        {{ comment.get('attachmentName')?.value }}
+                      </span>
+
+                      <button *ngIf="comments.length > 1 && isEditing"
+                        nz-button nzType="text" nzShape="circle" nzDanger nzSize="small"
+                        (click)="removeComment(i)">
+                        <span nz-icon nzType="delete" nzTheme="outline"></span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div *ngIf="isEditing" style="margin-top: 12px;">
+                  <button nz-button nzType="dashed" (click)="addComment()">
+                    <span nz-icon nzType="plus" nzTheme="outline"></span> Add Comment
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </nz-tab>
+
+    </nz-tabset>
+  </nz-card>
+</div>

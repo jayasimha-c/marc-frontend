@@ -6,8 +6,7 @@ import { RiskAnalysisOnlineService } from '../risk-analysis-online.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { FileSaverService } from '../../../../core/services/file-saver.service';
 import { PreSelectionModalComponent } from './pre-selection-modal.component';
-
-const DEFAULT_PAGINATION = { first: 0, rows: 10, sortOrder: 1, sortField: '', filters: {}, globalFilter: null };
+import { GridRequestBuilder } from '../../../../core/utils/grid-request.builder';
 
 @Component({
   standalone: false,
@@ -194,7 +193,7 @@ export class OnlineAnalysisComponent implements OnInit, OnDestroy {
         } else if (resp.success) {
           this.analysisComplete = true;
           this.jobId = resp.data.jobId;
-          this.getDetailedData(this.jobId, DEFAULT_PAGINATION);
+          this.getDetailedData(this.jobId, GridRequestBuilder.defaultLegacy());
           this.notificationService.success('Completed the Analysis, results are available now.');
         }
       });

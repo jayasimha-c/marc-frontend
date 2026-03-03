@@ -1,0 +1,14 @@
+.breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+::ng-deep .ant-table {
+  th, td {
+    white-space: nowrap;
+  }
+  .text-success {
+    color: #52c41a;
+  }
+}

@@ -1,0 +1,46 @@
+<div style="padding: 16px;">
+  <!-- Book Details Card -->
+  <nz-card style="margin-bottom: 16px;" [nzLoading]="loading">
+    <div *ngIf="book" style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()">
+          <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+        </button>
+        <span style="font-weight: 600; font-size: 18px;">{{ book.name }}</span>
+        <nz-tag [nzColor]="book.isActive ? 'green' : 'default'">{{ book.isActive ? 'Active' : 'Inactive' }}</nz-tag>
+      </div>
+      <nz-space>
+        <button *nzSpaceItem nz-button nzType="default" (click)="toggleActive()" [nzDanger]="book.isActive">
+          <span nz-icon [nzType]="book.isActive ? 'pause-circle' : 'play-circle'" nzTheme="outline"></span>
+          {{ book.isActive ? 'Deactivate' : 'Activate' }}
+        </button>
+        <button *nzSpaceItem nz-button nzType="default" (click)="editBook()">
+          <span nz-icon nzType="edit" nzTheme="outline"></span> Edit
+        </button>
+        <button *nzSpaceItem nz-button nzType="default" nzDanger (click)="deleteBook()">
+          <span nz-icon nzType="delete" nzTheme="outline"></span> Delete
+        </button>
+      </nz-space>
+    </div>
+
+    <nz-descriptions *ngIf="book" nzBordered nzSize="small" [nzColumn]="4" style="margin-top: 16px;">
+      <nz-descriptions-item nzTitle="Name">{{ book.name }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Control Type">{{ getControlTypeName(book.controlType) }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Controls">{{ book.controlCount || 0 }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Schedulers">{{ book.schedulerCount || 0 }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Description" [nzSpan]="4" *ngIf="book.description">{{ book.description }}</nz-descriptions-item>
+    </nz-descriptions>
+  </nz-card>
+
+  <!-- Controls in Book -->
+  <app-advanced-table *ngIf="!loading && book"
+    title="Controls in Book"
+    [columns]="controlColumns"
+    [data]="controls"
+    [totalRecords]="controls.length"
+    [actions]="controlActions"
+    [showPagination]="controls.length > 20"
+    (refresh)="loadControls()"
+    emptyText="No controls in this book. Click 'Add Control' to add controls.">
+  </app-advanced-table>
+</div>

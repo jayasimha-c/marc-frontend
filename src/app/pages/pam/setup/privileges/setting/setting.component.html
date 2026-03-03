@@ -1,0 +1,49 @@
+<nz-spin [nzSpinning]="loading">
+    <form nz-form [formGroup]="form" nzLayout="vertical">
+        <nz-list nzBordered nzSize="small">
+            <nz-list-item>
+                <nz-list-item-meta nzTitle="Send Transaction Log"
+                    nzDescription="Enable transaction log notifications"></nz-list-item-meta>
+                <nz-switch formControlName="sendTxnLog"></nz-switch>
+            </nz-list-item>
+
+            <nz-list-item>
+                <nz-list-item-meta nzTitle="Same Approver & Reviewer"
+                    nzDescription="Allow same user to be both approver and reviewer"></nz-list-item-meta>
+                <nz-switch formControlName="sameApproverReviewer"></nz-switch>
+            </nz-list-item>
+
+            <nz-list-item>
+                <nz-list-item-meta nzTitle="Same Requester & Approver"
+                    nzDescription="Allow same user to be both requester and approver"></nz-list-item-meta>
+                <nz-switch formControlName="sameRequesterApprover"></nz-switch>
+            </nz-list-item>
+
+            <nz-list-item>
+                <nz-list-item-meta nzTitle="Max Days for ID Request"
+                    nzDescription="Limit how many days a request can be active"></nz-list-item-meta>
+                <nz-switch formControlName="setMaxDays"></nz-switch>
+            </nz-list-item>
+
+            <nz-list-item *ngIf="form.get('setMaxDays')?.value">
+                <nz-list-item-meta nzTitle="Maximum Days"></nz-list-item-meta>
+                <nz-input-number formControlName="maxDays" [nzMin]="1" [nzMax]="365"
+                    nzPlaceHolder="Days" style="width:120px"></nz-input-number>
+            </nz-list-item>
+
+            <nz-list-item>
+                <nz-list-item-meta nzTitle="Enable Ticket Reconciliation"
+                    nzDescription="Validate tickets during reconciliation"></nz-list-item-meta>
+                <nz-switch formControlName="ticketValidate"></nz-switch>
+            </nz-list-item>
+        </nz-list>
+    </form>
+</nz-spin>
+
+<nz-divider></nz-divider>
+<div nz-row nzJustify="end">
+    <nz-space>
+        <button *nzSpaceItem nz-button (click)="modal.close()">Cancel</button>
+        <button *nzSpaceItem nz-button nzType="primary" [nzLoading]="loading" (click)="save()">Save Settings</button>
+    </nz-space>
+</div>

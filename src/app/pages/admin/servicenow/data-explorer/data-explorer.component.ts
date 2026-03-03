@@ -114,12 +114,22 @@ export class ServiceNowDataExplorerComponent implements OnInit, OnDestroy {
   }
 
   private buildRequest(params: any): any {
+    // Convert filters object { field: 'value' } to ColumnFilter array
+    const filtersArray: any[] = [];
+    if (params?.filters) {
+      for (const field of Object.keys(params.filters)) {
+        const value = params.filters[field];
+        if (value && typeof value === 'string' && value.trim()) {
+          filtersArray.push({ field, operator: 'contains', value: value.trim() });
+        }
+      }
+    }
     return {
-      page: params?.pageIndex ?? 0,
+      page: (params?.pageIndex ?? 1) - 1,
       size: params?.pageSize ?? 20,
       sortField: params?.sort?.field || '',
       sortDirection: (params?.sort?.direction || 'asc').toUpperCase(),
-      filters: params?.filters || [],
+      filters: filtersArray,
       globalFilter: params?.globalSearch || ''
     };
   }

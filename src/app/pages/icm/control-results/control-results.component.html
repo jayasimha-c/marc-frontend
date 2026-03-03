@@ -1,0 +1,14 @@
+<div style="padding: 16px;">
+  <app-advanced-table
+    title="Control Results"
+    [columns]="columns"
+    [data]="data"
+    [loading]="loading"
+    [totalRecords]="totalRecords"
+    [actions]="tableActions"
+    [showExport]="true"
+    (refresh)="loadData()"
+    (rowClick)="onRowClick($event)"
+    emptyText="No execution results found">
+  </app-advanced-table>
+</div>

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FueTypeService } from '../fue-type.service';
 import { NotificationService } from '../../../../../core/services/notification.service';
+import { TableColumn, TableAction } from '../../../../../shared/components/advanced-table/advanced-table.models';
 
 @Component({
     standalone: false,
@@ -9,10 +10,22 @@ import { NotificationService } from '../../../../../core/services/notification.s
     templateUrl: './fue-types.component.html'
 })
 export class FueTypesComponent implements OnInit {
+
+    @ViewChild('codeTpl', { static: true }) codeTpl!: TemplateRef<any>;
+    @ViewChild('nameTpl', { static: true }) nameTpl!: TemplateRef<any>;
+    @ViewChild('weightTpl', { static: true }) weightTpl!: TemplateRef<any>;
+    @ViewChild('usersPerFueTpl', { static: true }) usersPerFueTpl!: TemplateRef<any>;
+    @ViewChild('tierTpl', { static: true }) tierTpl!: TemplateRef<any>;
+    @ViewChild('orderTpl', { static: true }) orderTpl!: TemplateRef<any>;
+    @ViewChild('statusTpl', { static: true }) statusTpl!: TemplateRef<any>;
+
+    columns: TableColumn[] = [];
+    tableActions: TableAction[] = [];
     data: any[] = [];
     loading = false;
     editMode = false;
     selectedRow: any = null;
+    selectedRows = new Set<any>();
 
     constructor(
         private fueTypeService: FueTypeService,
@@ -22,7 +35,36 @@ export class FueTypesComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+        this.initTable();
         this.loadData();
+    }
+
+    initTable(): void {
+        this.columns = [
+            { field: 'code', header: 'Code', type: 'template', templateRef: this.codeTpl, width: '100px' },
+            { field: 'name', header: 'Name', type: 'template', templateRef: this.nameTpl, width: '200px' },
+            { field: 'fueWeight', header: 'FUE Weight', type: 'template', templateRef: this.weightTpl, width: '120px' },
+            { field: 'usersPerFue', header: 'Users / FUE', type: 'template', templateRef: this.usersPerFueTpl, width: '120px' },
+            { field: 'tierPriority', header: 'Tier Priority', type: 'template', templateRef: this.tierTpl, width: '120px' },
+            { field: 'displayOrder', header: 'Display Order', type: 'template', templateRef: this.orderTpl, width: '120px' },
+            { field: 'status', header: 'Status', type: 'template', templateRef: this.statusTpl, width: '100px' }
+        ];
+
+        this.buildActions();
+    }
+
+    buildActions(): void {
+        this.tableActions = [
+            { label: 'Save', icon: 'save', type: 'primary', command: () => this.save(), pinned: true, disabled: !this.editMode },
+            { label: 'Edit', icon: 'edit', command: () => this.toggleEdit(), pinned: true, disabled: this.editMode },
+            { label: 'Add Row', icon: 'plus-circle', command: () => this.addRow(), pinned: true },
+            { label: 'Cancel', icon: 'undo', command: () => this.cancel() },
+            { label: 'Delete', icon: 'delete', danger: true, command: () => this.deleteRow() },
+            { label: 'Export CSV', icon: 'download', command: () => this.exportCsv() },
+            { label: 'Add Initial Data', icon: 'plus', command: () => this.addInitialData() },
+            { label: 'Simulate', icon: 'experiment', command: () => this.openSimulator() },
+            { label: 'ACM to FUE Mapping', icon: 'swap', command: () => this.generateAcmMapping() }
+        ];
     }
 
     loadData(): void {
@@ -35,6 +77,7 @@ export class FueTypesComponent implements OnInit {
                 }));
                 this.loading = false;
                 this.editMode = false;
+                this.buildActions();
             },
             error: () => { this.data = []; this.loading = false; }
         });
@@ -42,6 +85,7 @@ export class FueTypesComponent implements OnInit {
 
     toggleEdit(): void {
         this.editMode = true;
+        this.buildActions();
     }
 
     cancel(): void {
@@ -54,6 +98,7 @@ export class FueTypesComponent implements OnInit {
             tierPriority: 0, displayOrder: 0, active: true, status: 'Active'
         }];
         this.editMode = true;
+        this.buildActions();
     }
 
     deleteRow(): void {
@@ -110,6 +155,7 @@ export class FueTypesComponent implements OnInit {
         ];
         this.data = [...this.data, ...templates.map(t => ({ ...t, status: 'Active' }))];
         this.editMode = true;
+        this.buildActions();
         this.notificationService.success(`Added ${templates.length} initial FUE types. Remember to save!`);
     }
 
@@ -148,5 +194,12 @@ export class FueTypesComponent implements OnInit {
 
     onRowClick(row: any): void {
         this.selectedRow = row;
+    }
+
+    onSelectionChange(selected: Set<any>): void {
+        this.selectedRows = selected;
+        if (selected.size === 1) {
+            this.selectedRow = Array.from(selected)[0];
+        }
     }
 }

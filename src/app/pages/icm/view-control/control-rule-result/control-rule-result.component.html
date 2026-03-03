@@ -1,0 +1,25 @@
+<nz-spin [nzSpinning]="loading">
+  <nz-table #resultTable
+    [nzData]="data"
+    nzSize="small"
+    nzBordered
+    [nzShowPagination]="true"
+    [nzPageSize]="20"
+    [nzScroll]="{ x: columns.length > 5 ? '1200px' : undefined }">
+    <thead>
+      <tr>
+        <th *ngFor="let col of columns">{{ col.header }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of resultTable.data">
+        <td *ngFor="let col of columns">{{ row[col.field] ?? '-' }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+  <nz-empty *ngIf="data.length === 0 && !loading" nzNotFoundContent="No results found"></nz-empty>
+</nz-spin>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modalRef.close()">Close</button>
+</div>

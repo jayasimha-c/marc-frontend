@@ -3,6 +3,8 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { RiskAnalysisOnlineService } from '../../risk-analysis-online.service';
 import { UserSelectModalComponent } from './user-select-modal.component';
 import { NotificationService } from '../../../../../core/services/notification.service';
+import { GridRequestBuilder } from '../../../../../core/utils/grid-request.builder';
+import { TableQueryParams } from '../../../../../shared/components/advanced-table/advanced-table.models';
 
 @Component({
   standalone: false,
@@ -46,9 +48,13 @@ export class OnlineUserListComponent implements OnInit {
 
   loadData(): void {
     if (!this.preSelection) return;
-    const event = { first: (this.currentPage - 1) * this.pageSize, rows: this.pageSize, sortOrder: 1, sortField: '', filters: {}, globalFilter: this.searchText ? { value: this.searchText } : null };
+    const params: TableQueryParams = { pageIndex: this.currentPage, pageSize: this.pageSize, filters: {}, globalSearch: this.searchText || '' };
+    const event = GridRequestBuilder.toLegacy(params);
     const payload = { lazyEvent: event, selectedSAP: this.preSelection.selectedSAP, selectedIds: this.preSelection.selectedusers };
-    this.apiService.userSelectedList(payload).subscribe((resp) => {
+    const api = this.preSelection?.formType === 'simulation'
+      ? this.apiService.simulationsUserSelectedList(payload, this.simulationType)
+      : this.apiService.userSelectedList(payload);
+    api.subscribe((resp) => {
       if (resp.success && resp.data) {
         this.items = resp.data.rows || [];
         this.totalRecords = resp.data.records || 0;

@@ -1,9 +1,9 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
+import { Router } from "@angular/router";
 import { NzModalService } from "ng-zorro-antd/modal";
 import { RequestService } from "../request.service";
 import { PaginationModel } from "../../../../core/models/pagination.model";
-import { CreateRequestModalComponent } from "../my-request/create-request-modal/create-request-modal.component";
 import { RequestMessageModalComponent } from "../../../../shared/components/request-message-modal/request-message-modal.component";
 import { ViewTxnLogComponent } from "../../reports/all-request/view-txn-log/view-txn-log.component";
 import { ApiResponse } from "../../../../core/models/api-response";
@@ -49,6 +49,7 @@ export class MyReviewsComponent implements OnInit {
     public loading: boolean = false;
 
     constructor(
+        private router: Router,
         private nzModal: NzModalService,
         private _requestService: RequestService
     ) { }
@@ -121,14 +122,7 @@ export class MyReviewsComponent implements OnInit {
 
     public openDetail(action: string, rowData: any) {
         if (action == 'view') {
-            this.nzModal.create({
-                nzTitle: 'View Request',
-                nzContent: CreateRequestModalComponent,
-                nzWidth: '90vw',
-                nzData: { action: 'view', data: rowData },
-                nzFooter: null,
-                nzClassName: 'updated-modal',
-            });
+            this.router.navigate(['/pam/requests/view-request', rowData.id]);
         }
     }
 

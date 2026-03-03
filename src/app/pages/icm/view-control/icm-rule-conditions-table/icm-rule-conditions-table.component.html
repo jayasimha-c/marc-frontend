@@ -1,0 +1,45 @@
+<nz-collapse>
+  <nz-collapse-panel [nzHeader]="headerTpl" [nzActive]="active">
+    <ng-template #headerTpl>
+      <span nz-icon [nzType]="icon" nzTheme="outline" style="margin-right: 8px;"></span>
+      {{ title }}
+      <nz-tag *ngIf="conditions.length > 0" style="margin-left: 8px;">{{ conditions.length }}</nz-tag>
+    </ng-template>
+
+    <nz-table *ngIf="conditions.length > 0"
+      #condTable [nzData]="conditions"
+      nzSize="small" nzBordered
+      [nzFrontPagination]="false"
+      [nzShowPagination]="false">
+      <thead>
+        <tr>
+          <th nzWidth="50px" nzAlign="center">#</th>
+          <th>Field</th>
+          <th nzWidth="120px">Operator</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cond of condTable.data; let i = index">
+          <td nzAlign="center">{{ i + 1 }}</td>
+          <td>
+            {{ cond.fieldLabel }}
+            <small *ngIf="cond.field !== cond.fieldLabel" style="color: rgba(0,0,0,0.45);"> ({{ cond.field }})</small>
+          </td>
+          <td>
+            <nz-tag nzColor="blue">{{ cond.operatorLabel }}</nz-tag>
+          </td>
+          <td>{{ cond.valueFormatted }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+
+    <nz-empty *ngIf="conditions.length === 0" nzNotFoundContent="No conditions defined"></nz-empty>
+
+    <div *ngIf="conditions.length > 0" style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+      <span style="color: rgba(0,0,0,0.45);">Logic:</span>
+      <nz-tag [nzColor]="logic === 'AND' ? 'blue' : 'orange'">{{ logic }}</nz-tag>
+      <span style="color: rgba(0,0,0,0.45);">({{ getLogicDescription() }})</span>
+    </div>
+  </nz-collapse-panel>
+</nz-collapse>

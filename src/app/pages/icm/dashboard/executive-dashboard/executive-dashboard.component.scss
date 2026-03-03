@@ -1,0 +1,32 @@
+:host {
+  display: block;
+}
+
+.attention-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.attention-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #fafafa;
+  }
+
+  .attention-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    small {
+      color: rgba(0, 0, 0, 0.45);
+    }
+  }
+}

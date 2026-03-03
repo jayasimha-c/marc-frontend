@@ -1,0 +1,107 @@
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.step-item {
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  overflow: hidden;
+
+  &:hover { border-color: #1890ff; }
+  &.expanded {
+    border-color: #1890ff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  &.cdk-drag-preview { box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); }
+  &.cdk-drag-animating { transition: transform 250ms cubic-bezier(0, 0, 0.2, 1); }
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+.step-drag-handle {
+  cursor: grab;
+  color: rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  &:active { cursor: grabbing; }
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  background: #1890ff;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 50%;
+}
+
+.step-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.step-details {
+  padding: 24px;
+  border-top: 1px solid #d9d9d9;
+}
+
+.quill-field { width: 100%; }
+
+.quill-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.45);
+  margin-bottom: 6px;
+}
+
+::ng-deep .quill-field quill-editor {
+  display: block;
+
+  .ql-toolbar {
+    border: 1px solid #d9d9d9;
+    border-radius: 8px 8px 0 0;
+    background: #fafafa;
+    padding: 6px;
+  }
+
+  .ql-container {
+    border: 1px solid #d9d9d9;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    font-size: 14px;
+
+    .ql-editor {
+      padding: 12px;
+      line-height: 1.5;
+      &.ql-blank::before { font-style: normal; color: rgba(0, 0, 0, 0.25); }
+    }
+  }
+}
+
+.step-placeholder {
+  background: rgba(24, 144, 255, 0.1);
+  border: 2px dashed #1890ff;
+  border-radius: 8px;
+  min-height: 60px;
+}
+
+.cdk-drag-placeholder { opacity: 0; }
+
+.steps-list.cdk-drop-list-dragging .step-item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

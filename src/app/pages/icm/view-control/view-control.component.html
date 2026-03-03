@@ -1,0 +1,304 @@
+<div style="padding: 16px;" *ngIf="control">
+  <!-- Header Card -->
+  <nz-card style="margin-bottom: 16px;" [nzBodyStyle]="{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }">
+    <h3 nz-typography style="margin: 0;">{{ controlTypeLabel }} View</h3>
+    <div>
+      <button nz-button nzType="text" nzShape="circle" nz-dropdown [nzDropdownMenu]="actionsMenu">
+        <span nz-icon nzType="more" nzTheme="outline"></span>
+      </button>
+      <nz-dropdown-menu #actionsMenu="nzDropdownMenu">
+        <ul nz-menu>
+          <li nz-menu-item (click)="goToList()">
+            <span nz-icon nzType="unordered-list" nzTheme="outline"></span>
+            <span>Controls List</span>
+          </li>
+          <li nz-menu-item (click)="toggleEdit()">
+            <span nz-icon [nzType]="isEditing ? 'close' : 'edit'" nzTheme="outline"></span>
+            {{ isEditing ? 'Cancel' : 'Edit' }}
+          </li>
+          <li nz-menu-item [nzDisabled]="!isEditing" (click)="handleSave()">
+            <span nz-icon nzType="save" nzTheme="outline"></span>
+            <span>Save</span>
+          </li>
+          <li nz-menu-item (click)="handleExecute()">
+            <span nz-icon nzType="caret-right" nzTheme="outline"></span>
+            <span>Execute</span>
+          </li>
+          <li nz-menu-item (click)="handleSimulate()" *ngIf="selectedType !== 2">
+            <span nz-icon nzType="experiment" nzTheme="outline"></span>
+            <span>Simulation</span>
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+    </div>
+  </nz-card>
+
+  <!-- Tabs -->
+  <nz-card>
+    <nz-tabset [nzAnimated]="false">
+
+      <!-- Tab 1: Control Details -->
+      <nz-tab nzTitle="Control Details">
+        <!-- View Mode -->
+        <div *ngIf="formType === 'view'" style="margin-top: 16px;">
+          <nz-descriptions nzBordered nzSize="small" [nzColumn]="3" nzTitle="Control Attributes">
+            <ng-container *ngFor="let row of detailRows">
+              <nz-descriptions-item *ngFor="let cell of row" [nzTitle]="cell.label" [nzSpan]="cell.span || 1">
+                <span [class.status-active]="cell.value === 'Active'"
+                      [class.status-inactive]="cell.value === 'Inactive'">
+                  {{ cell.value }}
+                </span>
+              </nz-descriptions-item>
+            </ng-container>
+          </nz-descriptions>
+        </div>
+
+        <!-- Edit Mode -->
+        <div *ngIf="formType === 'edit'" style="margin-top: 16px;">
+          <form nz-form [formGroup]="step1Form" nzLayout="vertical">
+            <div nz-row [nzGutter]="16">
+              <div nz-col nzXs="24" nzMd="8">
+                <nz-form-item>
+                  <nz-form-label>Name</nz-form-label>
+                  <nz-form-control>
+                    <input nz-input formControlName="controlName" />
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col nzXs="24" nzMd="8">
+                <nz-form-item>
+                  <nz-form-label>Criticality</nz-form-label>
+                  <nz-form-control>
+                    <nz-select formControlName="critically" nzPlaceHolder="Select" nzShowSearch>
+                      <nz-option *ngFor="let item of criticallyList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col nzXs="24" nzMd="8">
+                <nz-form-item>
+                  <nz-form-label>Type</nz-form-label>
+                  <nz-form-control>
+                    <nz-select formControlName="type" nzPlaceHolder="Select" nzShowSearch>
+                      <nz-option *ngFor="let item of typeList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            </div>
+            <div nz-row [nzGutter]="16">
+              <div nz-col nzXs="24" nzMd="8">
+                <nz-form-item>
+                  <nz-form-label>Business Process</nz-form-label>
+                  <nz-form-control>
+                    <nz-select formControlName="businessProcess" nzPlaceHolder="Select" nzShowSearch>
+                      <nz-option *ngFor="let item of bpList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col nzXs="24" nzMd="8">
+                <nz-form-item>
+                  <nz-form-label>Sub-Process</nz-form-label>
+                  <nz-form-control>
+                    <nz-select formControlName="businessSubProcess" nzPlaceHolder="Select" nzShowSearch>
+                      <nz-option *ngFor="let item of sbpList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col nzXs="24" nzMd="8">
+                <nz-form-item>
+                  <nz-form-label>Regulation</nz-form-label>
+                  <nz-form-control>
+                    <nz-select formControlName="regulation" nzPlaceHolder="Select" nzShowSearch>
+                      <nz-option *ngFor="let item of regulationList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            </div>
+            <div nz-row [nzGutter]="16">
+              <div nz-col nzXs="24" nzMd="8">
+                <nz-form-item>
+                  <nz-form-label>Group</nz-form-label>
+                  <nz-form-control>
+                    <nz-select formControlName="group" nzPlaceHolder="Select" nzShowSearch>
+                      <nz-option *ngFor="let item of groupList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col nzXs="24" nzMd="8">
+                <nz-form-item>
+                  <nz-form-label>Category</nz-form-label>
+                  <nz-form-control>
+                    <nz-select formControlName="category" nzPlaceHolder="Select" nzShowSearch>
+                      <nz-option *ngFor="let item of categoryList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col nzXs="24" nzMd="8">
+                <nz-form-item>
+                  <nz-form-label>Impact</nz-form-label>
+                  <nz-form-control>
+                    <nz-select formControlName="impact" nzPlaceHolder="Select" nzShowSearch>
+                      <nz-option *ngFor="let item of impactList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            </div>
+            <div nz-row>
+              <div nz-col nzSpan="24">
+                <nz-form-item>
+                  <nz-form-label>Description</nz-form-label>
+                  <nz-form-control>
+                    <textarea nz-input formControlName="description"
+                              [nzAutosize]="{ minRows: 3, maxRows: 6 }"></textarea>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            </div>
+          </form>
+        </div>
+      </nz-tab>
+
+      <!-- Tab 2: Rules / Scripts -->
+      <nz-tab [nzTitle]="rulesTabTitle">
+        <div style="margin-top: 16px;">
+
+          <!-- Standard Automated -->
+          <ng-container *ngIf="selectedType === 3">
+            <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" nzTitle="Standard Control" *ngIf="stdControl">
+              <nz-descriptions-item nzTitle="Name">{{ stdControl.name || '-' }}</nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Description">{{ stdControl.description || '-' }}</nz-descriptions-item>
+            </nz-descriptions>
+            <nz-empty *ngIf="!stdControl" nzNotFoundContent="No standard control linked"></nz-empty>
+          </ng-container>
+
+          <!-- Manual Scripts -->
+          <ng-container *ngIf="selectedType === 2">
+            <app-advanced-table *ngIf="scripts.length > 0"
+              title="Manual Scripts"
+              [columns]="scriptColumns"
+              [data]="scripts"
+              [totalRecords]="scripts.length"
+              [showPagination]="false"
+              [showSearch]="false"
+              [showRefresh]="false"
+              emptyText="No scripts">
+            </app-advanced-table>
+            <nz-empty *ngIf="scripts.length === 0"
+              nzNotFoundContent="No manual scripts linked to this control">
+            </nz-empty>
+          </ng-container>
+
+          <!-- Automated Rules (read-only view) -->
+          <ng-container *ngIf="selectedType === 1">
+            <ng-container *ngIf="rules.length > 0">
+              <!-- Rule header -->
+              <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" nzTitle="Rule Configuration" style="margin-bottom: 16px;">
+                <nz-descriptions-item nzTitle="Rule Name">{{ ruleName || '-' }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Table">{{ ruleTableName || '-' }}</nz-descriptions-item>
+              </nz-descriptions>
+
+              <!-- Extraction Filter Conditions -->
+              <div style="margin-bottom: 12px;" *ngIf="extractionConditions.length > 0">
+                <app-icm-rule-conditions-table
+                  title="Extraction Filter"
+                  icon="filter"
+                  [conditions]="extractionConditions"
+                  [logic]="extractionLogic">
+                </app-icm-rule-conditions-table>
+              </div>
+
+              <!-- Join Info -->
+              <nz-descriptions *ngIf="hasJoin && joinInfo" nzBordered nzSize="small" [nzColumn]="2"
+                nzTitle="Table Join" style="margin-bottom: 12px;">
+                <nz-descriptions-item nzTitle="Source">{{ joinInfo.srcTable }}.{{ joinInfo.srcField }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Target">{{ joinInfo.targetTable }}.{{ joinInfo.targetField }}</nz-descriptions-item>
+              </nz-descriptions>
+
+              <!-- Output Fields -->
+              <nz-card nzSize="small" nzTitle="Output Fields" style="margin-bottom: 12px;" *ngIf="outputFields.length > 0">
+                <nz-tag *ngFor="let f of outputFields">{{ f }}</nz-tag>
+              </nz-card>
+
+              <!-- Violation Rule Conditions -->
+              <div style="margin-bottom: 12px;" *ngIf="ruleConditions.length > 0">
+                <app-icm-rule-conditions-table
+                  title="Violation Rule"
+                  icon="warning"
+                  [conditions]="ruleConditions"
+                  [logic]="ruleLogic">
+                </app-icm-rule-conditions-table>
+              </div>
+
+              <!-- Raw SQL fallback (if no parsed conditions) -->
+              <ng-container *ngIf="extractionConditions.length === 0 && ruleConditions.length === 0">
+                <nz-descriptions nzBordered nzSize="small" [nzColumn]="1" *ngFor="let rule of rules">
+                  <nz-descriptions-item nzTitle="SQL Filter">
+                    <code style="font-size: 12px; word-break: break-all;">{{ rule.sqlFilter || '-' }}</code>
+                  </nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="SQL Rule">
+                    <code style="font-size: 12px; word-break: break-all;">{{ rule.sqlRule || '-' }}</code>
+                  </nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="Output Fields">
+                    <nz-tag *ngFor="let f of rule.fields">{{ f.formattedFieldName || f.fieldName }}</nz-tag>
+                    <span *ngIf="!rule.fields?.length">-</span>
+                  </nz-descriptions-item>
+                </nz-descriptions>
+              </ng-container>
+            </ng-container>
+            <nz-empty *ngIf="rules.length === 0"
+              nzNotFoundContent="No rules configured for this control">
+            </nz-empty>
+          </ng-container>
+
+          <!-- Fallback -->
+          <nz-empty *ngIf="selectedType !== 1 && selectedType !== 2 && selectedType !== 3"
+            nzNotFoundContent="No rules configured">
+          </nz-empty>
+
+          <!-- Execution Results -->
+          <div style="margin-top: 24px;" *ngIf="executionResults.length > 0 && (selectedType === 1 || selectedType === 3)">
+            <app-advanced-table
+              title="Execution Results"
+              [columns]="resultColumns"
+              [data]="executionResults"
+              [total]="executionResults.length"
+              [showPagination]="true"
+              [showSearch]="false"
+              [showRefresh]="false">
+            </app-advanced-table>
+          </div>
+        </div>
+      </nz-tab>
+
+      <!-- Tab 3: Notify -->
+      <nz-tab nzTitle="Notify">
+        <div style="margin-top: 16px;">
+          <app-advanced-table
+            title="Notification Settings"
+            [columns]="notifyColumns"
+            [data]="notifySettings"
+            [totalRecords]="notifySettings.length"
+            [actions]="notifyActions"
+            [showPagination]="false"
+            [showSearch]="false"
+            [showRefresh]="false"
+            emptyText="No notification settings configured">
+          </app-advanced-table>
+        </div>
+      </nz-tab>
+
+    </nz-tabset>
+  </nz-card>
+</div>
+
+<!-- Loading state -->
+<nz-spin [nzSpinning]="!control" nzTip="Loading control..." *ngIf="!control"
+         style="display: flex; justify-content: center; padding: 80px;">
+</nz-spin>

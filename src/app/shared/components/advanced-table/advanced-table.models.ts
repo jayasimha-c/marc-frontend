@@ -52,6 +52,6 @@ export interface TableQueryParams {
   pageIndex: number;
   pageSize: number;
   sort?: { field: string; direction: 'ascend' | 'descend' | null };
-  filters: Record<string, string>;
+  filters: Record<string, string | string[]>;
   globalSearch: string;
 }

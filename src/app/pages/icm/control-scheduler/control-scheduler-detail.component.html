@@ -1,0 +1,82 @@
+<div style="padding: 16px;">
+  <!-- Header -->
+  <nz-card style="margin-bottom: 16px;" [nzLoading]="loading">
+    <div *ngIf="scheduler" style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()">
+          <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+        </button>
+        <span style="font-weight: 600; font-size: 18px;">{{ scheduler.name }}</span>
+        <nz-tag [nzColor]="scheduler.enabled ? 'green' : 'default'">
+          {{ scheduler.enabled ? 'Enabled' : 'Disabled' }}
+        </nz-tag>
+        <nz-tag *ngIf="scheduler.isRunning" nzColor="processing">Running</nz-tag>
+      </div>
+      <nz-space>
+        <button *nzSpaceItem nz-button nzType="primary" (click)="executeNow()" [disabled]="scheduler.isRunning">
+          <span nz-icon nzType="caret-right" nzTheme="outline"></span> Execute Now
+        </button>
+        <button *nzSpaceItem nz-button nzType="text" nzShape="circle" nz-dropdown [nzDropdownMenu]="menu">
+          <span nz-icon nzType="more" nzTheme="outline"></span>
+        </button>
+        <nz-dropdown-menu #menu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item (click)="toggleEnabled()">
+              <span nz-icon [nzType]="scheduler.enabled ? 'pause-circle' : 'play-circle'" nzTheme="outline"></span>
+              {{ scheduler.enabled ? 'Disable' : 'Enable' }}
+            </li>
+            <li nz-menu-item (click)="editScheduler()">
+              <span nz-icon nzType="edit" nzTheme="outline"></span> Edit
+            </li>
+            <li nz-menu-item nzDanger [nzDisabled]="scheduler.isRunning" (click)="deleteScheduler()">
+              <span nz-icon nzType="delete" nzTheme="outline"></span> Delete
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </nz-space>
+    </div>
+  </nz-card>
+
+  <!-- Details -->
+  <nz-card *ngIf="!loading && scheduler" style="margin-bottom: 16px;">
+    <nz-descriptions nzTitle="Scheduler Details" nzBordered nzSize="small" [nzColumn]="4">
+      <nz-descriptions-item nzTitle="Name">{{ scheduler.name }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="SAP System">{{ scheduler.sapSystemName || '-' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Schedule Type">{{ getScheduleKindName(scheduler.scheduleKind) }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Total Controls">{{ scheduler.totalControlCount || 0 }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Start Date">{{ formatEpoch(scheduler.startDate) }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="End Date">{{ formatEpoch(scheduler.endDate) }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Last Execution">{{ formatEpoch(scheduler.lastExecutionTime) }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Next Execution">{{ formatEpoch(scheduler.nextExecutionTime) }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Repeat Every" *ngIf="scheduler.repeatPeriodically">
+        {{ scheduler.repeatAfterDays || 1 }} day(s)
+      </nz-descriptions-item>
+    </nz-descriptions>
+  </nz-card>
+
+  <!-- Control Books Table -->
+  <app-advanced-table *ngIf="!loading && scheduler"
+    title="Control Books"
+    [columns]="bookColumns"
+    [data]="books"
+    [totalRecords]="books.length"
+    [actions]="bookActions"
+    [showPagination]="books.length > 10"
+    (refresh)="loadScheduler()"
+    emptyText="No control books assigned. Click 'Add Book' to add.">
+  </app-advanced-table>
+
+  <div style="margin-top: 16px;"></div>
+
+  <!-- Direct Controls Table -->
+  <app-advanced-table *ngIf="!loading && scheduler"
+    title="Direct Controls"
+    [columns]="controlColumns"
+    [data]="controls"
+    [totalRecords]="controls.length"
+    [actions]="controlActions"
+    [showPagination]="controls.length > 10"
+    (refresh)="loadScheduler()"
+    emptyText="No direct controls assigned. Click 'Add Control' to add.">
+  </app-advanced-table>
+</div>

@@ -1,0 +1,28 @@
+<div class="master-data-page">
+  <app-advanced-table
+    [title]="selectedType.label"
+    [columns]="columns"
+    [data]="data"
+    [totalRecords]="totalRecords"
+    [loading]="loading"
+    [actions]="actions"
+    [showSearch]="true"
+    [showRefresh]="true"
+    [showExport]="true"
+    (refresh)="loadData()"
+    emptyText="No data found. Click 'Add' or 'Add Initial Data' to get started.">
+    <ng-template #extraToolbar>
+      <nz-select [(ngModel)]="selectedTypeKey"
+                 (ngModelChange)="onCategoryChange()"
+                 style="width: 180px;">
+        <nz-option *ngFor="let type of dataTypes"
+                   [nzValue]="type.key"
+                   [nzLabel]="type.label"
+                   nzCustomContent>
+          <span nz-icon [nzType]="type.icon" nzTheme="outline" style="margin-right: 6px;"></span>
+          {{ type.label }}
+        </nz-option>
+      </nz-select>
+    </ng-template>
+  </app-advanced-table>
+</div>

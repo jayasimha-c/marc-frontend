@@ -10,8 +10,21 @@ import { ViewTransactionLogsComponent } from './synchronize/jobs/view-transactio
 import { PamSchedulersComponent } from './synchronize/schedulers/schedulers.component';
 import { CreateSchedulersComponent } from './synchronize/schedulers/create-schedulers/create-schedulers.component';
 
+// Privileges
+import { PrivilegesComponent } from './privileges/privileges.component';
+import { AddPrivilegeComponent } from './privileges/add-privilege/add-privilege.component';
+import { PrivilegeWizardComponent } from './privileges/privilege-wizard/privilege-wizard.component';
+import { PrivilegeSettingComponent } from './privileges/setting/setting.component';
+import { SapMappingComponent } from './privileges/sap-mapping/sap-mapping.component';
+import { AddSapMappingComponent } from './privileges/sap-mapping/add-sap-mapping/add-sap-mapping.component';
+import { SapReviewerComponent } from './privileges/sap-reviewer/sap-reviewer.component';
+import { AddSapReviewerComponent } from './privileges/sap-reviewer/add-sap-reviewer/add-sap-reviewer.component';
+
 const routes: Routes = [
   { path: '', component: PamSetupComponent },
+  { path: 'privileges', component: PrivilegesComponent },
+  { path: 'privileges/wizard/new', component: PrivilegeWizardComponent },
+  { path: 'privileges/wizard/edit/:id', component: PrivilegeWizardComponent },
   { path: 'review-rule', component: ReviewRuleComponent },
   { path: 'reason', component: PamReasonComponent },
   { path: 'synchronize/jobs', component: PamJobsComponent },
@@ -27,9 +40,17 @@ const routes: Routes = [
     StartJobComponent,
     ViewTransactionLogsComponent,
     PamSchedulersComponent,
-    CreateSchedulersComponent
+    CreateSchedulersComponent,
+    // Privileges
+    PrivilegesComponent,
+    AddPrivilegeComponent,
+    PrivilegeWizardComponent,
+    PrivilegeSettingComponent,
+    SapMappingComponent,
+    AddSapMappingComponent,
+    SapReviewerComponent,
+    AddSapReviewerComponent
   ],
   imports: [SharedModule, RouterModule.forChild(routes)],
 })
 export class SetupModule { }
-

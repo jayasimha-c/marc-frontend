@@ -1,0 +1,13 @@
+<div style="padding: 16px;">
+  <app-advanced-table
+    title="Control Books"
+    [columns]="columns"
+    [data]="books"
+    [loading]="loading"
+    [totalRecords]="books.length"
+    [actions]="tableActions"
+    [showExport]="true"
+    (refresh)="loadData()"
+    emptyText="No control books found">
+  </app-advanced-table>
+</div>

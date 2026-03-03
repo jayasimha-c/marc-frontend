@@ -1,0 +1,13 @@
+<div style="padding: 16px;">
+  <app-advanced-table
+    title="Control Schedulers"
+    [columns]="columns"
+    [data]="data"
+    [loading]="loading"
+    [totalRecords]="data.length"
+    [actions]="tableActions"
+    (refresh)="loadData()"
+    (rowClick)="onRowDblClick($event)"
+    emptyText="No schedulers found">
+  </app-advanced-table>
+</div>

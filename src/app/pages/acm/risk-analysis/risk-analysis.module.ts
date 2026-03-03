@@ -25,9 +25,14 @@ import { RuleSelectModalComponent } from './online/rule-list/rule-select-modal.c
 import { RiskListComponent, RiskDetailModalContent } from './online/risk-list/risk-list.component';
 import { RiskSelectModalComponent } from './online/risk-list/risk-select-modal.component';
 
+// Simulation
+import { SimulationAnalysisComponent } from './simulation/simulation-analysis.component';
+import { SimulationPreSelectionComponent } from './simulation/simulation-preselection-modal.component';
+
 const routes: Routes = [
   { path: '', redirectTo: 'online', pathMatch: 'full' },
   { path: 'online', component: OnlineAnalysisComponent },
+  { path: 'simulation', component: SimulationAnalysisComponent },
 ];
 
 @NgModule({
@@ -48,6 +53,8 @@ const routes: Routes = [
     RiskListComponent,
     RiskDetailModalContent,
     RiskSelectModalComponent,
+    SimulationAnalysisComponent,
+    SimulationPreSelectionComponent,
   ],
   imports: [SharedModule, RouterModule.forChild(routes)],
 })

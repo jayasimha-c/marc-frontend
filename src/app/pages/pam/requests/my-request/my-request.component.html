@@ -1,0 +1,75 @@
+<app-page-panel header="My Requests">
+    <!-- Dashboard Metrics -->
+    <nz-row [nzGutter]="16" style="margin-bottom:16px">
+        <nz-col [nzSpan]="4">
+            <app-statistics-card title="Total Requests" [value]="metrics.totalRequests" icon="unordered-list"
+                color="#1890ff" [loading]="metricsLoading" [clickable]="true"
+                [selected]="activeFilter === 'total'" (click)="onMetricClick('total')">
+            </app-statistics-card>
+        </nz-col>
+        <nz-col [nzSpan]="4">
+            <app-statistics-card title="Pending" [value]="metrics.pendingCount" icon="clock-circle"
+                color="#faad14" [loading]="metricsLoading" [clickable]="true"
+                [selected]="activeFilter === 'pending'" (click)="onMetricClick('pending')">
+            </app-statistics-card>
+        </nz-col>
+        <nz-col [nzSpan]="4">
+            <app-statistics-card title="Approved" [value]="metrics.approvedCount" icon="check-circle"
+                color="#52c41a" [loading]="metricsLoading" [clickable]="true"
+                [selected]="activeFilter === 'approved'" (click)="onMetricClick('approved')">
+            </app-statistics-card>
+        </nz-col>
+        <nz-col [nzSpan]="4">
+            <app-statistics-card title="Active" [value]="metrics.activeCount" icon="thunderbolt"
+                color="#13c2c2" [loading]="metricsLoading" [clickable]="true"
+                [selected]="activeFilter === 'active'" (click)="onMetricClick('active')">
+            </app-statistics-card>
+        </nz-col>
+        <nz-col [nzSpan]="4">
+            <app-statistics-card title="Expiring Soon" [value]="metrics.expiringSoonCount" icon="warning"
+                color="#ff4d4f" [loading]="metricsLoading" [clickable]="true"
+                [selected]="activeFilter === 'expiring'" (click)="onMetricClick('expiring')">
+            </app-statistics-card>
+        </nz-col>
+        <nz-col [nzSpan]="4">
+            <app-statistics-card title="Avg. Processing" [value]="metrics.avgProcessingTime" icon="field-time"
+                color="#722ed1" description="hours" [loading]="metricsLoading">
+            </app-statistics-card>
+        </nz-col>
+    </nz-row>
+
+    <!-- Requests Table -->
+    <app-advanced-table title="Requests" [columns]="columns" [data]="tableData" [loading]="loading"
+        [showPagination]="true" [serverSide]="true" [totalRecords]="totalRecords"
+        [pageSize]="pageSize" [pageIndex]="pageIndex" [actions]="tableActions"
+        (queryParamsChange)="onPageChange($event)">
+    </app-advanced-table>
+</app-page-panel>
+
+<!-- Status template -->
+<ng-template #statusTpl let-row="row">
+    <span style="cursor:pointer" (click)="showMessage(row)">
+        <app-status-badge [status]="row.status"></app-status-badge>
+    </span>
+</ng-template>
+
+<!-- Operations template -->
+<ng-template #operationsTpl let-row="row">
+    <nz-space [nzSize]="4">
+        <button *nzSpaceItem nz-button nzType="link" nzSize="small" nz-tooltip="View" (click)="viewRequest(row)">
+            <span nz-icon nzType="eye"></span>
+        </button>
+        <ng-container *nzSpaceItem>
+            <button *ngIf="canEdit(row)" nz-button nzType="link" nzSize="small" nz-tooltip="Edit"
+                (click)="editRequest(row)">
+                <span nz-icon nzType="edit"></span>
+            </button>
+        </ng-container>
+        <ng-container *nzSpaceItem>
+            <button *ngIf="canEnd(row)" nz-button nzType="link" nzSize="small" nzDanger nz-tooltip="End Request"
+                (click)="endRequest(row)">
+                <span nz-icon nzType="stop"></span>
+            </button>
+        </ng-container>
+    </nz-space>
+</ng-template>

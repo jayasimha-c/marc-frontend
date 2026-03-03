@@ -1,0 +1,45 @@
+<div class="p-4">
+  <form [formGroup]="form">
+    <nz-form-item>
+      <nz-form-control nzErrorTip="SAP System is required">
+        <div class="nz-float-label" [class.has-value]="form.get('sapSystemId')?.value">
+          <nz-select formControlName="sapSystemId" nzPlaceHolder=" "
+            nzShowSearch (ngModelChange)="getVariantsList()">
+            <nz-option *ngFor="let type of sapSystemList" [nzValue]="type[0]"
+              [nzLabel]="type[1]"></nz-option>
+          </nz-select>
+          <label>SAP System</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-control nzErrorTip="Variants is required">
+        <div class="nz-float-label" [class.has-value]="form.get('variants')?.value?.length">
+          <nz-select formControlName="variants" nzPlaceHolder=" " nzMode="multiple">
+            <nz-option *ngFor="let i of variants" [nzValue]="i.id"
+              [nzLabel]="i.description"></nz-option>
+          </nz-select>
+          <label>Variants</label>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-table [nzData]="checkboxOptions" nzSize="small" [nzShowPagination]="false"
+              [nzFrontPagination]="false" class="mt-2">
+      <thead><tr><th>Other Options</th><th nzWidth="60px" style="text-align: center;">Select</th></tr></thead>
+      <tbody>
+        <tr><td>Exclude Inactive Users</td><td style="text-align: center;"><label nz-checkbox formControlName="excludeInactive"></label></td></tr>
+        <tr><td>Exclude Users without any Roles</td><td style="text-align: center;"><label nz-checkbox formControlName="excludeUsersWithoutAnyRoles"></label></td></tr>
+        <tr><td>Excluded Mitigated Users</td><td style="text-align: center;"><label nz-checkbox formControlName="excludeMitigatedUsers"></label></td></tr>
+        <tr><td>Perform Analysis on Org Fields</td><td style="text-align: center;"><label nz-checkbox formControlName="performAnalysisonOrgFields"></label></td></tr>
+        <tr><td>Add/Remove User's Existing Roles Selection</td><td style="text-align: center;"><label nz-checkbox formControlName="addRemoveUserExistingRolesSelection"></label></td></tr>
+        <tr><td>Include Reference User</td><td style="text-align: center;"><label nz-checkbox formControlName="includeReferenceUser"></label></td></tr>
+      </tbody>
+    </nz-table>
+  </form>
+</div>
+<div class="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 px-4 pb-2">
+  <button nz-button nzType="default" (click)="modal.close()">Close</button>
+  <button nz-button nzType="primary" (click)="next()">Next</button>
+</div>

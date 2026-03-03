@@ -1,0 +1,150 @@
+<div style="padding: 16px;">
+  <!-- Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button nz-button nzType="text" nzShape="circle" (click)="goBack()"
+        nz-tooltip nzTooltipTitle="Back to Dashboard">
+        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+      </button>
+      <div>
+        <h3 style="margin: 0;">Deficiency Management</h3>
+        <small>Track and analyze control deficiencies</small>
+      </div>
+    </div>
+
+    <nz-space>
+      <nz-form-item *nzSpaceItem style="margin-bottom: 0; width: 160px;">
+        <nz-form-control>
+          <div class="nz-float-label" [class.has-value]="selectedSystemId !== null">
+            <nz-select [(ngModel)]="selectedSystemId" nzPlaceHolder=" " nzShowSearch nzAllowClear
+              (ngModelChange)="onSystemChange()">
+              <nz-option *ngFor="let sys of systems" [nzValue]="sys.id" [nzLabel]="sys.name || sys.sid"></nz-option>
+            </nz-select>
+            <label>System</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-radio-group *nzSpaceItem [(ngModel)]="selectedPeriod" nzButtonStyle="solid" nzSize="small">
+        <label *ngFor="let preset of dateRangePresets" nz-radio-button [nzValue]="preset.period"
+          (click)="setDateRangePreset(preset)">{{ preset.label }}</label>
+      </nz-radio-group>
+      <button *nzSpaceItem nz-button nzType="text" nzShape="circle" (click)="refresh()"
+        nz-tooltip nzTooltipTitle="Refresh">
+        <span nz-icon nzType="reload" nzTheme="outline"></span>
+      </button>
+    </nz-space>
+  </div>
+
+  <!-- KPI Cards -->
+  <div nz-row [nzGutter]="[16, 16]" style="margin-bottom: 16px;">
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Open" [value]="loading ? '-' : (stats?.openDeficiencies || 0)"
+        description="Needs attention" [loading]="loading" icon="exclamation-circle"
+        [color]="(stats?.openDeficiencies || 0) > 0 ? '#ff4d4f' : '#d9d9d9'"
+        [clickable]="true" (click)="viewDeficiencies('open')">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Critical" [value]="loading ? '-' : (stats?.criticalCount || 0)"
+        description="Severity = Critical" [loading]="loading" icon="warning"
+        [color]="(stats?.criticalCount || 0) > 0 ? '#ff4d4f' : '#d9d9d9'"
+        [clickable]="true" (click)="viewDeficiencies('critical')">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Overdue" [value]="loading ? '-' : (stats?.overdueCount || 0)"
+        [description]="(stats?.overduePercentage || 0) + '% of open'" [loading]="loading" icon="clock-circle"
+        [color]="(stats?.overdueCount || 0) > 0 ? '#faad14' : '#d9d9d9'"
+        [clickable]="true" (click)="viewDeficiencies('overdue')">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Avg Age" [value]="loading ? '-' : (stats?.averageAgeInDays || 0)"
+        description="Days open" [loading]="loading" icon="hourglass" color="#1890ff">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Opened" [value]="loading ? '-' : (stats?.openedThisPeriod || 0)"
+        description="This period" [loading]="loading" icon="plus-circle" color="#fa8c16">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Closed" [value]="loading ? '-' : (stats?.closedThisPeriod || 0)"
+        description="This period" [loading]="loading" icon="check-circle" color="#52c41a">
+      </app-statistics-card>
+    </div>
+  </div>
+
+  <!-- Charts Row 1: Trend + Status -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+    <div nz-col [nzXs]="24" [nzLg]="16">
+      <common-apx-chart #trendChart [loading]="loadingTrend" [chartOptions]="trendChartOptions"></common-apx-chart>
+    </div>
+    <div nz-col [nzXs]="24" [nzLg]="8">
+      <common-apx-chart #statusChart [loading]="loading" [chartOptions]="statusChartOptions"></common-apx-chart>
+    </div>
+  </div>
+
+  <!-- Charts Row 2: Aging + Severity + Remediation Metrics -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+    <div nz-col [nzXs]="24" [nzMd]="12" [nzLg]="8">
+      <common-apx-chart #agingChart [loading]="loading" [chartOptions]="agingChartOptions"></common-apx-chart>
+    </div>
+    <div nz-col [nzXs]="24" [nzMd]="12" [nzLg]="8">
+      <common-apx-chart #severityChart [loading]="loading" [chartOptions]="severityChartOptions"></common-apx-chart>
+    </div>
+    <div nz-col [nzXs]="24" [nzLg]="8">
+      <nz-card nzTitle="Remediation Metrics" [nzLoading]="loading">
+        <nz-descriptions nzBordered [nzColumn]="1" nzSize="small">
+          <nz-descriptions-item nzTitle="Avg Time to Close">
+            <strong>{{ stats?.averageTimeToClose || 0 }} days</strong>
+          </nz-descriptions-item>
+          <nz-descriptions-item nzTitle="In Progress">
+            <strong>{{ stats?.inProgressDeficiencies || 0 }}</strong>
+          </nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Total (All Time)">
+            <strong>{{ stats?.totalDeficiencies || 0 }}</strong>
+          </nz-descriptions-item>
+        </nz-descriptions>
+
+        <nz-divider nzText="By Severity" nzOrientation="left"></nz-divider>
+
+        <div nz-row [nzGutter]="[8, 8]">
+          <div nz-col [nzSpan]="12">
+            <nz-statistic nzTitle="Low" [nzValue]="stats?.lowCount || 0"></nz-statistic>
+          </div>
+          <div nz-col [nzSpan]="12">
+            <nz-statistic nzTitle="Medium" [nzValue]="stats?.mediumCount || 0"
+              [nzValueStyle]="{ color: '#1890ff' }"></nz-statistic>
+          </div>
+          <div nz-col [nzSpan]="12">
+            <nz-statistic nzTitle="High" [nzValue]="stats?.highCount || 0"
+              [nzValueStyle]="{ color: '#fa8c16' }"></nz-statistic>
+          </div>
+          <div nz-col [nzSpan]="12">
+            <nz-statistic nzTitle="Critical" [nzValue]="stats?.criticalCount || 0"
+              [nzValueStyle]="{ color: '#ff4d4f' }"></nz-statistic>
+          </div>
+        </div>
+      </nz-card>
+    </div>
+  </div>
+
+  <!-- Action Bar -->
+  <nz-card style="text-align: center;">
+    <nz-space>
+      <button *nzSpaceItem nz-button nzType="primary" (click)="viewDeficiencies()">
+        <span nz-icon nzType="unordered-list" nzTheme="outline"></span> View All Deficiencies
+      </button>
+      <button *nzSpaceItem nz-button (click)="viewDeficiencies('open')">
+        <span nz-icon nzType="exclamation-circle" nzTheme="outline"></span> Open Only
+      </button>
+      <button *nzSpaceItem nz-button (click)="viewDeficiencies('critical')">
+        <span nz-icon nzType="warning" nzTheme="outline"></span> Critical Only
+      </button>
+      <button *nzSpaceItem nz-button (click)="viewDeficiencies('overdue')">
+        <span nz-icon nzType="clock-circle" nzTheme="outline"></span> Overdue Only
+      </button>
+    </nz-space>
+  </nz-card>
+</div>

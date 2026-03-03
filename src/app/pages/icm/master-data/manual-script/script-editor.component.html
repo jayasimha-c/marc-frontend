@@ -1,0 +1,236 @@
+<div style="padding: 16px;">
+  <!-- Page Header -->
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+    <button nz-button nzType="text" nzShape="circle" (click)="cancel()"
+      nz-tooltip nzTooltipTitle="Back to Scripts">
+      <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+    </button>
+    <h3 style="margin: 0;">{{ isEditMode ? 'Edit Script' : 'Create Script' }}</h3>
+  </div>
+
+  <nz-spin [nzSpinning]="loading">
+    <form [formGroup]="scriptForm" *ngIf="!loading">
+      <!-- Script Details Card -->
+      <nz-card style="margin-bottom: 16px;">
+        <h4 style="margin: 0 0 16px;">Script Details</h4>
+
+        <nz-form-item style="margin-bottom: 16px;">
+          <nz-form-control nzErrorTip="Script name is required">
+            <div class="nz-float-label" [class.has-value]="scriptForm.get('scriptName')!.value">
+              <input nz-input placeholder=" " formControlName="scriptName" />
+              <label>Script Name *</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item style="margin-bottom: 16px;">
+          <nz-form-control nzErrorTip="Maximum 512 characters">
+            <div class="nz-float-label" [class.has-value]="scriptForm.get('scriptDescription')!.value">
+              <textarea nz-input placeholder=" " formControlName="scriptDescription"
+                [nzAutosize]="{ minRows: 3, maxRows: 5 }"></textarea>
+              <label>Description</label>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="12">
+            <label nz-checkbox formControlName="isActive">Active</label>
+          </div>
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-control>
+                <div class="nz-float-label has-value">
+                  <nz-input-group [nzSuffix]="attachSuffix">
+                    <input nz-input placeholder=" " [value]="fileName || 'No file selected'" readonly
+                      (click)="fileInput.click()" />
+                  </nz-input-group>
+                  <label>Attachment</label>
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+            <ng-template #attachSuffix>
+              <span *ngIf="!fileName" nz-icon nzType="paper-clip" nzTheme="outline"
+                style="cursor: pointer;" (click)="fileInput.click()"></span>
+              <span *ngIf="fileName" nz-icon nzType="close" nzTheme="outline"
+                style="cursor: pointer;" nzDanger (click)="removeAttachment()"></span>
+            </ng-template>
+            <input #fileInput type="file" hidden (change)="onFileSelected($event)" />
+          </div>
+        </div>
+      </nz-card>
+
+      <!-- Steps Card -->
+      <nz-card style="margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <h4 style="margin: 0;">
+            Steps
+            <small style="font-weight: normal; margin-left: 8px;">({{ stepsArray.length }})</small>
+          </h4>
+          <nz-space>
+            <button *nzSpaceItem nz-button type="button" (click)="openStepLibrary()">
+              <span nz-icon nzType="read" nzTheme="outline"></span> Add from Library
+            </button>
+            <button *nzSpaceItem nz-button nzType="primary" type="button" (click)="addStep()">
+              <span nz-icon nzType="plus" nzTheme="outline"></span> Add Step
+            </button>
+          </nz-space>
+        </div>
+
+        <div *ngIf="stepsArray.length === 0" style="text-align: center; padding: 48px 0;">
+          <nz-empty nzNotFoundContent="No steps defined yet"></nz-empty>
+          <button nz-button nzType="primary" type="button" (click)="addStep()" style="margin-top: 16px;">Add First Step</button>
+        </div>
+
+        <div *ngIf="stepsArray.length > 0" class="steps-list" cdkDropList (cdkDropListDropped)="onDropStep($event)">
+          <div *ngFor="let step of stepsControls; let i = index"
+            class="step-item" [class.expanded]="isStepExpanded(i)" cdkDrag [formGroup]="$any(step)">
+
+            <!-- Step Header -->
+            <div class="step-header">
+              <div class="step-drag-handle" cdkDragHandle>
+                <span nz-icon nzType="holder" nzTheme="outline"></span>
+              </div>
+              <div class="step-number">{{ i + 1 }}</div>
+              <nz-form-item style="flex: 1; min-width: 200px; margin-bottom: 0;">
+                <nz-form-control nzErrorTip="Required">
+                  <div class="nz-float-label" [class.has-value]="step.get('stepName')!.value">
+                    <input nz-input placeholder=" " formControlName="stepName" />
+                    <label>Step Name *</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+              <label nz-checkbox formControlName="isActive">Active</label>
+              <div class="step-actions">
+                <button nz-button nzType="text" nzShape="circle" (click)="toggleStepExpansion(i)"
+                  nz-tooltip [nzTooltipTitle]="isStepExpanded(i) ? 'Collapse' : 'Expand'">
+                  <span nz-icon [nzType]="isStepExpanded(i) ? 'up' : 'down'" nzTheme="outline"></span>
+                </button>
+                <button nz-button nzType="text" nzShape="circle" (click)="moveStepUp(i)" [disabled]="i === 0"
+                  nz-tooltip nzTooltipTitle="Move up">
+                  <span nz-icon nzType="arrow-up" nzTheme="outline"></span>
+                </button>
+                <button nz-button nzType="text" nzShape="circle" (click)="moveStepDown(i)"
+                  [disabled]="i === stepsArray.length - 1" nz-tooltip nzTooltipTitle="Move down">
+                  <span nz-icon nzType="arrow-down" nzTheme="outline"></span>
+                </button>
+                <button nz-button nzType="text" nzShape="circle" nzDanger (click)="removeStep(i)"
+                  nz-tooltip nzTooltipTitle="Remove step">
+                  <span nz-icon nzType="delete" nzTheme="outline"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Expanded Details -->
+            <div *ngIf="isStepExpanded(i)" class="step-details">
+              <nz-divider nzText="Guidance" nzOrientation="left"></nz-divider>
+              <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+                <div nz-col [nzSpan]="8">
+                  <nz-form-item>
+                    <nz-form-control>
+                      <div class="nz-float-label" [class.has-value]="step.get('expectedResult')!.value">
+                        <nz-select formControlName="expectedResult" nzPlaceHolder=" ">
+                          <nz-option *ngFor="let r of expectedResults" [nzValue]="r.value" [nzLabel]="r.label"></nz-option>
+                        </nz-select>
+                        <label>Expected Result</label>
+                      </div>
+                    </nz-form-control>
+                  </nz-form-item>
+                </div>
+                <div nz-col [nzSpan]="8">
+                  <nz-form-item>
+                    <nz-form-control>
+                      <div class="nz-float-label" [class.has-value]="step.get('estimatedDurationMinutes')!.value">
+                        <input nz-input type="number" placeholder=" " formControlName="estimatedDurationMinutes" min="1" />
+                        <label>Duration (minutes)</label>
+                      </div>
+                    </nz-form-control>
+                  </nz-form-item>
+                </div>
+                <div nz-col [nzSpan]="8">
+                  <nz-form-item>
+                    <nz-form-control>
+                      <div class="nz-float-label" [class.has-value]="step.get('referenceUrl')!.value">
+                        <input nz-input placeholder=" " formControlName="referenceUrl" />
+                        <label>Reference URL</label>
+                      </div>
+                    </nz-form-control>
+                  </nz-form-item>
+                </div>
+              </div>
+
+              <nz-form-item style="margin-bottom: 16px;">
+                <nz-form-control>
+                  <div class="nz-float-label" [class.has-value]="step.get('expectedOutcome')!.value">
+                    <input nz-input placeholder=" " formControlName="expectedOutcome" />
+                    <label>Expected Outcome</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+
+              <div class="quill-field" style="margin-bottom: 16px;">
+                <label class="quill-label">Step Description</label>
+                <quill-editor formControlName="stepDescription" [modules]="quillModules"
+                  placeholder="Describe what this step involves" [styles]="{ height: '80px' }"></quill-editor>
+              </div>
+              <div class="quill-field" style="margin-bottom: 16px;">
+                <label class="quill-label">Detailed Instructions</label>
+                <quill-editor formControlName="stepInstructions" [modules]="quillModules"
+                  placeholder="Step-by-step instructions" [styles]="{ height: '120px' }"></quill-editor>
+              </div>
+
+              <nz-divider nzText="Evidence Requirements" nzOrientation="left"></nz-divider>
+              <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+                <div nz-col [nzSpan]="8">
+                  <label nz-checkbox formControlName="evidenceRequired">Evidence Required</label>
+                </div>
+                <div nz-col [nzSpan]="8">
+                  <nz-form-item>
+                    <nz-form-control>
+                      <div class="nz-float-label" [class.has-value]="step.get('evidenceType')!.value">
+                        <nz-select formControlName="evidenceType" nzPlaceHolder=" ">
+                          <nz-option *ngFor="let t of evidenceTypes" [nzValue]="t.value" [nzLabel]="t.label"></nz-option>
+                        </nz-select>
+                        <label>Evidence Type</label>
+                      </div>
+                    </nz-form-control>
+                  </nz-form-item>
+                </div>
+                <div nz-col [nzSpan]="8">
+                  <nz-form-item>
+                    <nz-form-control>
+                      <div class="nz-float-label" [class.has-value]="step.get('maxFileSizeMb')!.value">
+                        <input nz-input type="number" placeholder=" " formControlName="maxFileSizeMb" min="1" max="100" />
+                        <label>Max File Size (MB)</label>
+                      </div>
+                    </nz-form-control>
+                  </nz-form-item>
+                </div>
+              </div>
+              <nz-form-item>
+                <nz-form-control>
+                  <div class="nz-float-label" [class.has-value]="step.get('allowedFileTypes')!.value">
+                    <input nz-input placeholder=" " formControlName="allowedFileTypes" />
+                    <label>Allowed File Types</label>
+                  </div>
+                </nz-form-control>
+              </nz-form-item>
+              <small>Comma-separated extensions</small>
+            </div>
+
+            <div class="step-placeholder" *cdkDragPlaceholder></div>
+          </div>
+        </div>
+      </nz-card>
+
+      <!-- Footer -->
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button nz-button type="button" (click)="cancel()">Cancel</button>
+        <button nz-button nzType="primary" type="button" (click)="save()"
+          [disabled]="saving || scriptForm.invalid" [nzLoading]="saving">
+          <span nz-icon nzType="save" nzTheme="outline"></span> Save
+        </button>
+      </div>
+    </form>
+  </nz-spin>
+</div>

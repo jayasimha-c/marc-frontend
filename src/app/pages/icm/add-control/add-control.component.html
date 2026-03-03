@@ -1,0 +1,227 @@
+<div class="add-control-page">
+  <nz-steps [nzCurrent]="currentStep" style="margin-bottom: 24px;">
+    <nz-step nzTitle="Define Control"></nz-step>
+    <nz-step nzTitle="Implementation"></nz-step>
+    <nz-step nzTitle="Review & Notifications"></nz-step>
+  </nz-steps>
+
+  <!-- ═══ Step 1: Define Control ═══ -->
+  <div *ngIf="currentStep === 0">
+    <app-page-panel header="Define Control">
+      <form nz-form [formGroup]="step1Form" nzLayout="vertical">
+
+        <div nz-row [nzGutter]="16">
+          <div nz-col nzXs="24" nzMd="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Name</nz-form-label>
+              <nz-form-control nzErrorTip="Name is required">
+                <input nz-input formControlName="controlName" placeholder="Control name" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzXs="24" nzMd="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Criticality</nz-form-label>
+              <nz-form-control nzErrorTip="Criticality is required">
+                <nz-select formControlName="critically" nzPlaceHolder="Select criticality" nzShowSearch>
+                  <nz-option *ngFor="let item of criticallyList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzXs="24" nzMd="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Type</nz-form-label>
+              <nz-form-control nzErrorTip="Type is required">
+                <nz-select formControlName="type" nzPlaceHolder="Select type" nzShowSearch>
+                  <nz-option *ngFor="let item of typeList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div nz-row [nzGutter]="16">
+          <div nz-col nzXs="24" nzMd="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Business Process</nz-form-label>
+              <nz-form-control nzErrorTip="Business process is required">
+                <nz-select formControlName="businessProcess" nzPlaceHolder="Select business process" nzShowSearch>
+                  <nz-option *ngFor="let item of bpList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzXs="24" nzMd="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Business Sub-Process</nz-form-label>
+              <nz-form-control nzErrorTip="Business sub-process is required">
+                <nz-select formControlName="businessSubProcess" nzPlaceHolder="Select sub-process" nzShowSearch>
+                  <nz-option *ngFor="let item of sbpList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzXs="24" nzMd="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Regulation</nz-form-label>
+              <nz-form-control nzErrorTip="Regulation is required">
+                <nz-select formControlName="regulation" nzPlaceHolder="Select regulation" nzShowSearch>
+                  <nz-option *ngFor="let item of regulationList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div nz-row [nzGutter]="16">
+          <div nz-col nzXs="24" nzMd="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Group</nz-form-label>
+              <nz-form-control nzErrorTip="Group is required">
+                <nz-select formControlName="group" nzPlaceHolder="Select group" nzShowSearch>
+                  <nz-option *ngFor="let item of groupList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzXs="24" nzMd="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Category</nz-form-label>
+              <nz-form-control nzErrorTip="Category is required">
+                <nz-select formControlName="category" nzPlaceHolder="Select category" nzShowSearch>
+                  <nz-option *ngFor="let item of categoryList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzXs="24" nzMd="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Impact</nz-form-label>
+              <nz-form-control nzErrorTip="Impact is required">
+                <nz-select formControlName="impact" nzPlaceHolder="Select impact" nzShowSearch>
+                  <nz-option *ngFor="let item of impactList" [nzValue]="item.id" [nzLabel]="item.name"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div nz-row>
+          <div nz-col nzSpan="24">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Description is required">
+                <textarea nz-input formControlName="description" placeholder="Control description"
+                          [nzAutosize]="{ minRows: 3, maxRows: 6 }"></textarea>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+      </form>
+
+      <div class="step-actions">
+        <button nz-button nzType="default" (click)="goBack()">Cancel</button>
+        <button nz-button nzType="primary" [disabled]="step1Form.invalid" (click)="goToStep2()">Next</button>
+      </div>
+    </app-page-panel>
+  </div>
+
+  <!-- ═══ Step 2: Implementation ═══ -->
+  <div *ngIf="currentStep === 1">
+    <app-page-panel header="Control Implementation">
+
+      <!-- Manual (type=2) -->
+      <ng-container *ngIf="selectedType === '2'">
+        <form nz-form [formGroup]="manualScriptForm" nzLayout="inline" style="margin-bottom: 16px;">
+          <nz-form-item style="flex: 1;">
+            <nz-form-control>
+              <nz-select formControlName="manualControlScript" nzPlaceHolder="Select manual script" nzShowSearch style="width: 100%;">
+                <nz-option *ngFor="let ms of manualScriptList" [nzValue]="ms" [nzLabel]="ms.scriptName"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <button nz-button nzType="primary" (click)="addManualScript()">
+              <span nz-icon nzType="plus" nzTheme="outline"></span> Add Script
+            </button>
+          </nz-form-item>
+        </form>
+
+        <app-advanced-table
+          title="Manual Scripts"
+          [columns]="scriptColumns"
+          [data]="manualScripts"
+          [totalRecords]="manualScripts.length"
+          [showPagination]="false"
+          [showSearch]="false"
+          [showRefresh]="false"
+          emptyText="No scripts added yet">
+        </app-advanced-table>
+      </ng-container>
+
+      <!-- Automated (type=1) -->
+      <ng-container *ngIf="selectedType === '1'">
+        <form nz-form [formGroup]="step2Form" nzLayout="vertical">
+          <nz-form-item>
+            <nz-form-label nzRequired>Query Rule</nz-form-label>
+            <nz-form-control nzErrorTip="Query Rule is required">
+              <nz-select formControlName="queryRuleId" nzPlaceHolder="Select query rule" nzShowSearch>
+                <nz-option *ngFor="let q of queryRulesList" [nzValue]="q.id" [nzLabel]="q.name"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </form>
+      </ng-container>
+
+      <!-- Standard Automated (type=3) -->
+      <ng-container *ngIf="selectedType === '3'">
+        <form nz-form [formGroup]="step2Form" nzLayout="vertical">
+          <nz-form-item>
+            <nz-form-label nzRequired>Standard Control</nz-form-label>
+            <nz-form-control nzErrorTip="Standard Control is required">
+              <nz-select formControlName="stdControlId" nzPlaceHolder="Select standard control" nzShowSearch>
+                <nz-option *ngFor="let sc of stdControls" [nzValue]="sc.id" [nzLabel]="sc.name"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </form>
+      </ng-container>
+
+      <div class="step-actions">
+        <button nz-button nzType="default" (click)="currentStep = 0">Back</button>
+        <button nz-button nzType="primary" (click)="goToStep3()">Next</button>
+      </div>
+    </app-page-panel>
+  </div>
+
+  <!-- ═══ Step 3: Review & Notifications ═══ -->
+  <div *ngIf="currentStep === 2">
+    <app-page-panel header="Review & User Notifications">
+
+      <nz-alert nzType="info" nzShowIcon
+                nzMessage="Scheduling via Schedulers"
+                nzDescription="After creating this control, assign it to a Scheduler to configure when and on which SAP System it should execute. Go to ICM > Schedulers to manage schedulers."
+                style="margin-bottom: 16px;">
+      </nz-alert>
+
+      <app-advanced-table
+        title="User Notification Settings"
+        [columns]="notifyColumns"
+        [data]="notifySettings"
+        [totalRecords]="notifySettings.length"
+        [actions]="notifyActions"
+        [showPagination]="false"
+        [showSearch]="false"
+        [showRefresh]="false"
+        emptyText="No notification settings. Click 'Add Notification' to add users.">
+      </app-advanced-table>
+
+      <div class="step-actions">
+        <button nz-button nzType="default" (click)="currentStep = 1">Back</button>
+        <button nz-button nzType="default" (click)="currentStep = 0">Reset</button>
+        <button nz-button nzType="primary" [nzLoading]="saving" (click)="save()">Save Control</button>
+      </div>
+    </app-page-panel>
+  </div>
+</div>

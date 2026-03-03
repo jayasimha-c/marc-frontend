@@ -1,9 +1,9 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
+import { Router } from "@angular/router";
 import { NzModalService } from "ng-zorro-antd/modal";
 import { PaginationModel } from "../../../../core/models/pagination.model";
 import { RequestService } from "../request.service";
-import { CreateRequestModalComponent } from "../my-request/create-request-modal/create-request-modal.component";
 import { ApiResponse } from "../../../../core/models/api-response";
 import { NotificationService } from "../../../../core/services/notification.service";
 import { RequestMessageModalComponent } from "../../../../shared/components/request-message-modal/request-message-modal.component";
@@ -48,6 +48,7 @@ export class MyApprovalComponent implements OnInit {
     public loading: boolean = false;
 
     constructor(
+        private router: Router,
         private nzModal: NzModalService,
         private _requestService: RequestService,
         private notificationService: NotificationService
@@ -111,16 +112,7 @@ export class MyApprovalComponent implements OnInit {
 
     public openDetail(action: string, rowData: any) {
         if (action == 'view') {
-            this.nzModal.create({
-                nzContent: CreateRequestModalComponent,
-                nzWidth: '90vw',
-                nzData: { action: 'approval-view', data: rowData },
-                nzFooter: null
-            }).afterClose.subscribe((resp) => {
-                if (resp) {
-                    this.search();
-                }
-            });
+            this.router.navigate(['/pam/requests/approval-view', rowData.id]);
         } else if (action == 'reset') {
             this._requestService.requestReset(rowData?.id).subscribe((resp: ApiResponse) => {
                 this.notificationService.success(resp.message);

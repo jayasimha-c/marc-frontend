@@ -1,0 +1,81 @@
+<div style="padding: 16px;">
+  <!-- Header -->
+  <nz-card style="margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button nz-button nzType="text" nzShape="circle" (click)="goBack()"
+          nz-tooltip nzTooltipTitle="Back to Tasks">
+          <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+        </button>
+        <div>
+          <h3 style="margin: 0;">Control Task View</h3>
+          <small *ngIf="control">{{ control?.name }}</small>
+        </div>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Loading -->
+  <nz-card *ngIf="loading" style="text-align: center; padding: 40px 0;">
+    <nz-spin nzSimple></nz-spin>
+    <p style="margin-top: 16px; color: rgba(0,0,0,0.45);">Loading control data...</p>
+  </nz-card>
+
+  <!-- Control Details -->
+  <nz-collapse *ngIf="!loading && control" style="margin-bottom: 16px;">
+    <nz-collapse-panel nzHeader="Control Details" [nzActive]="detailsExpanded">
+      <nz-descriptions nzBordered [nzColumn]="3" nzSize="small">
+        <nz-descriptions-item nzTitle="Control Name">{{ control?.name || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="SAP System">{{ getSystemName() }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Control Type">{{ getLookupName('controlType', 'typeList') }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Criticality">{{ getLookupName('criticality', 'criticallyList') }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Impact">{{ getLookupName('impact', 'impactList') }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Category">{{ getLookupName('category', 'categoryList') }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Business Process">{{ getLookupName('businessProcess', 'bpList') }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Sub-Process">{{ getLookupName('businessSubProcess', 'sbpList') }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Group">{{ getLookupName('group', 'groupList') }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Regulation" [nzSpan]="3">{{ getLookupName('regulations', 'regulationList') }}</nz-descriptions-item>
+        <nz-descriptions-item *ngIf="control?.description" nzTitle="Description" [nzSpan]="3">{{ control.description }}</nz-descriptions-item>
+      </nz-descriptions>
+    </nz-collapse-panel>
+  </nz-collapse>
+
+  <!-- Manual Script Tasks -->
+  <nz-card *ngIf="!loading" nzTitle="Manual Script Tasks">
+    <nz-table #taskTable [nzData]="tasks" nzSize="small" [nzShowPagination]="false"
+      [nzScroll]="{ x: '800px' }">
+      <thead>
+        <tr>
+          <th nzWidth="80px">Task ID</th>
+          <th>Script Name</th>
+          <th nzWidth="150px">Created</th>
+          <th nzWidth="150px">Start Date</th>
+          <th nzWidth="150px">Finish Date</th>
+          <th nzWidth="120px">Status</th>
+          <th nzWidth="80px" nzAlign="center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let task of taskTable.data">
+          <td>{{ task.id }}</td>
+          <td>
+            <a (click)="answerTask(task.id)">{{ task.script?.icmManualScript?.scriptName || '-' }}</a>
+          </td>
+          <td>{{ task.created | date:'MM/dd/yyyy HH:mm' }}</td>
+          <td>{{ task.startDate | date:'MM/dd/yyyy HH:mm' }}</td>
+          <td>{{ task.finishDate | date:'MM/dd/yyyy HH:mm' }}</td>
+          <td>
+            <nz-tag [nzColor]="getStatusColor(task.statusLabel)">{{ task.statusLabel }}</nz-tag>
+          </td>
+          <td nzAlign="center">
+            <button nz-button nzType="link" nzSize="small" (click)="answerTask(task.id)"
+              nz-tooltip nzTooltipTitle="Answer Task">
+              <span nz-icon nzType="arrow-right" nzTheme="outline"></span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+    <nz-empty *ngIf="tasks.length === 0 && !loading" nzNotFoundContent="No manual tasks found"></nz-empty>
+  </nz-card>
+</div>

@@ -167,6 +167,11 @@ import {
   NodeExpandOutline,
   NodeCollapseOutline,
   TableOutline,
+  CarryOutOutline,
+  FileAddOutline,
+  UserSwitchOutline,
+  FormOutline,
+  PauseCircleOutline,
 } from '@ant-design/icons-angular/icons';
 
 registerLocaleData(en);
@@ -200,14 +205,15 @@ const icons = [
   ArrowUpOutline, ArrowDownOutline, PoweroffOutline,
   UndoOutline, FileExcelOutline, PlusSquareOutline,
   DoubleRightOutline, DoubleLeftOutline, LeftOutline, ReadOutline,
-  ColumnHeightOutline, MinusSquareOutline, EnterOutline, FieldTimeOutline,
+  ColumnHeightOutline, MinusSquareOutline, EnterOutline, FieldTimeOutline, FileAddOutline,
+  UserSwitchOutline, FormOutline, PauseCircleOutline,
   FallOutline, DollarOutline, SlidersOutline, FullscreenOutline, ShopOutline,
   ArrowRightOutline, BugOutline, CaretDownOutline, CaretUpOutline, CheckOutline,
   ClearOutline, CloseSquareOutline, CloudSyncOutline, CustomerServiceOutline,
   FastForwardOutline, HolderOutline, InfoOutline, OrderedListOutline,
   PaperClipOutline, ProfileOutline,
   PartitionOutline, PauseOutline, FileProtectOutline,
-  NodeExpandOutline, NodeCollapseOutline, TableOutline,
+  NodeExpandOutline, NodeCollapseOutline, TableOutline, CarryOutOutline,
 ];
 
 @NgModule({

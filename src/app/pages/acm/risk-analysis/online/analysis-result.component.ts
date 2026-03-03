@@ -1,4 +1,6 @@
 import { Component, Input } from '@angular/core';
+import { GridRequestBuilder } from '../../../../core/utils/grid-request.builder';
+import { TableQueryParams } from '../../../../shared/components/advanced-table/advanced-table.models';
 
 @Component({
   standalone: false,
@@ -47,24 +49,14 @@ export class AnalysisResultComponent {
     this.onSummaryRowSelect(row);
   }
 
-  // Build filter event in the format the backend expects
   private buildEvent(page: number, columnFilters: any, globalSearch: string): any {
-    const filters: any = {};
-    for (const field of Object.keys(columnFilters)) {
-      const value = columnFilters[field];
-      if (value && value.trim()) {
-        filters[field] = [{ value: value.trim(), matchMode: 'cn' }];
-      }
-    }
-    return {
-      first: (page - 1) * this.pageSize,
-      rows: this.pageSize,
-      page,
-      sortOrder: 1,
-      sortField: '',
-      filters,
-      globalFilter: globalSearch ? { value: globalSearch } : null,
+    const params: TableQueryParams = {
+      pageIndex: page,
+      pageSize: this.pageSize,
+      filters: columnFilters,
+      globalSearch: globalSearch || '',
     };
+    return GridRequestBuilder.toLegacy(params);
   }
 
   // Violations tab

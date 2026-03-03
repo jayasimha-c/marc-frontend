@@ -1,38 +1,43 @@
-import { Component, OnInit, Optional, Inject, ViewChild } from "@angular/core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
-import { RequestService } from "../../request.service";
-import { ApiResponse } from "../../../../../core/models/api-response";
-import { NotificationService } from "../../../../../core/services/notification.service";
-import { NZ_MODAL_DATA, NzModalRef, NzModalService } from "ng-zorro-antd/modal";
-import { ApproveModalComponent } from "../../my-approval/approve-modal.component";
-import { AdvancedTableComponent } from "../../../../../shared/components/advanced-table/advanced-table.component";
-import { PaginationModel } from "../../../../../core/models/pagination.model";
-import { ActivatedRoute, Router } from "@angular/router";
-import { Location } from "@angular/common";
-import { AttachmentService } from "../../../../../core/services/attachment.service";
+import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { RequestService } from '../../request.service';
+import { ApiResponse } from '../../../../../core/models/api-response';
+import { NotificationService } from '../../../../../core/services/notification.service';
+import { AttachmentService } from '../../../../../core/services/attachment.service';
+import { ApproveModalComponent } from '../../my-approval/approve-modal.component';
+import { TableColumn, TableAction } from '../../../../../shared/components/advanced-table/advanced-table.models';
 
 @Component({
     standalone: false,
-    selector: "app-create-request-modal",
-    templateUrl: "./create-request-modal.component.html",
-    styleUrls: ["./create-request-modal.component.scss"]
+    selector: 'app-create-request',
+    templateUrl: './create-request-modal.component.html',
+    styleUrls: ['./create-request-modal.component.scss']
 })
 export class CreateRequestModalComponent implements OnInit {
-    @ViewChild('txnGrid') txnGrid!: AdvancedTableComponent;
 
-    public sapSystemList: any[] = [];
-    public privIDList: any[] = [];
-    public reasonList: any[] = [];
-    public fileName: string = '';
-    public action: string = '';
-    public requestId: number | null = null;
-    public requestData: any = null;
+    @ViewChild('txnTpl', { static: true }) txnTpl!: TemplateRef<any>;
+    @ViewChild('noteTpl', { static: true }) noteTpl!: TemplateRef<any>;
 
-    private selectedFile: File | null = null;
-    public dbAttachmentId: number | null = null;
-    public isFullPage: boolean = false;
+    // Dropdowns
+    sapSystemList: any[] = [];
+    privIDList: any[] = [];
+    reasonList: any[] = [];
 
-    public durationOptions = [
+    // Mode
+    action = 'new';
+    requestId: number | null = null;
+    requestData: any = null;
+
+    // Attachment
+    fileName = '';
+    selectedFile: File | null = null;
+    dbAttachmentId: number | null = null;
+
+    // Duration
+    durationOptions = [
         { value: '1', label: '1 Hour' },
         { value: '2', label: '2 Hours' },
         { value: '4', label: '4 Hours' },
@@ -41,21 +46,26 @@ export class CreateRequestModalComponent implements OnInit {
         { value: 'custom', label: 'Custom' }
     ];
 
-    public ticketIntegrationEnabled = false;
-    public globalTicketIntegrationEnabled = false;
-    public ticketIntegrationType = 'ServiceNow';
-    public ticketValidating = false;
-    public ticketValidated = false;
-    public isSubmitting = false;
+    // Ticket integration
+    ticketIntegrationEnabled = false;
+    globalTicketIntegrationEnabled = false;
+    ticketIntegrationType = 'ServiceNow';
+    ticketValidating = false;
+    ticketValidated = false;
+    isSubmitting = false;
 
-    public form: FormGroup;
-    public table2: any;
+    // Form
+    form: FormGroup;
+
+    // TXN Table (review-rule inline editable pattern)
+    txnColumns: TableColumn[] = [];
+    txnActions: TableAction[] = [];
+    txnData: any[] = [];
+    selectedTxnRows = new Set<any>();
 
     constructor(
-        @Optional() @Inject(NZ_MODAL_DATA) public dialogData: any,
-        @Optional() public modal: NzModalRef,
-        private formBuilder: FormBuilder,
-        private _requestService: RequestService,
+        private fb: FormBuilder,
+        private requestService: RequestService,
         private notificationService: NotificationService,
         private nzModal: NzModalService,
         private route: ActivatedRoute,
@@ -63,99 +73,122 @@ export class CreateRequestModalComponent implements OnInit {
         private location: Location,
         private attachmentService: AttachmentService
     ) {
-        this.form = this.formBuilder.group({
-            status: [""],
-            sapSystem: ["", [Validators.required]],
-            privID: ["", [Validators.required]],
-            validFrom: ["", [Validators.required]],
-            duration: ["", [Validators.required]],
-            validTo: [{ value: "", disabled: true }],
-            reason: ["", [Validators.required]],
-            justification: ["", [Validators.required]],
-            attachment: [""],
-            requesterName: [""],
-            requestDate: [""],
-            ticketNumber: [{ value: "", disabled: false }]
+        this.form = this.fb.group({
+            status: [''],
+            sapSystem: ['', [Validators.required]],
+            privID: ['', [Validators.required]],
+            validFrom: ['', [Validators.required]],
+            duration: ['', [Validators.required]],
+            validTo: [{ value: '', disabled: true }],
+            reason: ['', [Validators.required]],
+            justification: ['', [Validators.required]],
+            attachment: [''],
+            requesterName: [''],
+            requestDate: [''],
+            ticketNumber: ['']
+        });
+    }
+
+    ngOnInit(): void {
+        // Determine action from URL
+        const url = this.router.url;
+        if (url.includes('edit-request')) {
+            this.action = 'edit';
+        } else if (url.includes('approval-view')) {
+            this.action = 'approval-view';
+        } else if (url.includes('view-request')) {
+            this.action = 'view';
+        } else {
+            this.action = 'new';
+        }
+
+        // Load route param
+        this.route.params.subscribe(params => {
+            if (params['id']) {
+                this.requestId = parseInt(params['id'], 10);
+                this.loadRequestData(this.requestId);
+            }
         });
 
-        this.isFullPage = !this.dialogData;
+        // Init TXN table
+        this.initTxnTable();
 
-        if (this.isFullPage) {
-            const url = this.router.url;
-            if (url.includes('create-request')) {
-                this.action = 'new';
-            } else if (url.includes('edit-request')) {
-                this.action = 'edit';
-            } else if (url.includes('view-request')) {
-                this.action = 'view';
+        // Load dropdown data
+        this.loadInfo();
+        this.loadTicketIntegrationSettings();
+
+        // SAP system change → reload privileges
+        this.form.get('sapSystem')?.valueChanges.subscribe(val => {
+            if (val) this.onSystemChange(val);
+        });
+
+        // Duration change: toggle validTo editable + auto-calculate
+        this.form.get('duration')?.valueChanges.subscribe(dur => {
+            if (dur === 'custom') {
+                this.form.get('validTo')?.enable();
+            } else {
+                this.form.get('validTo')?.disable();
             }
-            this.route.params.subscribe(params => {
-                if (params['id']) {
-                    this.requestId = parseInt(params['id'], 10);
-                    this._loadRequestData(this.requestId);
-                }
-            });
-        } else {
-            this.action = this.dialogData?.action || 'new';
-            if (this.dialogData?.data) {
-                this.requestData = this.dialogData.data;
-                this.requestId = this.dialogData.data.id;
-            }
-        }
+            this.updateValidTo();
+        });
+        this.form.get('validFrom')?.valueChanges.subscribe(() => {
+            if (this.form.get('duration')?.value !== 'custom') this.updateValidTo();
+        });
 
-        this._getInfo();
-        this._loadTicketIntegrationSettings();
-        this.initTxnGrid();
-
-        if (this.requestData && (this.action == 'edit' || this.action == "view" || this.action == "approval-view")) {
-            this._populateFormWithData(this.requestData);
+        // Default values for new request
+        if (this.action === 'new') {
+            const defaultValidFrom = new Date();
+            defaultValidFrom.setMinutes(defaultValidFrom.getMinutes() + 2);
+            this.form.patchValue({ validFrom: defaultValidFrom });
+            this.txnData = [{ txn: '', note: '' }];
         }
     }
 
-    private initTxnGrid(): void {
-        const isReadOnly = this.action == "view" || this.action == "approval-view";
-        this.table2 = {
-            column: [
-                { field: "txn", header: "TXN", type: "text", editable: !isReadOnly, readOnly: isReadOnly },
-                { field: "note", header: "Notes", type: "text", editable: !isReadOnly, readOnly: isReadOnly }
-            ],
-            data: []
-        };
+    initTxnTable(): void {
+        this.txnColumns = [
+            { field: 'txn', header: 'Transaction', type: 'template', templateRef: this.txnTpl },
+            { field: 'note', header: 'Notes', type: 'template', templateRef: this.noteTpl }
+        ];
+
+        if (!this.isReadOnly()) {
+            this.txnActions = [
+                { label: 'Add Row', icon: 'plus', type: 'dashed', command: () => this.addTxnRow() },
+                { label: 'Delete Selected', icon: 'delete', type: 'default', danger: true, command: () => this.deleteSelectedTxn() }
+            ];
+        }
     }
 
-    private _loadRequestData(id: number): void {
-        this._requestService.toEditRequest(id).subscribe((resp: ApiResponse) => {
+    // --- Data Loading ---
+
+    private loadRequestData(id: number): void {
+        this.requestService.toEditRequest(id).subscribe((resp: ApiResponse) => {
             if (resp.success && resp.data) {
                 this.requestData = resp.data.req;
                 this.fileName = resp.data.filename || '';
-                this._populateFormWithData(this.requestData);
-                this.initTxnGrid();
-                this._loadDbAttachment(id);
+                this.populateForm(this.requestData);
+                this.loadDbAttachment(id);
             }
         });
     }
 
-    private _loadDbAttachment(requestId: number): void {
+    private loadDbAttachment(requestId: number): void {
         this.attachmentService.listByEntity('PRIVILEGE_REQUEST', requestId).subscribe(
             (response: any) => {
-                if (response.success && response.data && response.data.length > 0) {
+                if (response.success && response.data?.length > 0) {
                     this.dbAttachmentId = response.data[0].id;
-                    if (!this.fileName) {
-                        this.fileName = response.data[0].originalName;
-                    }
+                    if (!this.fileName) this.fileName = response.data[0].originalName;
                 }
             }
         );
     }
 
-    private _populateFormWithData(data: any): void {
+    private populateForm(data: any): void {
         const validFrom = data.validFrom ? new Date(data.validFrom) : null;
         const validTo = data.validTo ? new Date(data.validTo) : null;
         let durationValue = 'custom';
 
         if (validFrom && validTo) {
-            const diffMs = validTo.getTime() - validFrom.getTime();
-            const hours = Math.round(diffMs / (1000 * 60 * 60));
+            const hours = Math.round((validTo.getTime() - validFrom.getTime()) / (1000 * 60 * 60));
             if ([1, 2, 4, 8, 24].includes(hours)) durationValue = hours.toString();
         }
 
@@ -163,8 +196,8 @@ export class CreateRequestModalComponent implements OnInit {
             status: data.status,
             sapSystem: data.system?.sapId,
             privID: data.system?.privilegeId,
-            validFrom: validFrom,
-            validTo: validTo,
+            validFrom,
+            validTo,
             duration: durationValue,
             reason: data.reason?.id,
             justification: data.justification,
@@ -174,51 +207,41 @@ export class CreateRequestModalComponent implements OnInit {
             ticketNumber: data.ticketNumber || ''
         });
 
-        this.getRequestsTxn(data.id);
+        // Load TXN rows
+        this.loadTxnData(data.id);
 
-        if (this.action == "view" || this.action == "approval-view") {
+        if (this.isReadOnly()) {
             this.form.disable();
-        }
-
-        if (data.system?.sapId) {
-            this.onSystemChange(data.system.sapId);
         }
     }
 
-    ngOnInit(): void {
-        if (!this.action || this.action === 'new') {
-            const defaultValidFrom = new Date();
-            defaultValidFrom.setMinutes(defaultValidFrom.getMinutes() + 2);
-            this.form.patchValue({ validFrom: defaultValidFrom });
-            this.table2.data = [{ txn: '', note: '' }];
-        }
-
-        this.form.get('duration')?.valueChanges.subscribe(dur => this.updateValidTo());
-        this.form.get('validFrom')?.valueChanges.subscribe(() => {
-            if (this.form.get('duration')?.value !== 'custom') this.updateValidTo();
+    private loadTxnData(id: number): void {
+        this.requestService.getRequestsTxn(id).subscribe((resp: ApiResponse) => {
+            this.txnData = resp.data?.rows || resp.data || [];
         });
     }
 
-    public navigateBack(): void {
-        if (this.isFullPage) this.location.back();
-        else this.modal.close(false);
+    private loadInfo(): void {
+        this.requestService.getInfoForRequests().subscribe((resp: ApiResponse) => {
+            this.sapSystemList = resp.data?.sys || [];
+            if (!this.requestData?.system?.sapId) this.privIDList = resp.data?.priv || [];
+            this.reasonList = resp.data?.reasons || [];
+        });
     }
 
-    private _loadTicketIntegrationSettings(): void {
-        this._requestService.getPamIntegrationSettings().subscribe(
-            (resp: ApiResponse) => {
-                if (resp.success && resp.data) {
-                    this.globalTicketIntegrationEnabled = resp.data.enabled || false;
-                    this.ticketIntegrationType = resp.data.integrationType || 'ServiceNow';
-                    this._updateTicketRequirement();
-                }
+    private loadTicketIntegrationSettings(): void {
+        this.requestService.getPamIntegrationSettings().subscribe((resp: ApiResponse) => {
+            if (resp.success && resp.data) {
+                this.globalTicketIntegrationEnabled = resp.data.enabled || false;
+                this.ticketIntegrationType = resp.data.integrationType || 'ServiceNow';
+                this.updateTicketRequirement();
             }
-        );
+        });
 
-        this.form.get('privID')?.valueChanges.subscribe(() => this._updateTicketRequirement());
+        this.form.get('privID')?.valueChanges.subscribe(() => this.updateTicketRequirement());
     }
 
-    private _updateTicketRequirement(): void {
+    private updateTicketRequirement(): void {
         const selectedPrivId = this.form.get('privID')?.value;
         let privilegeRequiresTicket = false;
 
@@ -229,7 +252,7 @@ export class CreateRequestModalComponent implements OnInit {
 
         this.ticketIntegrationEnabled = this.globalTicketIntegrationEnabled && privilegeRequiresTicket;
 
-        if (this.ticketIntegrationEnabled && this.action !== 'view' && this.action !== 'approval-view') {
+        if (this.ticketIntegrationEnabled && !this.isReadOnly()) {
             this.form.get('ticketNumber')?.setValidators([Validators.required]);
         } else {
             this.form.get('ticketNumber')?.clearValidators();
@@ -238,31 +261,100 @@ export class CreateRequestModalComponent implements OnInit {
         this.ticketValidated = false;
     }
 
-    public updateValidTo(): void {
+    // --- TXN Table Operations (review-rule pattern) ---
+
+    addTxnRow(): void {
+        this.txnData = [...this.txnData, { txn: '', note: '' }];
+    }
+
+    deleteSelectedTxn(): void {
+        if (this.selectedTxnRows.size === 0) {
+            this.notificationService.error('Please select at least one row');
+            return;
+        }
+        this.txnData = this.txnData.filter((_, i) => !this.selectedTxnRows.has(i));
+        this.selectedTxnRows.clear();
+    }
+
+    onTxnSelectionChange(selected: Set<any>): void {
+        this.selectedTxnRows = selected;
+    }
+
+    markModified(row: any): void {
+        row.modified = true;
+    }
+
+    onTxnPaste(event: ClipboardEvent): void {
+        const pastedText = event.clipboardData?.getData('text') || '';
+
+        if (!pastedText.includes('\t') && !pastedText.includes('\n')) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const rows = pastedText.split(/\r\n|\n|\r/).filter(r => r.trim() !== '');
+        const newEntries = rows.map(r => {
+            const cols = r.split('\t');
+            return { txn: cols[0]?.trim() || '', note: cols[1]?.trim() || '' };
+        });
+
+        this.txnData = [...this.txnData, ...newEntries];
+        this.notificationService.success(`Pasted ${newEntries.length} rows`);
+    }
+
+    // --- Form Operations ---
+
+    private onSystemChange(value: string): void {
+        this.requestService.getPrivilegesForRequests(value).subscribe((resp: ApiResponse) => {
+            this.privIDList = resp.data || [];
+            this.updateTicketRequirement();
+        });
+    }
+
+    updateValidTo(): void {
         const duration = this.form.get('duration')?.value;
         const validFrom = this.form.get('validFrom')?.value;
 
         if (duration && duration !== 'custom' && validFrom) {
             const validTo = new Date(validFrom);
             validTo.setHours(validTo.getHours() + parseInt(duration, 10));
-            this.form.patchValue({ validTo: validTo }, { emitEvent: false });
+            this.form.patchValue({ validTo }, { emitEvent: false });
         }
     }
 
-    public isCustomDuration(): boolean {
+    isCustomDuration(): boolean {
         return this.form.get('duration')?.value === 'custom';
     }
+
+    isReadOnly(): boolean {
+        return this.action === 'view' || this.action === 'approval-view';
+    }
+
+    navigateBack(): void {
+        this.location.back();
+    }
+
+    getPageTitle(): string {
+        switch (this.action) {
+            case 'view': return 'View Privilege Request';
+            case 'edit': return 'Edit Privilege Request';
+            case 'approval-view': return 'Review Privilege Request';
+            default: return 'New Privilege Request';
+        }
+    }
+
+    // --- Ticket Validation ---
 
     private validateTicketAsync(): Promise<boolean> {
         return new Promise((resolve) => {
             const tk = this.form.get('ticketNumber')?.value;
-            if (!tk || tk.trim() === '') {
+            if (!tk?.trim()) {
                 this.notificationService.error('Please enter a ticket number');
                 return resolve(false);
             }
             this.ticketValidating = true;
-            this._requestService.validateTicket(tk, this.ticketIntegrationType).subscribe(
-                (resp: ApiResponse) => {
+            this.requestService.validateTicket(tk, this.ticketIntegrationType).subscribe({
+                next: (resp: ApiResponse) => {
                     this.ticketValidating = false;
                     if (resp.success && resp.data) {
                         this.ticketValidated = true;
@@ -272,143 +364,113 @@ export class CreateRequestModalComponent implements OnInit {
                         resolve(false);
                     }
                 },
-                error => {
-                    this.ticketValidating = false;
-                    resolve(false);
-                }
-            );
+                error: () => { this.ticketValidating = false; resolve(false); }
+            });
         });
     }
 
-    private _getInfo() {
-        this._requestService.getInfoForRequests().subscribe((resp: ApiResponse) => {
-            this.sapSystemList = resp.data.sys || [];
-            if (!this.requestData?.system?.sapId) this.privIDList = resp.data.priv || [];
-            this.reasonList = resp.data.reasons || [];
-        });
-    }
+    // --- Submit ---
 
-    public onSystemChange(value: string) {
-        this._requestService.getPrivilegesForRequests(value).subscribe((resp: ApiResponse) => {
-            this.privIDList = resp.data || [];
-            this._updateTicketRequirement();
-        });
-    }
-
-    public async sendRequest() {
+    async sendRequest(): Promise<void> {
         this.form.markAllAsTouched();
         if (!this.form.valid) return;
 
         this.isSubmitting = true;
 
         if (this.ticketIntegrationEnabled) {
-            const isTkValid = await this.validateTicketAsync();
-            if (!isTkValid) {
-                this.isSubmitting = false;
-                return;
-            }
+            const isValid = await this.validateTicketAsync();
+            if (!isValid) { this.isSubmitting = false; return; }
         }
 
-        let txnList = this.table2.data.filter((row: any) => row?.txn && row.txn.toString().trim() !== '');
+        const txnList = this.txnData.filter(row => row?.txn?.toString().trim() !== '');
 
         const payload: any = {
-            sapId: this.form.get("sapSystem")?.value,
-            privilegeId: this.form.get("privID")?.value,
-            validFrom: this.form.get("validFrom")?.value,
-            validTo: this.form.get("validTo")?.value,
-            reasonId: this.form.get("reason")?.value,
-            justification: this.form.get("justification")?.value,
-            attachment: this.form.get("attachment")?.value,
-            ticketNumber: this.form.get("ticketNumber")?.value || null,
-            txnList: txnList,
+            sapId: this.form.get('sapSystem')?.value,
+            privilegeId: this.form.get('privID')?.value,
+            validFrom: this.form.get('validFrom')?.value,
+            validTo: this.form.get('validTo')?.value,
+            reasonId: this.form.get('reason')?.value,
+            justification: this.form.get('justification')?.value,
+            attachment: this.form.get('attachment')?.value,
+            ticketNumber: this.form.get('ticketNumber')?.value || null,
+            txnList,
             timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
         };
 
-        let request = this._requestService.sendRequest(payload);
-        if (this.action == 'edit' && this.requestId) {
+        let request = this.requestService.sendRequest(payload);
+        if (this.action === 'edit' && this.requestId) {
             payload.id = this.requestId;
-            request = this._requestService.updateRequest(payload);
+            request = this.requestService.updateRequest(payload);
         }
 
-        request.subscribe((resp: ApiResponse) => {
-            const reqId = resp.data?.id || this.requestId;
-            if (this.selectedFile && reqId) {
-                this.attachmentService.upload(this.selectedFile, 'PRIVILEGE_REQUEST', reqId).subscribe({
-                    complete: () => {
-                        this.isSubmitting = false;
-                        this.notificationService.success(resp.message);
-                        this.navigateBack();
-                    }
-                });
-            } else {
+        request.subscribe({
+            next: (resp: ApiResponse) => {
+                const reqId = resp.data?.id || this.requestId;
+                if (this.selectedFile && reqId) {
+                    this.attachmentService.upload(this.selectedFile, 'PRIVILEGE_REQUEST', reqId).subscribe({
+                        complete: () => {
+                            this.isSubmitting = false;
+                            this.notificationService.success(resp.message);
+                            this.navigateBack();
+                        }
+                    });
+                } else {
+                    this.isSubmitting = false;
+                    this.notificationService.success(resp.message);
+                    this.navigateBack();
+                }
+            },
+            error: (err) => {
                 this.isSubmitting = false;
-                this.notificationService.success(resp.message);
-                this.navigateBack();
+                this.notificationService.handleHttpError(err);
             }
         });
     }
 
-    public getRequestsTxn(id: number): void {
-        this._requestService.getRequestsTxn(id).subscribe((resp: ApiResponse) => {
-            this.table2.data = resp.data.rows || [];
-        });
-    }
+    // --- Attachment ---
 
-    public addNewRow(): void {
-        this.table2.data = [...this.table2.data, { txn: '', note: '' }];
-    }
-
-    public onFileSelected(event: any) {
+    onFileSelected(event: any): void {
         const file = event.target.files[0];
         this.selectedFile = file;
-        if (file) {
-            this.fileName = file.name;
-        }
+        if (file) this.fileName = file.name;
     }
 
-    public removeAttachment(): void {
+    removeAttachment(): void {
         this.form.get('attachment')?.setValue('');
         this.fileName = '';
         this.selectedFile = null;
         this.dbAttachmentId = null;
     }
 
-    public approveRequest() {
+    downloadAttachment(): void {
+        if (this.dbAttachmentId) {
+            this.attachmentService.download(this.dbAttachmentId, this.fileName);
+        }
+    }
+
+    // --- Approval Actions ---
+
+    approveRequest(): void {
         this.nzModal.create({
             nzTitle: 'Approve',
             nzContent: ApproveModalComponent,
             nzWidth: '30vw',
             nzData: { action: 'approve', title: 'Approve', data: this.requestData, page: 'approval' },
             nzFooter: null
-        }).afterClose.subscribe((res) => {
+        }).afterClose.subscribe(res => {
             if (res) this.navigateBack();
         });
     }
 
-    public rejectRequest() {
+    rejectRequest(): void {
         this.nzModal.create({
             nzTitle: 'Reject',
             nzContent: ApproveModalComponent,
             nzWidth: '30vw',
             nzData: { action: 'reject', title: 'Reject', data: this.requestData, page: 'approval' },
             nzFooter: null
-        }).afterClose.subscribe((res) => {
+        }).afterClose.subscribe(res => {
             if (res) this.navigateBack();
         });
-    }
-
-    public getPageTitle(): string {
-        switch (this.action) {
-            case 'view': return 'View Privilege Request';
-            case 'edit': return 'Edit Privilege Request';
-            case 'approval-view': return 'Review Privilege Request';
-            default: return 'New Privilege Request';
-        }
-    }
-
-    public downloadAttachment(): void {
-        if (this.dbAttachmentId) {
-            this.attachmentService.download(this.dbAttachmentId, this.fileName);
-        }
     }
 }

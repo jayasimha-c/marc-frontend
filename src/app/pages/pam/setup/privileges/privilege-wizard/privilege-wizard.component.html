@@ -1,0 +1,301 @@
+<nz-spin [nzSpinning]="loading" nzTip="Loading privilege data...">
+    <nz-card>
+        <!-- Steps Header -->
+        <nz-steps [nzCurrent]="currentStep" nzSize="small" style="margin-bottom:24px">
+            <nz-step nzTitle="Basic Info" nzIcon="profile"></nz-step>
+            <nz-step nzTitle="Settings" nzIcon="setting"></nz-step>
+            <nz-step nzTitle="Users" nzIcon="team"></nz-step>
+            <nz-step nzTitle="Systems" nzIcon="cloud-server"></nz-step>
+            <nz-step nzTitle="Review" nzIcon="check-circle"></nz-step>
+        </nz-steps>
+
+        <nz-divider></nz-divider>
+
+        <!-- Step 1: Basic Information -->
+        <ng-container *ngIf="currentStep === 0">
+            <h4 nz-typography>Basic Information</h4>
+            <span nz-typography nzType="secondary">Define the privilege identifier and description</span>
+
+            <form nz-form [formGroup]="basicInfoForm" nzLayout="vertical" style="max-width:480px;margin-top:16px">
+                <nz-form-item>
+                    <nz-form-label nzRequired>Privilege ID</nz-form-label>
+                    <nz-form-control [nzErrorTip]="privilegeIdErrorTpl" nzHasFeedback>
+                        <input nz-input formControlName="privilegeId" placeholder="Enter unique privilege ID"
+                            style="text-transform: uppercase" />
+                        <ng-template #privilegeIdErrorTpl let-control>
+                            <ng-container *ngIf="control.hasError('required')">Privilege ID is required</ng-container>
+                            <ng-container *ngIf="control.hasError('minlength')">Minimum 3 characters</ng-container>
+                            <ng-container *ngIf="control.hasError('maxlength')">Maximum 50 characters</ng-container>
+                            <ng-container *ngIf="control.hasError('pattern')">Only letters, numbers, dash, underscore</ng-container>
+                        </ng-template>
+                    </nz-form-control>
+                </nz-form-item>
+
+                <nz-form-item>
+                    <nz-form-label nzRequired>Description</nz-form-label>
+                    <nz-form-control [nzErrorTip]="descErrorTpl" nzHasFeedback>
+                        <textarea nz-input formControlName="description"
+                            placeholder="Describe the privilege (10-500 characters)"
+                            [nzAutosize]="{ minRows: 4, maxRows: 8 }"></textarea>
+                        <ng-template #descErrorTpl let-control>
+                            <ng-container *ngIf="control.hasError('required')">Description is required</ng-container>
+                            <ng-container *ngIf="control.hasError('minlength')">Minimum 10 characters</ng-container>
+                            <ng-container *ngIf="control.hasError('maxlength')">Maximum 500 characters</ng-container>
+                        </ng-template>
+                    </nz-form-control>
+                </nz-form-item>
+            </form>
+        </ng-container>
+
+        <!-- Step 2: Settings -->
+        <ng-container *ngIf="currentStep === 1">
+            <h4 nz-typography>Settings</h4>
+            <span nz-typography nzType="secondary">Configure privilege behavior and constraints</span>
+
+            <form [formGroup]="settingsForm" style="max-width:480px;margin-top:16px">
+                <nz-list nzBordered nzSize="small">
+                    <nz-list-item>
+                        <nz-list-item-meta nzTitle="Send Transaction Log"
+                            nzDescription="Enable transaction log email notifications"></nz-list-item-meta>
+                        <nz-switch formControlName="sendTxnLog"></nz-switch>
+                    </nz-list-item>
+                    <nz-list-item>
+                        <nz-list-item-meta nzTitle="Same Approver & Reviewer"
+                            nzDescription="Allow a user to act as both approver and reviewer"></nz-list-item-meta>
+                        <nz-switch formControlName="sameApproverReviewer"></nz-switch>
+                    </nz-list-item>
+                    <nz-list-item>
+                        <nz-list-item-meta nzTitle="Same Requester & Approver"
+                            nzDescription="Allow a user to act as both requester and approver"></nz-list-item-meta>
+                        <nz-switch formControlName="sameRequesterApprover"></nz-switch>
+                    </nz-list-item>
+                    <nz-list-item>
+                        <nz-list-item-meta nzTitle="Max Days for ID Request"
+                            nzDescription="Limit the validity period of privilege requests"></nz-list-item-meta>
+                        <nz-switch formControlName="setMaxDays"></nz-switch>
+                    </nz-list-item>
+                    <nz-list-item *ngIf="settingsForm.get('setMaxDays')?.value">
+                        <nz-list-item-meta nzTitle="Maximum Days"></nz-list-item-meta>
+                        <nz-input-number formControlName="maxDays" [nzMin]="1" [nzMax]="365"
+                            nzPlaceHolder="Days" style="width:120px"></nz-input-number>
+                    </nz-list-item>
+                    <nz-list-item>
+                        <nz-list-item-meta nzTitle="Ticket Reconciliation"
+                            nzDescription="Validate ticket numbers during reconciliation"></nz-list-item-meta>
+                        <nz-switch formControlName="ticketValidate"></nz-switch>
+                    </nz-list-item>
+                </nz-list>
+            </form>
+        </ng-container>
+
+        <!-- Step 3: Users Assignment -->
+        <ng-container *ngIf="currentStep === 2">
+            <h4 nz-typography>Users Assignment</h4>
+            <span nz-typography nzType="secondary">Assign approvers, reviewers, and requesters</span>
+
+            <nz-space style="margin:12px 0">
+                <nz-tag *nzSpaceItem nzColor="orange">Approvers: {{ approverIds.size }}</nz-tag>
+                <nz-tag *nzSpaceItem nzColor="cyan">Reviewers: {{ reviewerIds.size }}</nz-tag>
+                <nz-tag *nzSpaceItem nzColor="blue">Requesters: {{ requesterIds.size }}</nz-tag>
+            </nz-space>
+
+            <nz-alert *ngIf="!settingsForm.value.sameApproverReviewer" nzType="info" nzShowIcon
+                nzMessage="A user cannot be both approver and reviewer for this privilege"
+                style="margin-bottom:12px"></nz-alert>
+
+            <nz-input-group [nzPrefix]="searchIcon" style="max-width:300px;margin-bottom:12px">
+                <input nz-input [(ngModel)]="userSearchText" placeholder="Search users..." />
+            </nz-input-group>
+            <ng-template #searchIcon><span nz-icon nzType="search"></span></ng-template>
+
+            <nz-spin [nzSpinning]="usersLoading">
+                <nz-table #userTable [nzData]="filteredUsers" nzSize="small" [nzPageSize]="15"
+                    nzShowSizeChanger nzBordered [nzScroll]="{ y: '400px' }">
+                    <thead>
+                        <tr>
+                            <th nzWidth="200px">Username</th>
+                            <th nzWidth="200px">Display Name</th>
+                            <th nzWidth="100px" nzAlign="center">Approver</th>
+                            <th nzWidth="100px" nzAlign="center">Reviewer</th>
+                            <th nzWidth="100px" nzAlign="center">Requester</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let user of userTable.data">
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.displayName || user.email || '-' }}</td>
+                            <td nzAlign="center">
+                                <label nz-checkbox [ngModel]="approverIds.has(user.id)"
+                                    (ngModelChange)="toggleApprover(user.id)"></label>
+                            </td>
+                            <td nzAlign="center">
+                                <label nz-checkbox [ngModel]="reviewerIds.has(user.id)"
+                                    (ngModelChange)="toggleReviewer(user.id)"></label>
+                            </td>
+                            <td nzAlign="center">
+                                <label nz-checkbox [ngModel]="requesterIds.has(user.id)"
+                                    (ngModelChange)="toggleRequester(user.id)"></label>
+                            </td>
+                        </tr>
+                    </tbody>
+                </nz-table>
+            </nz-spin>
+        </ng-container>
+
+        <!-- Step 4: System Mapping -->
+        <ng-container *ngIf="currentStep === 3">
+            <h4 nz-typography>System Mapping</h4>
+            <span nz-typography nzType="secondary">Select SAP systems to map this privilege to</span>
+
+            <nz-space style="margin:12px 0">
+                <nz-tag *nzSpaceItem nzColor="purple">{{ selectedSystemIds.size }} system(s) selected</nz-tag>
+            </nz-space>
+
+            <nz-spin [nzSpinning]="systemsLoading">
+                <nz-empty *ngIf="sapSystems.length === 0 && !systemsLoading"
+                    nzNotFoundContent="No SAP systems available"></nz-empty>
+
+                <nz-row [nzGutter]="[12, 12]">
+                    <nz-col [nzXs]="24" [nzSm]="12" [nzLg]="8" [nzXl]="6" *ngFor="let sys of sapSystems">
+                        <nz-card nzSize="small" nzHoverable [nzBorderless]="false"
+                            [class.ant-card-selected]="isSystemSelected(sys.id)"
+                            (click)="toggleSystem(sys.id)" style="cursor:pointer">
+                            <nz-row nzAlign="middle" [nzGutter]="8">
+                                <nz-col>
+                                    <label nz-checkbox [ngModel]="isSystemSelected(sys.id)"
+                                        (click)="$event.stopPropagation()"
+                                        (ngModelChange)="toggleSystem(sys.id)"></label>
+                                </nz-col>
+                                <nz-col nzFlex="auto">
+                                    <strong>{{ sys.destinationName || sys.description }}</strong>
+                                    <br>
+                                    <span nz-typography nzType="secondary" style="font-size:12px">ID: {{ sys.id }}</span>
+                                </nz-col>
+                                <nz-col>
+                                    <span nz-icon nzType="cloud-server" style="font-size:18px"
+                                        [style.color]="isSystemSelected(sys.id) ? '#722ed1' : '#d9d9d9'"></span>
+                                </nz-col>
+                            </nz-row>
+                        </nz-card>
+                    </nz-col>
+                </nz-row>
+            </nz-spin>
+        </ng-container>
+
+        <!-- Step 5: Review & Activate -->
+        <ng-container *ngIf="currentStep === 4">
+            <h4 nz-typography>Review & Activate</h4>
+            <span nz-typography nzType="secondary">Review your configuration before saving</span>
+
+            <!-- Basic Info -->
+            <nz-card nzSize="small" nzTitle="Basic Information" [nzExtra]="editBasicTpl" style="margin-top:16px">
+                <nz-descriptions nzBordered nzSize="small" [nzColumn]="1">
+                    <nz-descriptions-item nzTitle="Privilege ID">
+                        <strong>{{ basicInfoForm.getRawValue().privilegeId }}</strong>
+                    </nz-descriptions-item>
+                    <nz-descriptions-item nzTitle="Description">
+                        {{ basicInfoForm.getRawValue().description }}
+                    </nz-descriptions-item>
+                </nz-descriptions>
+            </nz-card>
+            <ng-template #editBasicTpl>
+                <button nz-button nzType="link" nzSize="small" (click)="goToStep(0)">Edit</button>
+            </ng-template>
+
+            <!-- Settings -->
+            <nz-card nzSize="small" nzTitle="Settings" [nzExtra]="editSettingsTpl" style="margin-top:12px">
+                <nz-descriptions nzBordered nzSize="small" [nzColumn]="2">
+                    <nz-descriptions-item nzTitle="Transaction Log">
+                        <nz-tag [nzColor]="settingsForm.value.sendTxnLog ? 'green' : 'default'">
+                            {{ settingsForm.value.sendTxnLog ? 'Enabled' : 'Disabled' }}
+                        </nz-tag>
+                    </nz-descriptions-item>
+                    <nz-descriptions-item nzTitle="Same Approver & Reviewer">
+                        <nz-tag [nzColor]="settingsForm.value.sameApproverReviewer ? 'green' : 'default'">
+                            {{ settingsForm.value.sameApproverReviewer ? 'Allowed' : 'Not Allowed' }}
+                        </nz-tag>
+                    </nz-descriptions-item>
+                    <nz-descriptions-item nzTitle="Same Requester & Approver">
+                        <nz-tag [nzColor]="settingsForm.value.sameRequesterApprover ? 'green' : 'default'">
+                            {{ settingsForm.value.sameRequesterApprover ? 'Allowed' : 'Not Allowed' }}
+                        </nz-tag>
+                    </nz-descriptions-item>
+                    <nz-descriptions-item nzTitle="Max Days" *ngIf="settingsForm.value.setMaxDays">
+                        {{ settingsForm.value.maxDays }} days
+                    </nz-descriptions-item>
+                    <nz-descriptions-item nzTitle="Ticket Reconciliation">
+                        <nz-tag [nzColor]="settingsForm.value.ticketValidate ? 'green' : 'default'">
+                            {{ settingsForm.value.ticketValidate ? 'Enabled' : 'Disabled' }}
+                        </nz-tag>
+                    </nz-descriptions-item>
+                </nz-descriptions>
+            </nz-card>
+            <ng-template #editSettingsTpl>
+                <button nz-button nzType="link" nzSize="small" (click)="goToStep(1)">Edit</button>
+            </ng-template>
+
+            <!-- Users -->
+            <nz-card nzSize="small" nzTitle="Users" [nzExtra]="editUsersTpl" style="margin-top:12px">
+                <nz-descriptions nzBordered nzSize="small" [nzColumn]="1">
+                    <nz-descriptions-item nzTitle="Approvers">
+                        <nz-tag *ngFor="let name of getApproverNames()" nzColor="orange">{{ name }}</nz-tag>
+                        <span *ngIf="approverIds.size === 0" nz-typography nzType="secondary">None</span>
+                    </nz-descriptions-item>
+                    <nz-descriptions-item nzTitle="Reviewers">
+                        <nz-tag *ngFor="let name of getReviewerNames()" nzColor="cyan">{{ name }}</nz-tag>
+                        <span *ngIf="reviewerIds.size === 0" nz-typography nzType="secondary">None</span>
+                    </nz-descriptions-item>
+                    <nz-descriptions-item nzTitle="Requesters">
+                        <nz-tag *ngFor="let name of getRequesterNames()" nzColor="blue">{{ name }}</nz-tag>
+                        <span *ngIf="requesterIds.size === 0" nz-typography nzType="secondary">None</span>
+                    </nz-descriptions-item>
+                </nz-descriptions>
+            </nz-card>
+            <ng-template #editUsersTpl>
+                <button nz-button nzType="link" nzSize="small" (click)="goToStep(2)">Edit</button>
+            </ng-template>
+
+            <!-- Systems -->
+            <nz-card nzSize="small" nzTitle="SAP Systems" [nzExtra]="editSystemsTpl" style="margin-top:12px">
+                <nz-tag *ngFor="let name of getSelectedSystemNames()" nzColor="purple">{{ name }}</nz-tag>
+                <span *ngIf="selectedSystemIds.size === 0" nz-typography nzType="secondary">None selected</span>
+            </nz-card>
+            <ng-template #editSystemsTpl>
+                <button nz-button nzType="link" nzSize="small" (click)="goToStep(3)">Edit</button>
+            </ng-template>
+
+            <!-- Activation -->
+            <nz-card nzSize="small" nzTitle="Activation" style="margin-top:12px">
+                <nz-space nzAlign="center">
+                    <nz-switch *nzSpaceItem [(ngModel)]="activateOnSave"></nz-switch>
+                    <span *nzSpaceItem nz-typography>
+                        {{ activateOnSave ? 'Privilege will be activated immediately' : 'Privilege will be saved as inactive' }}
+                    </span>
+                </nz-space>
+            </nz-card>
+        </ng-container>
+
+        <!-- Navigation -->
+        <nz-divider></nz-divider>
+        <nz-row nzJustify="space-between">
+            <button nz-button (click)="cancel()">Cancel</button>
+            <nz-space>
+                <ng-container *nzSpaceItem>
+                    <button nz-button (click)="onPrev()" [style.display]="currentStep > 0 ? '' : 'none'">
+                        <span nz-icon nzType="left"></span> Previous
+                    </button>
+                </ng-container>
+                <ng-container *nzSpaceItem>
+                    <button nz-button nzType="primary" (click)="onNext()" *ngIf="currentStep < 4">
+                        Next <span nz-icon nzType="right"></span>
+                    </button>
+                    <button nz-button nzType="primary" (click)="saveWizard()" *ngIf="currentStep === 4"
+                        [nzLoading]="saving" nzDanger>
+                        <span nz-icon nzType="save"></span>
+                        {{ isEditMode ? 'Update Privilege' : 'Create Privilege' }}
+                    </button>
+                </ng-container>
+            </nz-space>
+        </nz-row>
+    </nz-card>
+</nz-spin>

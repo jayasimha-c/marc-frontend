@@ -1,0 +1,193 @@
+<div style="padding: 16px;">
+  <!-- Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button nz-button nzType="text" nzShape="circle" (click)="goBack()"
+        nz-tooltip nzTooltipTitle="Back to Dashboard">
+        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+      </button>
+      <div>
+        <h3 style="margin: 0;">Execution Monitoring</h3>
+        <small>Real-time control execution status</small>
+      </div>
+    </div>
+
+    <nz-space>
+      <nz-form-item *nzSpaceItem style="margin-bottom: 0; width: 160px;">
+        <nz-form-control>
+          <div class="nz-float-label" [class.has-value]="selectedSystemId !== null">
+            <nz-select [(ngModel)]="selectedSystemId" nzPlaceHolder=" " nzShowSearch nzAllowClear
+              (ngModelChange)="onSystemChange()">
+              <nz-option *ngFor="let sys of systems" [nzValue]="sys.id" [nzLabel]="sys.name || sys.sid"></nz-option>
+            </nz-select>
+            <label>System</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item *nzSpaceItem style="margin-bottom: 0; width: 110px;">
+        <nz-form-control>
+          <div class="nz-float-label" [class.has-value]="autoRefreshInterval !== null && autoRefreshInterval !== undefined">
+            <nz-select [(ngModel)]="autoRefreshInterval" nzPlaceHolder=" "
+              (ngModelChange)="onRefreshIntervalChange()">
+              <nz-option *ngFor="let opt of refreshOptions" [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
+            </nz-select>
+            <label>Refresh</label>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+      <button *nzSpaceItem nz-button nzType="text" nzShape="circle" (click)="refresh()"
+        nz-tooltip nzTooltipTitle="Refresh now">
+        <span nz-icon nzType="reload" nzTheme="outline"></span>
+      </button>
+      <small *nzSpaceItem style="color: rgba(0,0,0,0.45);">{{ getTimeAgo() }}</small>
+    </nz-space>
+  </div>
+
+  <!-- KPI Cards -->
+  <div nz-row [nzGutter]="[16, 16]" style="margin-bottom: 16px;">
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Today Total" [value]="loading ? '-' : (stats?.todayTotalExecutions || 0)"
+        description="Executions" [loading]="loading" icon="play-circle" color="#1890ff">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Success" [value]="loading ? '-' : (stats?.todaySuccessCount || 0)"
+        description="Completed OK" [loading]="loading" icon="check-circle" color="#52c41a">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Failed" [value]="loading ? '-' : (stats?.todayFailedCount || 0)"
+        description="With errors" [loading]="loading" icon="close-circle"
+        [color]="(stats?.todayFailedCount || 0) > 0 ? '#ff4d4f' : '#d9d9d9'">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Running" [value]="loading ? '-' : (stats?.todayRunningCount || 0)"
+        description="In progress" [loading]="loading" icon="sync" color="#1890ff">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Exceptions" [value]="loading ? '-' : (stats?.totalExceptionsFound || 0)"
+        description="Violations found" [loading]="loading" icon="warning"
+        [color]="(stats?.totalExceptionsFound || 0) > 0 ? '#faad14' : '#d9d9d9'"
+        [clickable]="true" (click)="viewControlResults()">
+      </app-statistics-card>
+    </div>
+    <div nz-col [nzXs]="12" [nzSm]="8" [nzLg]="4">
+      <app-statistics-card title="Schedulers" [value]="loading ? '-' : (stats?.activeSchedulers || 0)"
+        description="Active" [loading]="loading" icon="clock-circle" color="#722ed1"
+        [clickable]="true" (click)="viewSchedulers()">
+      </app-statistics-card>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+    <div nz-col [nzXs]="24" [nzLg]="16">
+      <nz-card [nzExtra]="periodButtons">
+        <common-apx-chart #trendChart [loading]="loadingTrend" [chartOptions]="trendChartOptions"></common-apx-chart>
+      </nz-card>
+      <ng-template #periodButtons>
+        <nz-radio-group [(ngModel)]="selectedPeriod" nzButtonStyle="solid" nzSize="small"
+          (ngModelChange)="onPeriodChange()">
+          <label *ngFor="let opt of periodOptions" nz-radio-button [nzValue]="opt.period">{{ opt.label }}</label>
+        </nz-radio-group>
+      </ng-template>
+    </div>
+    <div nz-col [nzXs]="24" [nzLg]="8">
+      <common-apx-chart #statusChart [loading]="loading" [chartOptions]="statusChartOptions"></common-apx-chart>
+    </div>
+  </div>
+
+  <!-- Bottom Row: Period Stats + System Health + Scheduler Status -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+    <!-- Period Statistics -->
+    <div nz-col [nzXs]="24" [nzMd]="12" [nzLg]="8">
+      <nz-card nzTitle="Period Statistics" [nzLoading]="loading">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span>Success Rate</span>
+          <strong [style.color]="getSuccessRateColor()">{{ stats?.periodSuccessRate || 0 }}%</strong>
+        </div>
+        <nz-progress [nzPercent]="stats?.periodSuccessRate || 0"
+          [nzStrokeColor]="getSuccessRateColor()" [nzShowInfo]="false" nzSize="small"></nz-progress>
+
+        <div nz-row [nzGutter]="[12, 12]" style="margin-top: 16px;">
+          <div nz-col [nzSpan]="12">
+            <nz-statistic nzTitle="Total Runs" [nzValue]="stats?.periodTotalExecutions || 0"></nz-statistic>
+          </div>
+          <div nz-col [nzSpan]="12">
+            <nz-statistic nzTitle="Failed" [nzValue]="stats?.periodFailedCount || 0"
+              [nzValueStyle]="(stats?.periodFailedCount || 0) > 0 ? { color: '#ff4d4f' } : {}"></nz-statistic>
+          </div>
+        </div>
+
+        <nz-divider></nz-divider>
+
+        <nz-alert nzType="warning" nzShowIcon [nzMessage]="exceptionsMsg"></nz-alert>
+        <ng-template #exceptionsMsg>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span>Controls with Exceptions</span>
+            <strong>{{ stats?.controlsWithExceptions || 0 }}</strong>
+          </div>
+        </ng-template>
+      </nz-card>
+    </div>
+
+    <!-- System Health -->
+    <div nz-col [nzXs]="24" [nzMd]="12" [nzLg]="8">
+      <nz-card nzTitle="System Health" [nzLoading]="loading">
+        <nz-list *ngIf="stats?.bySystem?.length" nzSize="small" style="max-height: 200px; overflow-y: auto;">
+          <nz-list-item *ngFor="let sys of stats.bySystem" nzNoFlex>
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <nz-badge [nzColor]="getSystemHealthColor(sys.status)"></nz-badge>
+                <strong>{{ sys.systemName }}</strong>
+              </div>
+              <div style="text-align: right;">
+                <div>{{ sys.successRate }}%</div>
+                <small>{{ sys.totalExecutions }} runs</small>
+              </div>
+            </div>
+          </nz-list-item>
+        </nz-list>
+        <nz-empty *ngIf="!stats?.bySystem?.length" nzNotFoundContent="No system data available"></nz-empty>
+      </nz-card>
+    </div>
+
+    <!-- Scheduler Status -->
+    <div nz-col [nzXs]="24" [nzLg]="8">
+      <nz-card nzTitle="Scheduler Status" [nzLoading]="loading">
+        <div nz-row [nzGutter]="[12, 12]">
+          <div nz-col [nzSpan]="8">
+            <nz-statistic nzTitle="Active" [nzValue]="stats?.activeSchedulers || 0"
+              [nzPrefix]="activeSchedIcon" [nzValueStyle]="{ color: '#52c41a' }"></nz-statistic>
+            <ng-template #activeSchedIcon><span nz-icon nzType="check-circle" nzTheme="outline"></span></ng-template>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <nz-statistic nzTitle="Disabled" [nzValue]="stats?.disabledSchedulers || 0"
+              [nzPrefix]="disabledSchedIcon"></nz-statistic>
+            <ng-template #disabledSchedIcon><span nz-icon nzType="pause-circle" nzTheme="outline"></span></ng-template>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <nz-statistic nzTitle="Overdue" [nzValue]="stats?.overdueSchedulers || 0"
+              [nzPrefix]="overdueSchedIcon"
+              [nzValueStyle]="(stats?.overdueSchedulers || 0) > 0 ? { color: '#ff4d4f' } : {}"></nz-statistic>
+            <ng-template #overdueSchedIcon><span nz-icon nzType="clock-circle" nzTheme="outline"></span></ng-template>
+          </div>
+        </div>
+      </nz-card>
+    </div>
+  </div>
+
+  <!-- Action Bar -->
+  <nz-card style="text-align: center;">
+    <nz-space>
+      <button *nzSpaceItem nz-button nzType="primary" (click)="viewControlResults()">
+        <span nz-icon nzType="bar-chart" nzTheme="outline"></span> Control Results
+      </button>
+      <button *nzSpaceItem nz-button (click)="viewSchedulers()">
+        <span nz-icon nzType="clock-circle" nzTheme="outline"></span> Manage Schedulers
+      </button>
+    </nz-space>
+  </nz-card>
+</div>

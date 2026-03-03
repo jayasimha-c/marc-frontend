@@ -198,6 +198,41 @@ export class RiskAnalysisOnlineService {
     return this.http.post<ApiResponse>('simulations/selectAllSimRoles', data);
   }
 
+  simulationsLoadSelection(simulationType: string): Observable<ApiResponse> {
+    const prefix = simulationType === 'offline' ? 'simulations/offline' : 'simulations';
+    return this.http.get<ApiResponse>(`${prefix}/loadSelection`);
+  }
+
+  saveSimulationsPreSelection(data: any, simulationType: string): Observable<ApiResponse> {
+    const prefix = simulationType === 'offline' ? 'simulations/offline' : 'simulations';
+    return this.http.post<ApiResponse>(`${prefix}/preSelection`, data);
+  }
+
+  startSimulationAnalysis(data: any, simulationType: string): Observable<ApiResponse> {
+    const prefix = simulationType === 'offline' ? 'simulations/offline' : 'simulations';
+    return this.http.post<ApiResponse>(`${prefix}/startSimulation`, data);
+  }
+
+  getSimulationResultSummary(jobId: string, event: any): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `analysis/simulationResultSummary?jobId=${jobId}&first=${event.first}&rows=${event.rows}&sortOrder=${event.sortOrder}&sortField=${event.sortField || ''}&filters=${encodeURI(JSON.stringify(event.filters || null))}`
+    );
+  }
+
+  getSimulationDetailedResult(jobId: string, event: any): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `analysis/simulationRiskViolaitonGrid?jobId=${jobId}&first=${event.first}&rows=${10000}&sortOrder=${event.sortOrder}&sortField=${event.sortField || ''}&filters=${encodeURI(JSON.stringify(event.filters || null))}`
+    );
+  }
+
+  getExportSimulationSummaryResults(jobId: any): Observable<any> {
+    return this.http.get(`simulations/exportSimulationRuleSummary?jobId=${jobId}`, { observe: 'response', responseType: 'blob' });
+  }
+
+  exportSimulationPdf(jobId: any): Observable<any> {
+    return this.http.get(`pdf/exportSimulationSummary?jobId=${jobId}`, { observe: 'response', responseType: 'blob' });
+  }
+
   // -- Cross-system --
 
   findCrossSystemUsers(payload: any): Observable<ApiResponse> {

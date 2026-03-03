@@ -1,0 +1,172 @@
+<div style="padding: 16px;">
+  <!-- Dashboard Metrics -->
+  <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+    <div nz-col nzXs="24" nzSm="12" nzLg="6">
+      <app-statistics-card
+        title="Total Controls"
+        [value]="totalControls"
+        [loading]="metricsLoading"
+        description="Active control count"
+        icon="dashboard"
+        color="#1890ff">
+      </app-statistics-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzLg="6">
+      <app-statistics-card
+        title="Control Types"
+        [value]="controlTypeChartData.length"
+        [loading]="metricsLoading"
+        description="Automated & Manual"
+        icon="setting"
+        color="#52c41a">
+      </app-statistics-card>
+      <div class="chart-mini" *ngIf="controlTypeChartData.length > 0">
+        <div class="progress-bar">
+          <div *ngFor="let item of controlTypeChartData"
+               class="progress-segment"
+               [style.width.%]="item.percentage"
+               [style.background-color]="item.color"
+               [title]="item.label + ': ' + item.value + ' (' + item.percentage + '%)'">
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span *ngFor="let item of controlTypeChartData" class="legend-item" [title]="item.label + ': ' + item.value">
+            <span class="legend-dot" [style.background-color]="item.color"></span>
+            {{item.label}} {{item.value}}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzLg="6">
+      <app-statistics-card
+        title="Risk Criticality"
+        [value]="criticalityChartData.length"
+        [loading]="metricsLoading"
+        description="C, H, M, L levels"
+        icon="safety"
+        color="#f5222d">
+      </app-statistics-card>
+      <div class="chart-mini" *ngIf="criticalityChartData.length > 0">
+        <div class="progress-bar">
+          <div *ngFor="let item of criticalityChartData"
+               class="progress-segment"
+               [style.width.%]="item.percentage"
+               [style.background-color]="item.color"
+               [title]="item.label + ': ' + item.value + ' (' + item.percentage + '%)'">
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span *ngFor="let item of criticalityChartData" class="legend-item" [title]="item.label + ': ' + item.value">
+            <span class="legend-dot" [style.background-color]="item.color"></span>
+            {{item.label}} {{item.value}}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzLg="6">
+      <app-statistics-card
+        title="Business Process"
+        [value]="businessProcessChartData.length"
+        [loading]="metricsLoading"
+        [description]="businessProcessChartData.length + ' processes'"
+        icon="apartment"
+        color="#722ed1">
+      </app-statistics-card>
+      <div class="chart-mini" *ngIf="businessProcessChartData.length > 0">
+        <div class="progress-bar">
+          <div *ngFor="let item of businessProcessChartData"
+               class="progress-segment"
+               [style.width.%]="item.percentage"
+               [style.background-color]="item.color"
+               [title]="item.label + ': ' + item.value + ' (' + item.percentage + '%)'">
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span *ngFor="let item of businessProcessChartData" class="legend-item" [title]="item.label + ': ' + item.value">
+            <span class="legend-dot" [style.background-color]="item.color"></span>
+            {{item.label}} {{item.value}}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Panel -->
+  <nz-card style="margin-bottom: 16px;" [nzBodyStyle]="{ padding: searchOpen ? '16px' : '12px 16px' }">
+    <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;"
+         (click)="searchOpen = !searchOpen">
+      <span style="font-weight: 600; font-size: 15px;">Search</span>
+      <button nz-button nzType="default" nzSize="small">
+        <span nz-icon [nzType]="searchOpen ? 'minus' : 'plus'" nzTheme="outline"></span>
+        Custom Filter
+      </button>
+    </div>
+    <form [formGroup]="filterForm" *ngIf="searchOpen" style="margin-top: 16px;">
+      <div nz-row [nzGutter]="16">
+        <div nz-col nzXs="24" nzMd="6">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label" [class.has-value]="filterForm.get('controlName')!.value">
+                <input nz-input placeholder=" " formControlName="controlName" />
+                <label>Control Name</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col nzXs="24" nzMd="6">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label" [class.has-value]="filterForm.get('criticality')!.value">
+                <nz-select formControlName="criticality" nzPlaceHolder=" " nzShowSearch nzAllowClear>
+                  <nz-option *ngFor="let c of criticallyList" [nzValue]="c.id" [nzLabel]="c.name"></nz-option>
+                </nz-select>
+                <label>Criticality</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col nzXs="24" nzMd="6">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label" [class.has-value]="filterForm.get('businessProcess')!.value">
+                <nz-select formControlName="businessProcess" nzPlaceHolder=" " nzShowSearch nzAllowClear>
+                  <nz-option *ngFor="let b of bpList" [nzValue]="b.id" [nzLabel]="b.name"></nz-option>
+                </nz-select>
+                <label>Business Process</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col nzXs="24" nzMd="6">
+          <nz-form-item>
+            <nz-form-control>
+              <div class="nz-float-label" [class.has-value]="filterForm.get('businessSubProcess')!.value">
+                <nz-select formControlName="businessSubProcess" nzPlaceHolder=" " nzShowSearch nzAllowClear>
+                  <nz-option *ngFor="let s of sbpList" [nzValue]="s.id" [nzLabel]="s.name"></nz-option>
+                </nz-select>
+                <label>Business Sub-Process</label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end;">
+        <button nz-button nzType="primary" (click)="onSearch()">Search</button>
+      </div>
+    </form>
+  </nz-card>
+
+  <!-- Controls Table -->
+  <app-advanced-table
+    title="Controls"
+    [columns]="columns"
+    [data]="controls"
+    [loading]="loading"
+    [serverSide]="true"
+    [totalRecords]="totalRecords"
+    [actions]="tableActions"
+    [showExport]="true"
+    (queryParamsChange)="onQueryParamsChange($event)"
+    (rowClick)="onRowClick($event)">
+  </app-advanced-table>
+</div>

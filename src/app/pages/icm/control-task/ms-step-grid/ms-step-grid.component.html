@@ -1,0 +1,136 @@
+<nz-card nzTitle="Task Steps">
+  <form [formGroup]="form">
+    <nz-table #stepTable
+      [nzData]="stepsFormArray.controls"
+      [nzFrontPagination]="false"
+      [nzShowPagination]="false"
+      nzSize="small"
+      nzBordered
+      [nzScroll]="{ x: '900px' }">
+      <thead>
+        <tr>
+          <th nzWidth="60px" nzAlign="center">#</th>
+          <th nzWidth="200px">Step Name</th>
+          <th nzWidth="140px">Status</th>
+          <th>Comment / Notes</th>
+          <th nzWidth="200px">Evidence</th>
+          <th nzWidth="50px" nzAlign="center"></th>
+        </tr>
+      </thead>
+      <tbody formArrayName="steps">
+        <ng-container *ngFor="let step of stepsFormArray.controls; let i = index">
+          <!-- Main Row -->
+          <tr [formGroupName]="i">
+            <td nzAlign="center">
+              <nz-tag [nzColor]="getStatusTagColor(step.get('status')?.value)">
+                {{ step.get('stepOrder')?.value }}
+              </nz-tag>
+            </td>
+            <td>
+              <strong>{{ step.get('stepName')?.value }}</strong>
+              <br *ngIf="step.get('stepDescription')?.value">
+              <small style="color: rgba(0,0,0,0.45);">{{ step.get('stepDescription')?.value }}</small>
+            </td>
+            <td>
+              <nz-select formControlName="status"
+                style="width: 120px;"
+                nzPlaceHolder="Status"
+                [nzDisabled]="readonly"
+                (ngModelChange)="onStatusChange(i)">
+                <nz-option *ngFor="let opt of statusOptions"
+                  [nzValue]="opt.value"
+                  [nzLabel]="opt.label"
+                  nzCustomContent>
+                  <span nz-icon [nzType]="opt.icon" nzTheme="outline"
+                    [style.color]="opt.color === 'success' ? '#52c41a' : opt.color === 'error' ? '#ff4d4f' : '#8c8c8c'">
+                  </span>
+                  {{ opt.label }}
+                </nz-option>
+              </nz-select>
+            </td>
+            <td>
+              <textarea nz-input formControlName="comment"
+                [nzAutosize]="{ minRows: 1, maxRows: 4 }"
+                placeholder="Add comment..."
+                [readOnly]="readonly"
+                (blur)="onCommentChange(i)"
+                class="step-comment"></textarea>
+            </td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                <nz-tag *ngIf="step.get('attachmentName')?.value"
+                  nzColor="blue" style="cursor: pointer;"
+                  (click)="onDownloadAttachment(i)">
+                  <span nz-icon nzType="paper-clip" nzTheme="outline"></span>
+                  {{ step.get('attachmentName')?.value }}
+                </nz-tag>
+                <button *ngIf="step.get('attachmentName')?.value && !readonly"
+                  nz-button nzType="text" nzSize="small" nzDanger
+                  nz-tooltip nzTooltipTitle="Remove attachment"
+                  (click)="onRemoveAttachment(i)">
+                  <span nz-icon nzType="delete" nzTheme="outline"></span>
+                </button>
+                <button *ngIf="!step.get('attachmentName')?.value && !readonly"
+                  nz-button nzType="dashed" nzSize="small"
+                  (click)="fileInput.click()">
+                  <span nz-icon nzType="upload" nzTheme="outline"></span>
+                  Upload
+                </button>
+                <input #fileInput type="file" style="display: none;" (change)="onFileSelect($event, i)">
+              </div>
+            </td>
+            <td nzAlign="center">
+              <button nz-button nzType="text" nzSize="small"
+                nz-tooltip [nzTooltipTitle]="isExpanded(i) ? 'Collapse' : 'Expand details'"
+                (click)="toggleExpand(i)">
+                <span nz-icon [nzType]="isExpanded(i) ? 'up' : 'down'" nzTheme="outline"></span>
+              </button>
+            </td>
+          </tr>
+          <!-- Expanded Details Row -->
+          <tr *ngIf="isExpanded(i)">
+            <td [attr.colspan]="6" style="background: #fafafa; padding: 16px;">
+              <nz-descriptions nzBordered [nzColumn]="2" nzSize="small">
+                <nz-descriptions-item *ngIf="showInstructions && step.get('stepInstructions')?.value"
+                  nzTitle="Instructions" [nzSpan]="2">
+                  {{ step.get('stepInstructions')?.value }}
+                </nz-descriptions-item>
+                <nz-descriptions-item *ngIf="showExpectedOutcome && step.get('expectedOutcome')?.value"
+                  nzTitle="Expected Outcome" [nzSpan]="2">
+                  {{ step.get('expectedOutcome')?.value }}
+                </nz-descriptions-item>
+                <nz-descriptions-item *ngIf="step.get('expectedResult')?.value"
+                  nzTitle="Expected Result">
+                  <nz-tag [nzColor]="getExpectedResultColor(step.get('expectedResult')?.value)">
+                    {{ step.get('expectedResult')?.value }}
+                  </nz-tag>
+                </nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Evidence Required">
+                  <nz-tag [nzColor]="step.get('evidenceRequired')?.value ? 'orange' : 'default'">
+                    {{ step.get('evidenceRequired')?.value ? 'Yes' : 'No' }}
+                  </nz-tag>
+                </nz-descriptions-item>
+              </nz-descriptions>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </nz-table>
+  </form>
+
+  <!-- Summary Footer -->
+  <div style="display: flex; gap: 16px; margin-top: 12px; justify-content: flex-end;">
+    <span>
+      <nz-tag nzColor="success">{{ getCountByStatus(1) }} Pass</nz-tag>
+    </span>
+    <span>
+      <nz-tag nzColor="error">{{ getCountByStatus(2) }} Failed</nz-tag>
+    </span>
+    <span>
+      <nz-tag nzColor="default">{{ getCountByStatus(null) }} Pending</nz-tag>
+    </span>
+    <span style="color: rgba(0,0,0,0.45);">
+      Total: {{ stepsFormArray.length }}
+    </span>
+  </div>
+</nz-card>

@@ -1,0 +1,21 @@
+<form nz-form [formGroup]="form" nzLayout="vertical">
+    <nz-form-item>
+        <nz-form-label nzRequired>Select User</nz-form-label>
+        <nz-form-control nzErrorTip="Please select a user">
+            <nz-select formControlName="userId" nzPlaceHolder="Search and select user" nzShowSearch nzAllowClear>
+                <nz-option *ngFor="let user of usersList" [nzValue]="user.id"
+                    [nzLabel]="user.username || user.displayName || user.email"></nz-option>
+            </nz-select>
+        </nz-form-control>
+    </nz-form-item>
+</form>
+
+<nz-divider></nz-divider>
+<div nz-row nzJustify="end">
+    <nz-space>
+        <button *nzSpaceItem nz-button (click)="modal.close()">Cancel</button>
+        <button *nzSpaceItem nz-button nzType="primary" [nzLoading]="loading" (click)="save()">
+            Add {{ userType | titlecase }}
+        </button>
+    </nz-space>
+</div>

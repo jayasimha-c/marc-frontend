@@ -1,0 +1,205 @@
+Filter Flow Analysis: Source Frontend → Backend
+
+  1. Source Frontend (PrimeNG/AG-Grid Legacy Pattern)
+
+  Model: PaginationModel = { first, rows, sortOrder, sortField, filters: object|null, page?, globalFilter? }
+
+  Default: { first: 1, rows: 10, sortOrder: 0, sortField: "", filters: {}, page: 0 }
+
+  Component builds the event like:
+  {
+    first: event.first,
+    rows: event.rows,
+    sortOrder: event.sortOrder,
+    sortField: event.sortField || "",
+    filters: event.filters || null,
+    page: Math.round(event.first / 10) + 1,
+    globalFilter: event.globalFilter || null
+  }
+
+  Service sends as GET query params:
+  this.http.get(`endpoint?first=${e.first}&rows=${e.rows}&sortOrder=${e.sortOrder}&sortField=${e.sortField}&filters=${encodeURI(JSON.stringify(e.filters))}&global
+  Filter=${e.globalFilter}`)
+
+  Filters are a PrimeNG-style object like {"bname":[{"value":"x","matchMode":"contains"}]} — JSON-stringified and URI-encoded as a query parameter.
+
+  ---
+  2. Backend — Two Distinct Patterns
+
+  Pattern A: Legacy GET Endpoints (adhocAnalysis, analysis, simulations)
+
+  - Accept filters as a JSON-stringified query parameter in PrimeNG format
+  - Backend parses the JSON string back into a filter object
+  - Used by: analysis/adhocRiskViolaitonGrid, analysis/simulationResultSummary, etc.
+
+  Pattern B: New POST Endpoints (ServiceNow)
+
+  - Accept @RequestBody GridFilterRequest as POST body
+  - GridFilterRequest: { page, size, sortField, sortDirection (ASC/DESC enum), filters: List<ColumnFilter>, globalFilter }
+  - ColumnFilter: { field, operator (CONTAINS/EQUALS/STARTS_WITH/ENDS_WITH/IN/etc.), value, values }
+  - sortDirection is a Java enum — must be uppercase "ASC" or "DESC"
+  - filters must be an array of ColumnFilter, not an object
+  - Used by: servicenow/sync/data/{id}/users/filtered, roles/filtered, groups/filtered
+
+  ---
+  3. Target Frontend (app-advanced-table)
+
+  The target's advanced-table emits TableQueryParams:
+  { pageIndex (1-based), pageSize, sort: {field, direction}, filters: {fieldName: 'value'}, globalSearch }
+
+  Conversion needed per endpoint type:
+  ┌────────────┬───────────────────────────────┬──────────────────────────────────┬────────────────────────────────────┐
+  │   Field    │     advanced-table emits      │      Pattern A (GET legacy)      │ Pattern B (POST GridFilterRequest) │
+  ├────────────┼───────────────────────────────┼──────────────────────────────────┼────────────────────────────────────┤
+  │ page       │ pageIndex (1-based)           │ first = (pageIndex-1)*pageSize+1 │ page = pageIndex - 1 (0-based)     │
+  ├────────────┼───────────────────────────────┼──────────────────────────────────┼────────────────────────────────────┤
+  │ size       │ pageSize                      │ rows = pageSize                  │ size = pageSize                    │
+  ├────────────┼───────────────────────────────┼──────────────────────────────────┼────────────────────────────────────┤
+  │ sort field │ sort.field                    │ sortField                        │ sortField                          │
+  ├────────────┼───────────────────────────────┼──────────────────────────────────┼────────────────────────────────────┤
+  │ sort dir   │ sort.direction ('asc'/'desc') │ sortOrder (1 or -1)              │ sortDirection ('ASC'/'DESC')       │
+  ├────────────┼───────────────────────────────┼──────────────────────────────────┼────────────────────────────────────┤
+  │ filters    │ { field: 'value' } object     │ JSON-stringified PrimeNG object  │ ColumnFilter[] array               │
+  ├────────────┼───────────────────────────────┼──────────────────────────────────┼────────────────────────────────────┤
+  │ search     │ globalSearch                  │ globalFilter                     │ globalFilter                       │
+  └────────────┴───────────────────────────────┴──────────────────────────────────┴────────────────────────────────────┘
+  ---
+  Summary
+
+  The existing buildRequest() in the ServiceNow data explorer (already fixed) correctly converts to Pattern B. The simulation service methods use Pattern A (GET
+  with stringified filters), which matches how the source frontend sent them. No further code changes needed — this is just the analysis you requested.
+
+✻ Crunched for 4m 11s
+
+● Agent "Analyze source frontend filters" completed
+
+● The background analysis agent also completed and confirmed the same findings. The key takeaway is:
+
+  - Legacy analysis endpoints (violations, summary, detailed) use GET with filters as encodeURI(JSON.stringify(filters)) query params in PrimeNG format { field:
+  [{value, matchMode}] }
+  - ServiceNow endpoints use POST with GridFilterRequest body containing filters: ColumnFilter[] array format
+
+  Both patterns are now correctly handled in the target project. Is there anything else you'd like me to work on?
+
+● Agent "Analyze backend filter handling" completed
+
+● The backend analysis agent also completed. It found additional detail about the legacy PrimeTableRequestData approach (operators like cn, bw, ew, eq, in
+  converted to SQL wildcards) and confirmed the newer GridFilterRequest + GridSpecificationBuilder pattern used by ServiceNow endpoints.
+
+  What would you like to work on next?
+
+> how to improvise legacy and adopt into advanced-table ?
+
+● Good question. Let me first check the current state of the advanced-table and how the legacy endpoints are being called in the target project.
+
+● Explore(Explore advanced-table and legacy usage) Sonnet 4.5
+  ⎿  Done (21 tool uses · 62.4k tokens · 1m 36s)
+
+● Here's the situation and two approaches:
+
+  Current Problem
+
+  1. 5+ duplicate buildRequest methods scattered across components — each doing the same conversion slightly differently
+  2. Legacy analysis endpoints still use GET with first/rows/sortOrder/sortField/filters (PrimeNG format)
+  3. Newer endpoints (ServiceNow, Identity) use POST with GridFilterRequest
+
+  Approach A: Shared Utility Only (Frontend, no backend changes)
+
+  Create one GridRequestBuilder utility that handles both formats:
+
+  TableQueryParams (advanced-table)
+          │
+     GridRequestBuilder
+          │
+     ┌────┴────┐
+     ▼         ▼
+  toLegacy()  toGridFilter()
+  (GET)       (POST GridFilterRequest)
+
+  - Eliminates all 5+ duplicate buildRequest methods
+  - Legacy endpoints keep working as-is
+  - No backend changes needed
+
+  Approach B: Full Modernization (Frontend + Backend)
+
+  1. Add new POST endpoints on backend accepting GridFilterRequest for analysis too
+  2. Retire the GET query-param endpoints
+  3. All frontend uses one toGridFilter() conversion
+
+  This is cleaner long-term but requires backend changes.
+
+  My recommendation: Start with Approach A — it's practical, eliminates duplication now, and you can migrate backend endpoints incrementally later.
+
+  The shared utility would live in core/utils/grid-request.builder.ts and provide:
+  - toGridFilterRequest(params) — for POST endpoints (ServiceNow, Identity, etc.)
+  - toLegacyPagination(params) — for GET endpoints (analysis, adhoc)
+  - Both handle the pageIndex→page, ascend/descend→ASC/DESC, filters object→ColumnFilter[] conversions
+
+  Want me to implement this?
+
+✻ Brewed for 2m 21s
+
+> is appraoch A cause any performance issues ?
+
+● No. Approach A is purely a code organization change — it moves the same conversion logic from 5+ scattered copies into one shared function.
+
+  At runtime:
+  - Same HTTP requests go to the same endpoints
+  - Same payload format, same response format
+  - The utility just maps a few fields (subtract 1 from pageIndex, uppercase a string, loop through a small filters object) — nanoseconds of work
+  - No extra network calls, no middleware, no serialization overhead
+
+  The only "difference" is the legacy GET endpoints send filters as a JSON-stringified query param (?filters=...), which is slightly less efficient than a POST
+  body for large filter sets — but that's already the case today. Approach A doesn't change that.
+
+  TL;DR: Zero performance impact. It's a refactor, not an architectural change.
+
+> if we implement option A. is it a global change. or we apply at a every page ?
+
+● It's both — you create the utility once globally, then apply it per page where needed.
+
+  What changes:
+  ┌────────────────────────────────────┬──────────────────────────────────────────────────────┬─────────────────────────┐
+  │               Layer                │                        Change                        │        One-time?        │
+  ├────────────────────────────────────┼──────────────────────────────────────────────────────┼─────────────────────────┤
+  │ core/utils/grid-request.builder.ts │ Create shared utility                                │ Yes, once               │
+  ├────────────────────────────────────┼──────────────────────────────────────────────────────┼─────────────────────────┤
+  │ Each component with buildRequest() │ Replace with GridRequestBuilder.toGridFilter(params) │ Per page (~5 files)     │
+  ├────────────────────────────────────┼──────────────────────────────────────────────────────┼─────────────────────────┤
+  │ Legacy analysis service methods    │ Replace with GridRequestBuilder.toLegacy(params)     │ Per method (~5 methods) │
+  └────────────────────────────────────┴──────────────────────────────────────────────────────┴─────────────────────────┘
+  The actual conversion logic is written once. But you still need to touch each file that currently has its own copy to swap it out. It's a find-and-replace style
+   change — no logic changes, just import the utility instead of the local method.
+
+  Roughly 7-8 files to update:
+  - servicenow/data-explorer — remove local buildRequest()
+  - cis/data-explorer — remove local buildRequest()
+  - identity-exceptions — remove local buildGridRequest()
+  - identity-repository — remove local buildGridRequest()
+  - role-concept — remove local conversion
+  - online-analysis — switch to toLegacy()
+  - simulation-analysis — switch to toLegacy()
+
+  Want me to implement it?
+
+> so shared shared utility can be used for online-anlaysis and simulation-anlaysis as well , is that correct ?
+
+● Yes, exactly. The shared utility covers all cases:
+  ┌──────────────────────────┬─────────────────────────────────────────────┬─────────────────────────────────────────┐
+  │        Component         │               Currently uses                │             Utility method              │
+  ├──────────────────────────┼─────────────────────────────────────────────┼─────────────────────────────────────────┤
+  │ online-analysis          │ DEFAULT_PAGINATION (legacy format manually) │ GridRequestBuilder.toLegacy(params)     │
+  ├──────────────────────────┼─────────────────────────────────────────────┼─────────────────────────────────────────┤
+  │ simulation-analysis      │ Same legacy format                          │ GridRequestBuilder.toLegacy(params)     │
+  ├──────────────────────────┼─────────────────────────────────────────────┼─────────────────────────────────────────┤
+  │ servicenow/data-explorer │ Local buildRequest()                        │ GridRequestBuilder.toGridFilter(params) │
+  ├──────────────────────────┼─────────────────────────────────────────────┼─────────────────────────────────────────┤
+  │ cis/data-explorer        │ Local buildRequest()                        │ GridRequestBuilder.toGridFilter(params) │
+  ├──────────────────────────┼─────────────────────────────────────────────┼─────────────────────────────────────────┤
+  │ identity-exceptions      │ Local buildGridRequest()                    │ GridRequestBuilder.toGridFilter(params) │
+  ├──────────────────────────┼─────────────────────────────────────────────┼─────────────────────────────────────────┤
+  │ identity-repository      │ Local buildGridRequest()                    │ GridRequestBuilder.toGridFilter(params) │
+  ├──────────────────────────┼─────────────────────────────────────────────┼─────────────────────────────────────────┤
+  │ role-concept             │ Local conversion                            │ GridRequestBuilder.toGridFilter(params) │
+  └──────────────────────────┴─────────────────────────────────────────────┴─────────────────────────────────────────┘
+  Same utility, two methods — toLegacy() for the old GET endpoints, toGridFilter() for the new POST endpoints. Every page that has a server-side table uses one or

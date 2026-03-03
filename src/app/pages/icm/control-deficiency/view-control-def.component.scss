@@ -1,0 +1,60 @@
+.section-block {
+  margin-bottom: 16px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  font-weight: 600;
+  font-size: 14px;
+
+  span[nz-icon] {
+    font-size: 16px;
+  }
+}
+
+.field-list {
+  padding: 12px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.field-list-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8c8c8c;
+  margin-right: 4px;
+}
+
+.comment-row {
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+:host-context(.dark) {
+  .section-block {
+    border-color: #303030;
+  }
+
+  .section-header {
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom-color: #303030;
+  }
+
+  .comment-row {
+    border-bottom-color: #303030;
+  }
+}

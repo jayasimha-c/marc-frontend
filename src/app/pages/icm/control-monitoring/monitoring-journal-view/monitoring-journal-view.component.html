@@ -1,0 +1,37 @@
+<nz-spin [nzSpinning]="loading">
+  <nz-table #logTable
+    [nzData]="data"
+    nzSize="small"
+    nzBordered
+    [nzShowPagination]="true"
+    [nzPageSize]="20"
+    [nzScroll]="{ x: '800px' }">
+    <thead>
+      <tr>
+        <th nzWidth="160px">Log Date</th>
+        <th nzWidth="120px">User</th>
+        <th nzWidth="140px">ETL Level Name</th>
+        <th nzWidth="100px">Status</th>
+        <th>Result Info</th>
+        <th nzWidth="120px" nzAlign="center">Record Count</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of logTable.data">
+        <td>{{ row.logDate | date:'MM/dd/yyyy HH:mm:ss' }}</td>
+        <td>{{ row.username }}</td>
+        <td>{{ row.level?.name || '-' }}</td>
+        <td>
+          <nz-tag [nzColor]="getStatusColor(row.statusLabel)">{{ row.statusLabel }}</nz-tag>
+        </td>
+        <td style="white-space: pre-wrap; word-break: break-word;">{{ row.resultInfo || '-' }}</td>
+        <td nzAlign="center">{{ row.resultCount ?? '-' }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+  <nz-empty *ngIf="data.length === 0 && !loading" nzNotFoundContent="No journal entries found"></nz-empty>
+</nz-spin>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modalRef.close()">Close</button>
+</div>

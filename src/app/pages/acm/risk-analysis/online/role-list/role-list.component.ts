@@ -3,6 +3,8 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { RiskAnalysisOnlineService } from '../../risk-analysis-online.service';
 import { RoleSelectModalComponent } from './role-select-modal.component';
 import { RoleDetailModalComponent } from './role-detail-modal.component';
+import { GridRequestBuilder } from '../../../../../core/utils/grid-request.builder';
+import { TableQueryParams } from '../../../../../shared/components/advanced-table/advanced-table.models';
 
 @Component({
   standalone: false,
@@ -37,7 +39,8 @@ export class OnlineRoleListComponent implements OnInit {
 
   loadData(): void {
     if (!this.preSelection) return;
-    const event = { first: (this.currentPage - 1) * this.pageSize, rows: this.pageSize, sortOrder: 1, sortField: '', filters: {}, globalFilter: this.searchText ? { value: this.searchText } : null };
+    const params: TableQueryParams = { pageIndex: this.currentPage, pageSize: this.pageSize, filters: {}, globalSearch: this.searchText || '' };
+    const event = GridRequestBuilder.toLegacy(params);
     const selectedIds = this.preSelection.formType === 'simulation' ? this.preSelection.selectedRoles || [] : this.preSelection.selectedusers || [];
     const payload = { lazyEvent: event, selectedSAP: this.preSelection.selectedSAP, selectedIds };
 

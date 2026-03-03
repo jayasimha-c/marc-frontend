@@ -1,0 +1,29 @@
+<form nz-form [formGroup]="form" nzLayout="vertical">
+    <nz-form-item>
+        <nz-form-label nzRequired>SAP System</nz-form-label>
+        <nz-form-control nzErrorTip="Please select a SAP System">
+            <nz-select formControlName="sap" nzPlaceHolder="Select SAP System" nzShowSearch>
+                <nz-option *ngFor="let sys of sapSysList" [nzValue]="sys.id"
+                    [nzLabel]="sys.destinationName || sys.description"></nz-option>
+            </nz-select>
+        </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+        <nz-form-label nzRequired>Notes</nz-form-label>
+        <nz-form-control nzErrorTip="Notes are required">
+            <textarea nz-input formControlName="notes" placeholder="Enter notes"
+                [nzAutosize]="{ minRows: 3, maxRows: 6 }"></textarea>
+        </nz-form-control>
+    </nz-form-item>
+</form>
+
+<nz-divider></nz-divider>
+<div nz-row nzJustify="end">
+    <nz-space>
+        <button *nzSpaceItem nz-button (click)="modal.close()">Cancel</button>
+        <button *nzSpaceItem nz-button nzType="primary" [nzLoading]="loading" (click)="save()">
+            {{ formType === 'Edit' ? 'Update' : 'Add' }} Mapping
+        </button>
+    </nz-space>
+</div>
