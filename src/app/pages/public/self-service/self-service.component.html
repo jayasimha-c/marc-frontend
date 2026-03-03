@@ -1,0 +1,53 @@
+<div style="min-height: 100vh; display: flex; flex-direction: column; background: #f5f5f5;">
+
+  <!-- Header -->
+  <div style="padding: 16px 24px; background: #fff; border-bottom: 1px solid #f0f0f0;">
+    <img [src]="logoUrl" [alt]="appName" style="height: 32px;" />
+  </div>
+
+  <!-- Content -->
+  <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px;">
+    <nz-card style="width: 440px;">
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" style="text-align: center; padding: 40px 0;">
+        <nz-spin nzSimple nzTip="Processing your request..."></nz-spin>
+      </div>
+
+      <!-- Success -->
+      <ng-container *ngIf="!isLoading && isSuccess">
+        <nz-result nzStatus="success" [nzTitle]="title" [nzSubTitle]="description">
+          <div nz-result-content>
+            <div *ngIf="systemInfo" style="margin-bottom: 12px; color: #595959;">{{ systemInfo }}</div>
+            <div *ngIf="nextSteps" style="padding: 12px; background: #fafafa; border-radius: 4px;">
+              <strong>Next Steps</strong>
+              <p style="margin: 4px 0 0; color: #595959;">{{ nextSteps }}</p>
+            </div>
+          </div>
+          <div nz-result-extra>
+            <button nz-button nzType="primary" (click)="goToLogin()">Go to Login</button>
+          </div>
+        </nz-result>
+      </ng-container>
+
+      <!-- Error -->
+      <ng-container *ngIf="!isLoading && !isSuccess">
+        <nz-result nzStatus="error" nzTitle="Request Failed" [nzSubTitle]="errorMessage || details?.message">
+          <div nz-result-content>
+            <p style="color: #595959;">If you believe this is an error, contact your system administrator.</p>
+          </div>
+          <div nz-result-extra>
+            <button nz-button nzType="primary" (click)="goToLogin()">Go to Home</button>
+          </div>
+        </nz-result>
+      </ng-container>
+
+    </nz-card>
+  </div>
+
+  <!-- Footer -->
+  <div style="padding: 12px; text-align: center; color: #8c8c8c; font-size: 12px;">
+    &copy; {{ appName }}
+  </div>
+
+</div>

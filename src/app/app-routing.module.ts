@@ -41,6 +41,12 @@ const routes: Routes = [
     loadChildren: () => import('./pages/auth/unlock-session/unlock-session.module').then(m => m.UnlockSessionModule),
   },
 
+  // Public routes (no auth)
+  {
+    path: 'public',
+    loadChildren: () => import('./pages/public/public.module').then(m => m.PublicModule),
+  },
+
   // Auth routes (sign-out)
   {
     path: 'sign-out',

@@ -1,0 +1,191 @@
+<nz-spin [nzSpinning]="loading" nzTip="Loading profile...">
+  <div *ngIf="!loading" style="padding: 24px;">
+
+    <!-- Back button (identity mode) -->
+    <div *ngIf="!isViewingOwnProfile" style="margin-bottom: 16px;">
+      <button nz-button nzType="text" (click)="navigateBack()">
+        <span nz-icon nzType="arrow-left"></span> Back to Identity Repository
+      </button>
+    </div>
+
+    <!-- Profile Header -->
+    <nz-card style="margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <nz-avatar [nzText]="initials" [nzSize]="56"
+                     [style.background-color]="isActive ? '#1890ff' : '#d9d9d9'"
+                     style="font-size: 22px;"></nz-avatar>
+          <div>
+            <div style="font-size: 20px; font-weight: 600;">
+              {{ displayName }}
+              <nz-tag [nzColor]="isActive ? 'success' : 'default'" style="margin-left: 8px; vertical-align: middle;">
+                {{ isActive ? 'Active' : 'Inactive' }}
+              </nz-tag>
+            </div>
+            <!-- Own profile subtitle -->
+            <div *ngIf="isViewingOwnProfile && user?.email" style="color: #8c8c8c; margin-top: 4px;">
+              {{ user.email }}
+            </div>
+            <!-- Identity subtitle -->
+            <div *ngIf="!isViewingOwnProfile && identityData" style="color: #8c8c8c; margin-top: 4px;">
+              <span *ngIf="identityData.department">{{ identityData.department }}</span>
+              <span *ngIf="identityData.department && identityData.employeeId"> · </span>
+              <span *ngIf="identityData.employeeId">{{ identityData.employeeId }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div>
+          <button *ngIf="isViewingOwnProfile" nz-button nzType="default" (click)="signOut()">
+            <span nz-icon nzType="logout"></span> Sign Out
+          </button>
+          <nz-statistic *ngIf="!isViewingOwnProfile"
+                        [nzValue]="linkedAccounts.length" nzTitle="Linked Accounts"></nz-statistic>
+        </div>
+      </div>
+    </nz-card>
+
+    <!-- Tabs -->
+    <nz-tabset>
+      <!-- Overview Tab -->
+      <nz-tab nzTitle="Overview">
+
+        <!-- Own Profile: Account Information -->
+        <nz-card *ngIf="isViewingOwnProfile && user" nzTitle="Account Information" style="margin-bottom: 16px;">
+          <nz-descriptions nzBordered [nzColumn]="{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 1, xs: 1 }">
+            <nz-descriptions-item nzTitle="User ID">{{ user.id }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Username">{{ user.username }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Name">{{ user.name || '-' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Email">{{ user.email }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Total Roles" [nzSpan]="2">{{ user.roles?.length || 0 }}</nz-descriptions-item>
+          </nz-descriptions>
+        </nz-card>
+
+        <!-- Identity Profile: Two-column layout -->
+        <ng-container *ngIf="!isViewingOwnProfile && identityData">
+          <div nz-row [nzGutter]="16">
+            <div nz-col [nzXs]="24" [nzLg]="16">
+              <nz-card nzTitle="Identity Information" style="margin-bottom: 16px;">
+                <nz-descriptions nzBordered [nzColumn]="{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 1, xs: 1 }">
+                  <nz-descriptions-item nzTitle="First Name">{{ identityData.firstName || '-' }}</nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="Last Name">{{ identityData.lastName || '-' }}</nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="Email">{{ identityData.primaryEmail || '-' }}</nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="Phone">{{ identityData.phone || '-' }}</nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="Job Title">{{ identityData.jobTitle || '-' }}</nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="Department">{{ identityData.department || '-' }}</nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="Location">{{ identityData.location || '-' }}</nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="Manager">{{ identityData.managerName || '-' }}</nz-descriptions-item>
+                </nz-descriptions>
+              </nz-card>
+            </div>
+            <div nz-col [nzXs]="24" [nzLg]="8">
+              <nz-card nzTitle="Account Details" style="margin-bottom: 16px;">
+                <nz-descriptions nzBordered [nzColumn]="1">
+                  <nz-descriptions-item nzTitle="Employee ID">{{ identityData.employeeId || '-' }}</nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="Cost Center">{{ identityData.costCenter || '-' }}</nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="Company Code">{{ identityData.companyCode || '-' }}</nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="User Type">{{ identityData.userType || '-' }}</nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="Source Type">{{ identityData.sourceType || '-' }}</nz-descriptions-item>
+                  <nz-descriptions-item nzTitle="SAP Username">{{ identityData.sapBname || '-' }}</nz-descriptions-item>
+                </nz-descriptions>
+              </nz-card>
+            </div>
+          </div>
+        </ng-container>
+
+      </nz-tab>
+
+      <!-- Security & Access Tab -->
+      <nz-tab nzTitle="Security & Access">
+
+        <!-- Own Profile: Roles & Authorities -->
+        <ng-container *ngIf="isViewingOwnProfile && user">
+          <nz-card nzTitle="Assigned Roles" [nzExtra]="rolesCount" style="margin-bottom: 16px;">
+            <ng-template #rolesCount>
+              <span style="color: #8c8c8c;">{{ user.roles?.length || 0 }} roles</span>
+            </ng-template>
+            <nz-table #rolesTable [nzData]="user.roles || []" nzSize="small"
+                      [nzPageSize]="15" [nzShowSizeChanger]="true"
+                      [nzFrontPagination]="true">
+              <thead>
+                <tr>
+                  <th nzWidth="60px">#</th>
+                  <th>Role Code</th>
+                  <th>Role Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let role of rolesTable.data; let i = index">
+                  <td>{{ (rolesTable.nzPageIndex - 1) * rolesTable.nzPageSize + i + 1 }}</td>
+                  <td><code>{{ role }}</code></td>
+                  <td>{{ formatRoleName(role) }}</td>
+                </tr>
+              </tbody>
+            </nz-table>
+          </nz-card>
+
+          <nz-card *ngIf="user.authorities?.length" nzTitle="Authorities" [nzExtra]="authCount" style="margin-bottom: 16px;">
+            <ng-template #authCount>
+              <span style="color: #8c8c8c;">{{ user.authorities.length }} authorities</span>
+            </ng-template>
+            <nz-table #authTable [nzData]="user.authorities" nzSize="small"
+                      [nzPageSize]="15" [nzShowSizeChanger]="true"
+                      [nzFrontPagination]="true">
+              <thead>
+                <tr>
+                  <th nzWidth="60px">#</th>
+                  <th>Authority Code</th>
+                  <th>Authority Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let auth of authTable.data; let i = index">
+                  <td>{{ (authTable.nzPageIndex - 1) * authTable.nzPageSize + i + 1 }}</td>
+                  <td><code>{{ auth }}</code></td>
+                  <td>{{ formatRoleName(auth) }}</td>
+                </tr>
+              </tbody>
+            </nz-table>
+          </nz-card>
+        </ng-container>
+
+        <!-- Identity: Linked Accounts -->
+        <ng-container *ngIf="!isViewingOwnProfile">
+          <nz-card nzTitle="Linked Accounts" [nzExtra]="accountsCount" style="margin-bottom: 16px;">
+            <ng-template #accountsCount>
+              <span style="color: #8c8c8c;">{{ linkedAccounts.length }} accounts</span>
+            </ng-template>
+            <nz-spin [nzSpinning]="accountsLoading">
+              <nz-table #accountsTable [nzData]="linkedAccounts"
+                        [nzShowPagination]="linkedAccounts.length > 10"
+                        [nzPageSize]="10" nzSize="small">
+                <thead>
+                  <tr>
+                    <th>System</th>
+                    <th>Application Type</th>
+                    <th>Status</th>
+                    <th>Last Synced</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let account of accountsTable.data">
+                    <td>{{ account.connectionName || account.systemName || '-' }}</td>
+                    <td><nz-tag>{{ getAppTypeLabel(account.applicationType) }}</nz-tag></td>
+                    <td>
+                      <nz-badge [nzStatus]="account.active || account.status === 'linked' ? 'success' : 'default'"
+                                [nzText]="account.active || account.status === 'linked' ? 'Active' : 'Inactive'"></nz-badge>
+                    </td>
+                    <td>{{ account.lastSyncedAt | date:'short' }}</td>
+                  </tr>
+                </tbody>
+              </nz-table>
+            </nz-spin>
+          </nz-card>
+        </ng-container>
+
+      </nz-tab>
+    </nz-tabset>
+
+  </div>
+</nz-spin>

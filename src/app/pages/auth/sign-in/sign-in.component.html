@@ -5,14 +5,14 @@
       <p>Manage Access Risks and Controls</p>
     </div>
 
-    <div class="text-center my-8" *ngIf="isLoadingLicense">
+    <div style="text-align: center; margin: 32px 0;" *ngIf="isLoadingLicense">
       <nz-spin nzSimple nzTip="Checking license..."></nz-spin>
     </div>
 
     <!-- License Form -->
     <ng-container *ngIf="!isLoadingLicense && !isLicenseValid">
       <nz-alert nzType="error" nzMessage="License Required" [nzDescription]="licenseMessage" nzShowIcon
-        class="mb-6"></nz-alert>
+        style="margin-bottom: 24px;"></nz-alert>
       <form nz-form [formGroup]="licenseForm" (ngSubmit)="applyLicense()" nzLayout="vertical">
         <nz-form-item>
           <nz-form-label nzFor="licenseKey">License Key</nz-form-label>
@@ -31,23 +31,31 @@
     <ng-container *ngIf="!isLoadingLicense && isLicenseValid && showPasswordReset">
       <nz-alert nzType="info" nzMessage="Password Reset Required"
         nzDescription="This is your first login or you're using a temporary password. Please create a new password to continue."
-        nzShowIcon class="mb-6"></nz-alert>
+        nzShowIcon style="margin-bottom: 24px;"></nz-alert>
       <form nz-form [formGroup]="passwordResetForm" (ngSubmit)="submitPasswordReset()" nzLayout="vertical">
         <nz-form-item>
           <nz-form-label nzFor="newPassword">New Password</nz-form-label>
           <nz-form-control nzErrorTip="Password is required (min 8 characters)">
-            <nz-input-group nzPrefixIcon="lock" nzSize="large">
-              <input nz-input formControlName="newPassword" type="password" placeholder="Enter new password" />
+            <nz-input-group nzPrefixIcon="lock" nzSize="large" [nzSuffix]="newPwSuffix">
+              <input nz-input formControlName="newPassword" [type]="newPasswordVisible ? 'text' : 'password'" placeholder="Enter new password" />
             </nz-input-group>
+            <ng-template #newPwSuffix>
+              <span nz-icon [nzType]="newPasswordVisible ? 'eye' : 'eye-invisible'"
+                (click)="newPasswordVisible = !newPasswordVisible" style="cursor: pointer;"></span>
+            </ng-template>
           </nz-form-control>
         </nz-form-item>
 
         <nz-form-item>
           <nz-form-label nzFor="confirmPassword">Confirm Password</nz-form-label>
           <nz-form-control nzErrorTip="Please confirm your password">
-            <nz-input-group nzPrefixIcon="lock" nzSize="large">
-              <input nz-input formControlName="confirmPassword" type="password" placeholder="Confirm new password" />
+            <nz-input-group nzPrefixIcon="lock" nzSize="large" [nzSuffix]="confirmPwSuffix">
+              <input nz-input formControlName="confirmPassword" [type]="confirmPasswordVisible ? 'text' : 'password'" placeholder="Confirm new password" />
             </nz-input-group>
+            <ng-template #confirmPwSuffix>
+              <span nz-icon [nzType]="confirmPasswordVisible ? 'eye' : 'eye-invisible'"
+                (click)="confirmPasswordVisible = !confirmPasswordVisible" style="cursor: pointer;"></span>
+            </ng-template>
           </nz-form-control>
         </nz-form-item>
 
@@ -98,7 +106,7 @@
             <label nz-checkbox formControlName="remember">
               <span>Remember me</span>
             </label>
-            <a routerLink="/auth/forgot-password">Forgot Password?</a>
+            <a routerLink="/forgot-password">Forgot Password?</a>
           </div>
         </nz-form-control>
       </nz-form-item>

@@ -3,7 +3,11 @@ import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { UserComponent } from './user.component';
 
-const routes: Routes = [{ path: '', component: UserComponent }, { path: '**', component: UserComponent }];
+const routes: Routes = [
+  { path: '', component: UserComponent },
+  { path: 'profile', component: UserComponent },
+  { path: 'profile/:id', component: UserComponent },
+];
 
 @NgModule({
   declarations: [UserComponent],
