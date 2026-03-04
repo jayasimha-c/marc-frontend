@@ -1,251 +1,207 @@
-<nz-card nzTitle="AI Integration">
-  <nz-tabset [nzSelectedIndex]="activeTabIndex" (nzSelectChange)="onTabChange($event.index)" [nzAnimated]="false">
+<nz-tabset [nzSelectedIndex]="activeTabIndex" (nzSelectChange)="onTabChange($event.index)" [nzAnimated]="false">
 
-    <nz-tab [nzTitle]="configTabTitle">
-      <ng-template #configTabTitle>
-        <span nz-icon nzType="setting" nzTheme="outline" class="ai__tab-icon"></span>
-        Configuration
+    <nz-tab nzTitle="Configuration">
+
+      <!-- Connection Status -->
+      <nz-alert style="margin-bottom: 16px;"
+        [nzType]="connectionStatus === 'connected' ? 'success' :
+                  connectionStatus === 'disconnected' ? 'error' :
+                  connectionStatus === 'testing' ? 'warning' : 'info'"
+        nzShowIcon
+        [nzMessage]="statusMessage">
+      </nz-alert>
+      <ng-template #statusMessage>
+        <span>
+          {{connectionStatus === 'connected' ? 'Connected' :
+            connectionStatus === 'disconnected' ? 'Not Connected' :
+            connectionStatus === 'testing' ? 'Testing Connection...' : 'Not Tested'}}
+          <span *ngIf="lastTestTime" style="margin-left: 12px; color: rgba(0,0,0,0.45);">
+            Last tested: {{lastTestTime | date:'short'}}
+          </span>
+          <span *ngIf="responseTimeMs !== null && connectionStatus === 'connected'"
+                style="margin-left: 12px; color: rgba(0,0,0,0.45);">
+            {{responseTimeMs}}ms
+          </span>
+        </span>
       </ng-template>
 
-      <div class="ai__config-content">
+      <form [formGroup]="configForm" nz-form nzLayout="vertical">
 
-        <div class="ai__status-bar"
-          [class.ai__status-bar--connected]="connectionStatus === 'connected'"
-          [class.ai__status-bar--disconnected]="connectionStatus === 'disconnected'"
-          [class.ai__status-bar--testing]="connectionStatus === 'testing'"
-          [class.ai__status-bar--unknown]="connectionStatus === 'unknown'">
-          <div class="ai__status-left">
-            <div class="ai__status-dot"
-              [class.ai__status-dot--connected]="connectionStatus === 'connected'"
-              [class.ai__status-dot--disconnected]="connectionStatus === 'disconnected'"
-              [class.ai__status-dot--testing]="connectionStatus === 'testing'"
-              [class.ai__status-dot--unknown]="connectionStatus === 'unknown'"></div>
-            <span class="ai__status-text">
-              {{connectionStatus === 'connected' ? 'Connected' :
-                connectionStatus === 'disconnected' ? 'Not Connected' :
-                connectionStatus === 'testing' ? 'Testing Connection...' : 'Not Tested'}}
-            </span>
-          </div>
-          <div class="ai__status-right">
-            <div class="ai__status-info" *ngIf="lastTestTime">
-              <span nz-icon nzType="clock-circle" nzTheme="outline"></span>
-              <span>Last tested: {{lastTestTime | date:'short'}}</span>
-            </div>
-            <div class="ai__status-info" *ngIf="responseTimeMs !== null && connectionStatus === 'connected'">
-              <span nz-icon nzType="clock-circle" nzTheme="outline"></span>
-              <span class="ai__monospace">{{responseTimeMs}}ms</span>
-            </div>
-          </div>
-        </div>
-
-        <form [formGroup]="configForm">
-
-          <div class="ai__section">
-            <div class="ai__section-header">
-              <span nz-icon nzType="setting" nzTheme="outline" class="ai__section-icon"></span>
-              <span>Connection Details</span>
-            </div>
-
-            <div class="ai__form-row ai__form-row--3col">
+        <!-- Connection Details -->
+        <nz-card nzSize="small" nzTitle="Connection Details" style="margin-bottom: 16px;">
+          <div nz-row [nzGutter]="16">
+            <div nz-col nzSpan="8">
               <nz-form-item>
+                <nz-form-label nzRequired>Configuration Name</nz-form-label>
                 <nz-form-control nzErrorTip="Configuration name is required">
-                  <div class="nz-float-label" [class.has-value]="configForm.get('name')?.value">
-                    <input nz-input placeholder=" " formControlName="name" />
-                    <label>Configuration Name</label>
-                  </div>
+                  <input nz-input formControlName="name" />
                 </nz-form-control>
               </nz-form-item>
-
-              <nz-form-item>
-                <nz-form-control nzErrorTip="Provider is required">
-                  <div class="nz-float-label" [class.has-value]="configForm.get('provider')?.value">
-                    <nz-select formControlName="provider" nzPlaceHolder=" ">
-                      <nz-option *ngFor="let p of providerList" [nzValue]="p.value" [nzLabel]="p.label"></nz-option>
-                    </nz-select>
-                    <label>Provider</label>
-                  </div>
-                </nz-form-control>
-              </nz-form-item>
-
-              <div class="ai__switch-row">
-                <nz-switch formControlName="enabled"></nz-switch>
-                <span class="ai__switch-label">{{configForm.get('enabled')?.value ? 'Enabled' : 'Disabled'}}</span>
-              </div>
             </div>
-
-            <nz-form-item>
-              <nz-form-control nzErrorTip="API key is required">
-                <div class="nz-float-label" [class.has-value]="configForm.get('apiKey')?.value">
-                  <nz-input-group [nzSuffix]="apiKeySuffix">
-                    <input nz-input
-                      [type]="hideApiKey ? 'password' : 'text'"
-                      placeholder=" "
-                      formControlName="apiKey"
-                      class="ai__monospace"
-                      (focus)="onApiKeyFocus()"
-                      (blur)="onApiKeyBlur()" />
-                  </nz-input-group>
-                  <label>API Key</label>
-                </div>
-                <ng-template #apiKeySuffix>
-                  <span nz-icon
-                    [nzType]="hideApiKey ? 'eye' : 'eye-invisible'"
-                    nzTheme="outline"
-                    class="ai__eye-icon"
-                    (click)="hideApiKey = !hideApiKey"></span>
-                </ng-template>
-              </nz-form-control>
-              <div class="ai__help-text">
-                Encrypted before storage. Get key from
-                <a href="https://console.anthropic.com/settings/keys" target="_blank" class="ai__link">console.anthropic.com</a>
-              </div>
-            </nz-form-item>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>Provider</nz-form-label>
+                <nz-form-control>
+                  <nz-select formControlName="provider">
+                    <nz-option *ngFor="let p of providerList" [nzValue]="p.value" [nzLabel]="p.label"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label>Status</nz-form-label>
+                <nz-form-control>
+                  <nz-switch formControlName="enabled"
+                             [nzCheckedChildren]="'Enabled'" [nzUnCheckedChildren]="'Disabled'"></nz-switch>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
           </div>
 
-          <div class="ai__section">
-            <div class="ai__section-header">
-              <span nz-icon nzType="control" nzTheme="outline" class="ai__section-icon"></span>
-              <span>Model Settings</span>
-            </div>
+          <nz-form-item>
+            <nz-form-label nzRequired>API Key</nz-form-label>
+            <nz-form-control nzErrorTip="API key is required">
+              <nz-input-group [nzSuffix]="apiKeySuffix">
+                <input nz-input
+                  [type]="hideApiKey ? 'password' : 'text'"
+                  formControlName="apiKey"
+                  style="font-family: monospace;"
+                  (focus)="onApiKeyFocus()"
+                  (blur)="onApiKeyBlur()" />
+              </nz-input-group>
+              <ng-template #apiKeySuffix>
+                <span nz-icon
+                  [nzType]="hideApiKey ? 'eye' : 'eye-invisible'"
+                  style="cursor: pointer;"
+                  (click)="hideApiKey = !hideApiKey"></span>
+              </ng-template>
+            </nz-form-control>
+            <span style="font-size: 12px; color: rgba(0,0,0,0.45);">
+              Encrypted before storage. Get key from
+              <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>
+            </span>
+          </nz-form-item>
+        </nz-card>
 
-            <div class="ai__form-row ai__form-row--3col">
+        <!-- Model Settings -->
+        <nz-card nzSize="small" nzTitle="Model Settings" style="margin-bottom: 16px;">
+          <div nz-row [nzGutter]="16">
+            <div nz-col nzSpan="8">
               <nz-form-item>
-                <nz-form-control nzErrorTip="Model selection is required">
-                  <div class="nz-float-label" [class.has-value]="configForm.get('model')?.value">
-                    <nz-select formControlName="model" nzPlaceHolder=" ">
-                      <nz-option *ngFor="let model of modelList" [nzValue]="model.value"
-                        [nzLabel]="model.label + ' - ' + model.description"></nz-option>
-                    </nz-select>
-                    <label>Model</label>
-                  </div>
+                <nz-form-label nzRequired>Model</nz-form-label>
+                <nz-form-control>
+                  <nz-select formControlName="model">
+                    <nz-option *ngFor="let m of modelList" [nzValue]="m.value"
+                      [nzLabel]="m.label + ' - ' + m.description"></nz-option>
+                  </nz-select>
                 </nz-form-control>
               </nz-form-item>
-
+            </div>
+            <div nz-col nzSpan="8">
               <nz-form-item>
+                <nz-form-label nzRequired>Max Tokens</nz-form-label>
                 <nz-form-control nzErrorTip="Valid range: 1 - 200,000">
-                  <div class="nz-float-label" [class.has-value]="configForm.get('maxTokens')?.value !== null && configForm.get('maxTokens')?.value !== ''">
-                    <input nz-input type="number" placeholder=" " formControlName="maxTokens" />
-                    <label>Max Tokens</label>
-                  </div>
+                  <input nz-input type="number" formControlName="maxTokens" />
                 </nz-form-control>
-                <div class="ai__help-text">1 - 200,000</div>
+                <span style="font-size: 12px; color: rgba(0,0,0,0.45);">1 - 200,000</span>
               </nz-form-item>
-
+            </div>
+            <div nz-col nzSpan="8">
               <nz-form-item>
+                <nz-form-label nzRequired>Temperature</nz-form-label>
                 <nz-form-control nzErrorTip="Valid range: 0.0 - 1.0">
-                  <div class="nz-float-label" [class.has-value]="configForm.get('temperature')?.value !== null && configForm.get('temperature')?.value !== ''">
-                    <input nz-input type="number" step="0.1" placeholder=" " formControlName="temperature" />
-                    <label>Temperature</label>
-                  </div>
+                  <input nz-input type="number" step="0.1" formControlName="temperature" />
                 </nz-form-control>
-                <div class="ai__help-text">0 = precise, 1 = creative</div>
+                <span style="font-size: 12px; color: rgba(0,0,0,0.45);">0 = precise, 1 = creative</span>
               </nz-form-item>
             </div>
           </div>
+        </nz-card>
 
-          <div class="ai__section">
-            <div class="ai__section-header">
-              <span nz-icon nzType="lock" nzTheme="outline" class="ai__section-icon"></span>
-              <span>Data Controls</span>
-            </div>
+        <!-- Data Controls -->
+        <nz-card nzSize="small" nzTitle="Data Controls" style="margin-bottom: 16px;">
+          <nz-table [nzData]="dataControls" nzSize="small" [nzShowPagination]="false" nzTableLayout="fixed">
+            <thead>
+              <tr>
+                <th nzWidth="50px">#</th>
+                <th>Configuration</th>
+                <th>Details</th>
+                <th nzWidth="80px" nzAlign="center">Include</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ctrl of dataControls; let i = index">
+                <td>{{i + 1}}</td>
+                <td>{{ctrl.label}}</td>
+                <td style="color: rgba(0,0,0,0.45);">{{ctrl.detail}}</td>
+                <td nzAlign="center">
+                  <nz-switch [formControlName]="ctrl.formKey" nzSize="small"></nz-switch>
+                </td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-card>
 
-            <table class="ai__controls-table">
-              <thead>
-                <tr>
-                  <th class="ai__controls-table-num">#</th>
-                  <th>Configuration</th>
-                  <th>Details</th>
-                  <th class="ai__controls-table-toggle">Include</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let ctrl of dataControls; let i = index">
-                  <td class="ai__controls-table-num ai__text-secondary">{{i + 1}}</td>
-                  <td>{{ctrl.label}}</td>
-                  <td class="ai__text-secondary">{{ctrl.detail}}</td>
-                  <td class="ai__controls-table-toggle">
-                    <nz-switch [formControlName]="ctrl.formKey" nzSize="small"></nz-switch>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <!-- AI Feature Selection -->
+        <nz-card nzSize="small" nzTitle="AI Feature Selection" style="margin-bottom: 16px;">
+          <nz-table [nzData]="featureControls" nzSize="small" [nzShowPagination]="false" nzTableLayout="fixed">
+            <thead>
+              <tr>
+                <th nzWidth="50px">#</th>
+                <th>Feature</th>
+                <th>Details</th>
+                <th nzWidth="80px" nzAlign="center">Enable</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let feat of featureControls; let i = index">
+                <td>{{i + 1}}</td>
+                <td>{{feat.label}}</td>
+                <td style="color: rgba(0,0,0,0.45);">{{feat.detail}}</td>
+                <td nzAlign="center">
+                  <nz-switch [formControlName]="feat.formKey" nzSize="small"></nz-switch>
+                </td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-card>
 
-          <div class="ai__section">
-            <div class="ai__section-header">
-              <span nz-icon nzType="experiment" nzTheme="outline" class="ai__section-icon"></span>
-              <span>AI Feature Selection</span>
-            </div>
-
-            <table class="ai__controls-table">
-              <thead>
-                <tr>
-                  <th class="ai__controls-table-num">#</th>
-                  <th>Feature</th>
-                  <th>Details</th>
-                  <th class="ai__controls-table-toggle">Enable</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let feat of featureControls; let i = index">
-                  <td class="ai__controls-table-num ai__text-secondary">{{i + 1}}</td>
-                  <td>{{feat.label}}</td>
-                  <td class="ai__text-secondary">{{feat.detail}}</td>
-                  <td class="ai__controls-table-toggle">
-                    <nz-switch [formControlName]="feat.formKey" nzSize="small"></nz-switch>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="ai__actions">
-            <button nz-button nzType="default"
-              type="button"
-              [disabled]="isTestingConnection || isSaving"
-              (click)="onTest()">
-              <span *ngIf="!isTestingConnection" nz-icon nzType="api" nzTheme="outline"></span>
-              <span *ngIf="isTestingConnection" nz-icon nzType="loading" nzTheme="outline"></span>
-              {{isTestingConnection ? 'Testing...' : 'Test Connection'}}
-            </button>
-
-            <button nz-button nzType="primary"
-              type="button"
-              [disabled]="isSaving || isTestingConnection"
-              (click)="onSave()">
-              <span *ngIf="!isSaving" nz-icon nzType="save" nzTheme="outline"></span>
-              <span *ngIf="isSaving" nz-icon nzType="loading" nzTheme="outline"></span>
-              {{isSaving ? 'Saving...' : 'Save Settings'}}
-            </button>
-          </div>
-        </form>
-      </div>
+        <!-- Actions -->
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+          <button nz-button type="button"
+            [disabled]="isTestingConnection || isSaving"
+            [nzLoading]="isTestingConnection"
+            (click)="onTest()">
+            <span nz-icon nzType="api"></span>
+            {{isTestingConnection ? 'Testing...' : 'Test Connection'}}
+          </button>
+          <button nz-button nzType="primary" type="button"
+            [disabled]="isSaving || isTestingConnection"
+            [nzLoading]="isSaving"
+            (click)="onSave()">
+            {{isSaving ? 'Saving...' : 'Save Settings'}}
+          </button>
+        </div>
+      </form>
     </nz-tab>
 
-    <nz-tab [nzTitle]="auditTabTitle">
-      <ng-template #auditTabTitle>
-        <span nz-icon nzType="audit" nzTheme="outline" class="ai__tab-icon"></span>
-        Audit Log
-      </ng-template>
-
-      <div class="ai__audit-content">
-        <app-advanced-table
-          title="AI Prompt Audit Log"
-          [data]="auditData"
-          [columns]="auditColumns"
-          [loading]="auditLoading"
-          [serverSide]="true"
-          [total]="auditTotal"
-          [showSearch]="false"
-          [showPagination]="true"
-          size="middle"
-          (queryParamsChange)="onAuditQueryChange($event)"
-          (rowClick)="onAuditRowSelect($event)">
-        </app-advanced-table>
-      </div>
+    <nz-tab nzTitle="Audit Log">
+      <app-advanced-table
+        title="AI Prompt Audit Log"
+        [data]="auditData"
+        [columns]="auditColumns"
+        [loading]="auditLoading"
+        [serverSide]="true"
+        [total]="auditTotal"
+        [showSearch]="false"
+        [showPagination]="true"
+        size="middle"
+        (queryParamsChange)="onAuditQueryChange($event)"
+        (rowClick)="onAuditRowSelect($event)">
+      </app-advanced-table>
     </nz-tab>
   </nz-tabset>
-</nz-card>
 
 <app-side-panel
   #auditDetailPanel
@@ -258,56 +214,43 @@
   [secondaryAction]="{ label: 'Close' }"
   (closed)="onAuditPanelClosed()">
 
-  <div panel-content class="ai__panel-content" *ngIf="selectedAuditLog">
+  <div panel-content *ngIf="selectedAuditLog">
 
-    <div class="ai__badges">
+    <div style="margin-bottom: 16px;">
       <nz-tag [nzColor]="selectedAuditLog.success ? 'success' : 'error'">
         {{selectedAuditLog.success ? 'Success' : 'Failed'}}
       </nz-tag>
       <nz-tag *ngIf="selectedAuditLog.dataControlViolated" nzColor="warning">
         Data Control Violation
       </nz-tag>
-      <span *ngIf="selectedAuditLog.responseTimeMs" class="ai__text-secondary ai__text-sm">
+      <span *ngIf="selectedAuditLog.responseTimeMs" style="color: rgba(0,0,0,0.45); font-size: 12px; margin-left: 8px;">
         {{selectedAuditLog.responseTimeMs}}ms
       </span>
     </div>
 
-    <div class="ai__metadata">
-      <div class="ai__metadata-label">User</div>
-      <div class="ai__metadata-value">{{selectedAuditLog.username}}</div>
+    <nz-descriptions nzSize="small" [nzColumn]="1" nzBordered>
+      <nz-descriptions-item nzTitle="User">{{selectedAuditLog.username}}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Feature">{{selectedAuditLog.feature || '—'}}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Model">
+        <code>{{selectedAuditLog.model || '—'}}</code>
+      </nz-descriptions-item>
+      <nz-descriptions-item nzTitle="IP Address">
+        <code>{{selectedAuditLog.ipAddress || '—'}}</code>
+      </nz-descriptions-item>
+      <nz-descriptions-item *ngIf="selectedAuditLog.violationDetails" nzTitle="Violation Details">
+        <span style="color: #faad14;">{{selectedAuditLog.violationDetails}}</span>
+      </nz-descriptions-item>
+      <nz-descriptions-item *ngIf="selectedAuditLog.errorMessage" nzTitle="Error">
+        <span style="color: #ff4d4f;">{{selectedAuditLog.errorMessage}}</span>
+      </nz-descriptions-item>
+    </nz-descriptions>
 
-      <div class="ai__metadata-label">Feature</div>
-      <div class="ai__metadata-value">{{selectedAuditLog.feature || '—'}}</div>
+    <nz-card nzSize="small" nzTitle="Prompt" style="margin-top: 16px;">
+      <pre style="margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 12px;">{{selectedAuditLog.promptText || 'No prompt text recorded'}}</pre>
+    </nz-card>
 
-      <div class="ai__metadata-label">Model</div>
-      <div class="ai__metadata-value ai__monospace">{{selectedAuditLog.model || '—'}}</div>
-
-      <div class="ai__metadata-label">IP Address</div>
-      <div class="ai__metadata-value ai__monospace">{{selectedAuditLog.ipAddress || '—'}}</div>
-
-      <ng-container *ngIf="selectedAuditLog.violationDetails">
-        <div class="ai__metadata-label">Violation Details</div>
-        <div class="ai__metadata-value ai__text-warning">{{selectedAuditLog.violationDetails}}</div>
-      </ng-container>
-
-      <ng-container *ngIf="selectedAuditLog.errorMessage">
-        <div class="ai__metadata-label">Error</div>
-        <div class="ai__metadata-value ai__text-danger">{{selectedAuditLog.errorMessage}}</div>
-      </ng-container>
-    </div>
-
-    <div class="ai__text-section">
-      <h4 class="ai__text-section-title">Prompt</h4>
-      <div class="ai__text-block">
-        <pre>{{selectedAuditLog.promptText || 'No prompt text recorded'}}</pre>
-      </div>
-    </div>
-
-    <div class="ai__text-section" *ngIf="selectedAuditLog.responseText">
-      <h4 class="ai__text-section-title">Response</h4>
-      <div class="ai__text-block">
-        <pre>{{selectedAuditLog.responseText}}</pre>
-      </div>
-    </div>
+    <nz-card *ngIf="selectedAuditLog.responseText" nzSize="small" nzTitle="Response" style="margin-top: 16px;">
+      <pre style="margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 12px;">{{selectedAuditLog.responseText}}</pre>
+    </nz-card>
   </div>
 </app-side-panel>

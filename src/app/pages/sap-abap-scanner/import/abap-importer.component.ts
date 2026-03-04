@@ -20,6 +20,11 @@ export class AbapImporterComponent implements OnDestroy {
   uploadSuccess: { [key: string]: boolean } = {};
   selectedFiles: { [key: string]: File } = {};
 
+  uploadTypes = [
+    { key: 'append', name: 'ABAP Rules (Append)' },
+    { key: 'overwrite', name: 'ABAP Rules (Overwrite)' },
+  ];
+
   readonly AbapImportMode = AbapImportMode;
 
   constructor(
@@ -116,6 +121,11 @@ export class AbapImporterComponent implements OnDestroy {
       return false;
     }
     return true;
+  }
+
+  triggerFileInput(uploadType: string): void {
+    const input = document.getElementById('file-' + uploadType) as HTMLInputElement;
+    if (input) input.click();
   }
 
   getFileName(uploadType: string): string {

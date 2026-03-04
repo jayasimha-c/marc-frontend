@@ -1,137 +1,137 @@
-<nz-page-header nzTitle="Whitelist Management">
-  <nz-page-header-extra>
-    <button nz-button (click)="loadWhitelist(); loadWhitelistCount()">
-      <span nz-icon nzType="reload"></span> Refresh
-    </button>
-  </nz-page-header-extra>
-</nz-page-header>
+<nz-tabset [(nzSelectedIndex)]="activeTab">
 
-<!-- Stats -->
-<div nz-row [nzGutter]="[16, 16]" style="margin-bottom: 16px;">
-  <div nz-col nzXs="12" nzSm="12" nzMd="6">
-    <nz-card nzSize="small">
-      <nz-statistic nzTitle="Total Whitelists" [nzValue]="whiteListCount?.total || 0"
-                    [nzPrefix]="totalIcon" [nzValueStyle]="{ color: '#1890ff' }"></nz-statistic>
-      <ng-template #totalIcon><span nz-icon nzType="unordered-list" nzTheme="outline"></span></ng-template>
-    </nz-card>
-  </div>
-  <div nz-col nzXs="12" nzSm="12" nzMd="6">
-    <nz-card nzSize="small">
-      <nz-statistic nzTitle="Active" [nzValue]="whiteListCount?.active || 0"
-                    [nzPrefix]="activeIcon" [nzValueStyle]="{ color: '#52c41a' }"></nz-statistic>
-      <ng-template #activeIcon><span nz-icon nzType="check-circle" nzTheme="outline"></span></ng-template>
-    </nz-card>
-  </div>
-  <div nz-col nzXs="12" nzSm="12" nzMd="6">
-    <nz-card nzSize="small">
-      <nz-statistic nzTitle="Disabled" [nzValue]="whiteListCount?.inactive || 0"
-                    [nzPrefix]="inactiveIcon" [nzValueStyle]="{ color: '#ff4d4f' }"></nz-statistic>
-      <ng-template #inactiveIcon><span nz-icon nzType="stop" nzTheme="outline"></span></ng-template>
-    </nz-card>
-  </div>
-  <div nz-col nzXs="12" nzSm="12" nzMd="6">
-    <nz-card nzSize="small">
-      <nz-statistic nzTitle="Recently Modified" [nzValue]="whiteListCount?.recent || 0"
-                    [nzPrefix]="recentIcon" [nzValueStyle]="{ color: '#faad14' }"></nz-statistic>
-      <ng-template #recentIcon><span nz-icon nzType="clock-circle" nzTheme="outline"></span></ng-template>
-    </nz-card>
-  </div>
-</div>
-
-<!-- Whitelist Entries -->
-<nz-card nzSize="small" nzTitle="Whitelist Entries" [nzExtra]="whitelistExtra" style="margin-bottom: 16px;">
-  <ng-template #whitelistExtra>
-    <nz-space [nzSize]="8">
-      <nz-input-group *nzSpaceItem nzSearch nzSize="small" [nzSuffix]="searchIcon" style="width: 200px;">
+  <!-- Tab 1: Whitelist Entries -->
+  <nz-tab nzTitle="Whitelist Entries">
+    <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <nz-input-group nzSearch nzSize="small" [nzSuffix]="searchIcon" style="width: 200px;">
         <input nz-input nzSize="small" placeholder="Search..." [formControl]="filterForm.controls['search']" />
       </nz-input-group>
       <ng-template #searchIcon><span nz-icon nzType="search"></span></ng-template>
 
-      <nz-select *nzSpaceItem nzSize="small" [formControl]="filterForm.controls['type']"
+      <nz-select nzSize="small" [formControl]="filterForm.controls['type']"
                  nzPlaceHolder="All Types" nzAllowClear style="width: 120px;">
         <nz-option *ngFor="let t of whitelistTypeOptions" [nzValue]="t.value" [nzLabel]="t.label"></nz-option>
       </nz-select>
 
-      <nz-select *nzSpaceItem nzSize="small" [formControl]="filterForm.controls['isActive']"
+      <nz-select nzSize="small" [formControl]="filterForm.controls['isActive']"
                  nzPlaceHolder="All Status" nzAllowClear style="width: 120px;">
         <nz-option [nzValue]="true" nzLabel="Active"></nz-option>
         <nz-option [nzValue]="false" nzLabel="Inactive"></nz-option>
       </nz-select>
 
-      <nz-divider *nzSpaceItem nzType="vertical"></nz-divider>
+      <span style="flex: 1;"></span>
 
-      <button *nzSpaceItem nz-button nzSize="small" nzType="primary" (click)="openAddModal()">
+      <button nz-button nzSize="small" nzType="primary" (click)="openAddModal()">
         <span nz-icon nzType="plus"></span> Add
       </button>
-      <button *nzSpaceItem nz-button nzSize="small" (click)="openEditModal()" [disabled]="!selectedRow">
+      <button nz-button nzSize="small" (click)="openEditModal()" [disabled]="!selectedRow">
         <span nz-icon nzType="edit"></span> Edit
       </button>
-      <button *nzSpaceItem nz-button nzSize="small" nzDanger (click)="deleteWhitelist()" [disabled]="!selectedRow">
+      <button nz-button nzSize="small" nzDanger (click)="deleteWhitelist()" [disabled]="!selectedRow">
         <span nz-icon nzType="delete"></span> Delete
       </button>
-    </nz-space>
-  </ng-template>
+    </div>
 
-  <nz-table #whitelistTable
-            [nzData]="whitelistData"
-            nzSize="small"
-            [nzShowPagination]="whitelistData.length > 10"
-            [nzPageSize]="10"
-            nzTableLayout="fixed">
-    <thead>
-      <tr>
-        <th nzWidth="40px"></th>
-        <th>Name</th>
-        <th nzWidth="100px">Type</th>
-        <th nzWidth="120px">Field</th>
-        <th nzWidth="80px">Active</th>
-        <th nzWidth="160px">Created</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let row of whitelistTable.data"
-          [class.ant-table-row-selected]="selectedRow === row"
-          (click)="onWhitelistRowClick(row)"
-          style="cursor: pointer;">
-        <td>
-          <label nz-radio [ngModel]="selectedRow === row" (ngModelChange)="onWhitelistRowClick(row)"></label>
-        </td>
-        <td>{{ row.name }}</td>
-        <td>
-          <nz-tag>{{ row.type }}</nz-tag>
-        </td>
-        <td>{{ row.field }}</td>
-        <td>
-          <nz-badge [nzStatus]="row.active ? 'success' : 'default'" [nzText]="row.active ? 'Active' : 'Inactive'"></nz-badge>
-        </td>
-        <td>{{ row.createdDate || row.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
-      </tr>
-    </tbody>
-  </nz-table>
-</nz-card>
+    <nz-table #whitelistTable
+              [nzData]="whitelistData"
+              nzSize="small"
+              [nzShowPagination]="whitelistData.length > 10"
+              [nzPageSize]="10"
+              nzTableLayout="fixed">
+      <thead>
+        <tr>
+          <th nzWidth="40px"></th>
+          <th>Name</th>
+          <th nzWidth="100px">Type</th>
+          <th nzWidth="120px">Field</th>
+          <th nzWidth="80px">Active</th>
+          <th nzWidth="160px">Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of whitelistTable.data"
+            [class.ant-table-row-selected]="selectedRow === row"
+            (click)="onWhitelistRowClick(row)"
+            style="cursor: pointer;">
+          <td>
+            <label nz-radio [ngModel]="selectedRow === row" (ngModelChange)="onWhitelistRowClick(row)"></label>
+          </td>
+          <td>{{ row.name }}</td>
+          <td>
+            <nz-tag>{{ row.type }}</nz-tag>
+          </td>
+          <td>{{ row.field }}</td>
+          <td>
+            <nz-badge [nzStatus]="row.active ? 'success' : 'default'" [nzText]="row.active ? 'Active' : 'Inactive'"></nz-badge>
+          </td>
+          <td>{{ row.createdDate || row.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-tab>
 
-<!-- Violation Whitelists -->
-<nz-card nzSize="small" nzTitle="Violation Whitelists" [nzExtra]="violationExtra">
-  <ng-template #violationExtra>
-    <button nz-button nzSize="small" [disabled]="!violationSelectedRow"
-            (click)="openViolationDetail()">
-      <span nz-icon nzType="eye"></span> View Details
-    </button>
-  </ng-template>
+  <!-- Tab 2: Violation Whitelists -->
+  <nz-tab nzTitle="Violation Whitelists">
+    <app-advanced-table
+      [columns]="violationColumns"
+      [data]="violationData"
+      [loading]="violationLoading"
+      [serverSide]="true"
+      [totalRecords]="violationTotal"
+      [showSearch]="true"
+      [defaultPageSize]="20"
+      tableLayout="fixed"
+      (queryParamsChange)="onViolationQueryChange($event)"
+      (rowClick)="onViolationRowClick($event)">
+    </app-advanced-table>
 
-  <app-advanced-table
-    [columns]="violationColumns"
-    [data]="violationData"
-    [loading]="violationLoading"
-    [serverSide]="true"
-    [totalRecords]="violationTotal"
-    [showSearch]="true"
-    [defaultPageSize]="20"
-    tableLayout="fixed"
-    (queryParamsChange)="onViolationQueryChange($event)"
-    (rowClick)="onViolationRowClick($event)">
-  </app-advanced-table>
-</nz-card>
+    <!-- Inline Detail Table -->
+    <ng-container *ngIf="showDetail">
+      <nz-divider></nz-divider>
+      <nz-card nzSize="small" [nzTitle]="detailTitle" [nzExtra]="detailActions">
+        <ng-template #detailActions>
+          <nz-space>
+            <button *nzSpaceItem nz-button nzSize="small" nzDanger
+                    [disabled]="!detailSelectedRow" (click)="removeFromWhitelist()">
+              <span nz-icon nzType="delete"></span> Remove
+            </button>
+            <button *nzSpaceItem nz-button nzSize="small" (click)="closeDetail()">
+              <span nz-icon nzType="close"></span> Close
+            </button>
+          </nz-space>
+        </ng-template>
+
+        <nz-table #detailTable
+                  [nzData]="detailData"
+                  nzSize="small"
+                  [nzLoading]="detailLoading"
+                  [nzShowPagination]="detailData.length > 10"
+                  [nzPageSize]="10"
+                  [nzScroll]="{ x: '1200px' }">
+          <thead>
+            <tr>
+              <th *ngFor="let col of detailColumns" [nzWidth]="col.width || null">{{ col.header }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of detailTable.data"
+                [class.ant-table-row-selected]="detailSelectedRow === row"
+                (click)="detailSelectedRow = row"
+                style="cursor: pointer;">
+              <td *ngFor="let col of detailColumns">
+                <ng-container [ngSwitch]="col.type">
+                  <span *ngSwitchCase="'date'">{{ row[col.field] | date:'yyyy-MM-dd HH:mm' }}</span>
+                  <span *ngSwitchDefault>{{ row[col.field] }}</span>
+                </ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </ng-container>
+  </nz-tab>
+
+</nz-tabset>
 
 <!-- Add/Edit Modal -->
 <nz-modal

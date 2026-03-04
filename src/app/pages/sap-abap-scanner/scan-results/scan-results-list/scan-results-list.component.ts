@@ -21,14 +21,14 @@ export class ScanResultsListComponent implements OnInit {
   private lastQueryParams: TableQueryParams | null = null;
 
   columns: TableColumn[] = [
-    { field: 'scanName', header: 'Scan Name', sortable: false },
+    { field: 'schedulerName', header: 'Scan Name', sortable: false },
     { field: 'sapSystemName', header: 'SAP System', width: '160px', sortable: false },
-    { field: 'totalPrograms', header: 'Programs', width: '100px', sortable: false },
+    { field: 'programsScanned', header: 'Programs', width: '100px', sortable: false },
     { field: 'totalFindings', header: 'Findings', width: '100px', sortable: false },
-    { field: 'status', header: 'Status', width: '120px', sortable: false, type: 'tag',
-      tagColors: { COMPLETED: 'green', FAILED: 'red', RUNNING: 'processing', PENDING: 'default', CANCELLED: 'orange' } },
-    { field: 'startedAt', header: 'Started At', type: 'date', width: '160px', sortable: false },
-    { field: 'completedAt', header: 'Completed At', type: 'date', width: '160px', sortable: false },
+    { field: 'executionStatus', header: 'Status', width: '120px', sortable: false, type: 'tag',
+      tagColors: { COMPLETED: 'green', FAILED: 'red', RUNNING: 'processing', SCHEDULED: 'default', CANCELLED: 'orange' } },
+    { field: 'executionStartTime', header: 'Started At', type: 'date', width: '160px', sortable: false },
+    { field: 'durationFormatted', header: 'Duration', width: '100px', sortable: false },
   ];
 
   actions: TableAction[] = [
@@ -59,7 +59,11 @@ export class ScanResultsListComponent implements OnInit {
     this.abapService.getScanHistoryList(query).subscribe({
       next: (res) => {
         if (res.success) {
-          this.data = res.data?.rows || [];
+          const rows = res.data?.rows || [];
+          this.data = rows.map((r: any) => ({
+            ...r,
+            durationFormatted: this.formatDuration(r.durationInMinutes),
+          }));
           this.totalRecords = res.data?.records || 0;
         }
         this.loading = false;
@@ -94,10 +98,19 @@ export class ScanResultsListComponent implements OnInit {
       }
       this.router.navigate(['/sap-abap-scanner/scan-results/detail'], {
         queryParams: {
-          executionId: this.selectedRow.id || this.selectedRow.executionId,
+          executionId: this.selectedRow.executionId || this.selectedRow.id,
           systemId: this.selectedRow.sapSystemId,
         },
       });
     }
+  }
+
+  private formatDuration(minutes: number | null | undefined): string {
+    if (minutes == null) return '-';
+    if (minutes < 1) return '< 1 min';
+    if (minutes < 60) return `${Math.round(minutes)} min`;
+    const h = Math.floor(minutes / 60);
+    const m = Math.round(minutes % 60);
+    return m > 0 ? `${h}h ${m}m` : `${h}h`;
   }
 }

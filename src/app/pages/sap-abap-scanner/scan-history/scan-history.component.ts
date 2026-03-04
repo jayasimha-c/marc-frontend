@@ -23,21 +23,18 @@ export class ScanHistoryComponent implements OnInit, OnDestroy {
   private lastQueryParams: TableQueryParams | null = null;
 
   columns: TableColumn[] = [
-    { field: 'name', header: 'Name', sortable: false },
-    { field: 'status', header: 'Status', width: '120px', sortable: false, type: 'tag',
+    { field: 'schedulerName', header: 'Name', sortable: false },
+    { field: 'executionStatus', header: 'Status', width: '120px', sortable: false, type: 'tag',
       tagColors: {
         COMPLETED: 'green', FAILED: 'red', RUNNING: 'processing',
         SCHEDULED: 'default', CANCELLED: 'orange', IN_REVIEW: 'gold',
       } },
     { field: 'sapSystemName', header: 'System', width: '120px', sortable: false },
-    { field: 'totalPrograms', header: 'Programs', width: '90px', sortable: false },
-    { field: 'criticalCount', header: 'Critical', width: '80px', sortable: false },
-    { field: 'highCount', header: 'High', width: '80px', sortable: false },
-    { field: 'mediumCount', header: 'Medium', width: '80px', sortable: false },
-    { field: 'lowCount', header: 'Low', width: '80px', sortable: false },
+    { field: 'programsScanned', header: 'Programs', width: '90px', sortable: false },
+    { field: 'rulesViolated', header: 'Rules Violated', width: '110px', sortable: false },
     { field: 'totalFindings', header: 'Findings', width: '90px', sortable: false },
-    { field: 'createdAt', header: 'Created', type: 'date', width: '160px', sortable: false },
-    { field: 'duration', header: 'Duration', width: '100px', sortable: false },
+    { field: 'executionStartTime', header: 'Created', type: 'date', width: '160px', sortable: false },
+    { field: 'durationFormatted', header: 'Duration', width: '100px', sortable: false },
   ];
 
   actions: TableAction[] = [
@@ -75,7 +72,11 @@ export class ScanHistoryComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           if (res.success) {
-            this.data = res.data?.rows || [];
+            const rows = res.data?.rows || [];
+            this.data = rows.map((r: any) => ({
+              ...r,
+              durationFormatted: this.formatDuration(r.durationInMinutes),
+            }));
             this.totalRecords = res.data?.records || 0;
           }
           this.loading = false;
@@ -115,7 +116,7 @@ export class ScanHistoryComponent implements OnInit, OnDestroy {
           this.notification.warn('Please select a scan first');
           return;
         }
-        const executionId = this.selectedRow.id || this.selectedRow.executionId;
+        const executionId = this.selectedRow.executionId || this.selectedRow.id;
         const systemId = this.selectedRow.sapSystemId;
         if (executionId && systemId) {
           this.router.navigate(['/sap-abap-scanner/scan-results/detail'], {
@@ -126,5 +127,14 @@ export class ScanHistoryComponent implements OnInit, OnDestroy {
         }
         break;
     }
+  }
+
+  private formatDuration(minutes: number | null | undefined): string {
+    if (minutes == null) return '-';
+    if (minutes < 1) return '< 1 min';
+    if (minutes < 60) return `${Math.round(minutes)} min`;
+    const h = Math.floor(minutes / 60);
+    const m = Math.round(minutes % 60);
+    return m > 0 ? `${h}h ${m}m` : `${h}h`;
   }
 }
