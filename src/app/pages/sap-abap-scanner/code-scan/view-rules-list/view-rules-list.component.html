@@ -1,0 +1,14 @@
+<app-advanced-table
+  title="Rules"
+  [columns]="columns"
+  [data]="data"
+  [loading]="false"
+  [serverSide]="false"
+  [totalRecords]="data.length"
+  [actions]="actions"
+  [showSearch]="false"
+  [showRefresh]="false"
+  [maxVisibleActions]="2"
+  tableLayout="fixed"
+  (rowClick)="onRowClick($event)">
+</app-advanced-table>

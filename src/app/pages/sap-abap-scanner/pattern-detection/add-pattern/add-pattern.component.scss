@@ -1,0 +1,158 @@
+// Add/Edit Detection Pattern Dialog
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+
+  .flex-1 {
+    flex: 1;
+  }
+
+  .active-toggle {
+    margin-top: 2px;
+  }
+
+  .active-label {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.65);
+  }
+}
+
+.w-full {
+  width: 100%;
+}
+
+// Patterns section
+.patterns-section {
+  margin-bottom: 16px;
+
+  .patterns-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    .patterns-title {
+      font-weight: 500;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.85);
+    }
+  }
+
+  .patterns-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+// Pattern card
+.pattern-card {
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: #1890ff;
+  }
+
+  &.has-error {
+    border-color: #ff4d4f;
+  }
+}
+
+.pattern-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+
+  .pattern-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .pattern-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #1890ff;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .stage-select {
+      width: 110px;
+    }
+
+    .capture-input {
+      width: 60px;
+    }
+  }
+
+  .pattern-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .status-icon {
+      font-size: 18px;
+
+      &.valid {
+        color: #52c41a;
+      }
+
+      &.invalid {
+        color: #ff4d4f;
+      }
+    }
+
+    .remove-btn {
+      &:not(:disabled) {
+        color: rgba(0, 0, 0, 0.45);
+
+        &:hover {
+          color: #ff4d4f;
+        }
+      }
+    }
+  }
+}
+
+.regex-textarea {
+  border: none;
+  border-radius: 0;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+.pattern-error-alert {
+  border-radius: 0;
+}
+
+.strategy-warning {
+  margin-top: 12px;
+}
+
+// Footer
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}

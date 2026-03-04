@@ -141,4 +141,64 @@ export class CssMonitoringService {
   getViolationById(violationId: number, type: string): Observable<ApiResponse> {
     return this.http.get<ApiResponse>(`css/getViolationById?violationId=${violationId}&type=${type}`);
   }
+
+  // ─── Whitelist ───
+
+  getBtpWhitelist(): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>('btp/whitelist');
+  }
+
+  deleteBtpWhitelist(ids: number[]): Observable<ApiResponse> {
+    return this.http.delete<ApiResponse>('btp/whitelist/bulk', { body: ids });
+  }
+
+  getAccessRuleWhitelist(hasRoles: boolean): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`css/hana-whitelist/access-rule?hasRole=${hasRoles}`);
+  }
+
+  deleteAccessRuleWhitelist(ids: number[]): Observable<ApiResponse> {
+    return this.http.delete<ApiResponse>('css/hana-whitelist/access-rule', { body: ids });
+  }
+
+  getAuditRuleWhitelist(parameterId?: number): Observable<ApiResponse> {
+    const url = parameterId ? `css/hana-whitelist/audit-rule?parameterId=${parameterId}` : 'css/hana-whitelist/audit-rule';
+    return this.http.get<ApiResponse>(url);
+  }
+
+  getAuditRuleWhitelistByParameterName(parameterName: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`css/hana-whitelist/audit-rule-param?parameterName=${encodeURIComponent(parameterName)}`);
+  }
+
+  deleteAuditRuleWhitelist(ids: number[]): Observable<ApiResponse> {
+    return this.http.delete<ApiResponse>('css/hana-whitelist/audit-rule', { body: ids });
+  }
+
+  getInitWhiteList(parameterId?: number): Observable<ApiResponse> {
+    const url = parameterId ? `css/hana-whitelist/ini?parameterId=${parameterId}` : 'css/hana-whitelist/ini';
+    return this.http.get<ApiResponse>(url);
+  }
+
+  getInitWhiteListByParameterName(parameterName: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`css/hana-whitelist/ini-param?parameterName=${encodeURIComponent(parameterName)}`);
+  }
+
+  deleteInitWhiteList(ids: number[]): Observable<ApiResponse> {
+    return this.http.delete<ApiResponse>('css/hana-whitelist/ini', { body: ids });
+  }
+
+  getAllUMEWhitelist(): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>('css/sap-ume-violations/whitelist');
+  }
+
+  deleteUMEWhitelist(ids: number[]): Observable<ApiResponse> {
+    return this.http.delete<ApiResponse>('css/sap-ume-violations/whitelist/bulk', { body: ids });
+  }
+
+  getCssAcmViolationsWhitelist(): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>('css/css-acm-violations/whitelist/list');
+  }
+
+  deleteCssAcmViolationsWhitelist(ids: number[]): Observable<ApiResponse> {
+    return this.http.delete<ApiResponse>('css/css-acm-violations/whitelist/bulk', { body: ids });
+  }
 }

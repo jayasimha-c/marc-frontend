@@ -1,0 +1,32 @@
+.add-rule-page {
+  padding: 16px;
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .page-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+  }
+
+  .steps-container {
+    margin-bottom: 24px;
+  }
+
+  .step-content {
+    margin-top: 16px;
+  }
+
+  .step-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+  }
+}

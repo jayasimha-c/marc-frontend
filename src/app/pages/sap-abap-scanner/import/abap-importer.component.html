@@ -1,0 +1,172 @@
+<div class="importer-page">
+  <!-- Page Header -->
+  <div style="margin-bottom: 16px;">
+    <span style="font-size: 18px; font-weight: 600;">
+      <span nz-icon nzType="upload" nzTheme="outline"></span>
+      ABAP Data Import
+    </span>
+    <p style="color: #888; margin-top: 4px;">Import ABAP detection patterns, rules, and scheduled scans from Excel files</p>
+  </div>
+
+  <!-- Step 1: Guidelines -->
+  <nz-card style="margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-weight: 600; font-size: 15px;">
+      <span class="step-number">1</span>
+      <span nz-icon nzType="info-circle" nzTheme="outline"></span>
+      Important Guidelines
+    </div>
+
+    <div nz-row [nzGutter]="16">
+      <div nz-col nzXs="24" nzMd="12">
+        <h4 style="font-weight: 600; margin-bottom: 8px;">Before You Start:</h4>
+        <ul style="padding-left: 20px; line-height: 2; margin: 0;">
+          <li>Export existing data first to see the expected Excel format</li>
+          <li>Make sure sheet names match: "DetectionPatterns", "Rules"</li>
+          <li>Test with a small dataset first using preview mode</li>
+          <li>Upload process may take time, please be patient</li>
+        </ul>
+      </div>
+      <div nz-col nzXs="24" nzMd="12">
+        <nz-alert nzType="warning" nzShowIcon
+          nzMessage="Import Process"
+          nzDescription="Step 1: Preview - Validate and show what will be imported. Step 2: Import - Apply changes to database. Import order: Patterns -> Rules (maintains dependencies).">
+        </nz-alert>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Step 2: Download Templates -->
+  <nz-card style="margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-weight: 600; font-size: 15px;">
+      <span class="step-number">2</span>
+      <span nz-icon nzType="download" nzTheme="outline"></span>
+      Download Templates
+    </div>
+
+    <p style="color: #888; margin-bottom: 12px;">Download the required templates and fill them with your ABAP data</p>
+
+    <div nz-row [nzGutter]="16">
+      <div nz-col nzXs="24" nzMd="8">
+        <nz-card nzSize="small" nzBordered>
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <span nz-icon nzType="file-search" nzTheme="outline" style="font-size: 24px; color: #722ed1;"></span>
+            <div style="flex: 1;">
+              <h4 style="margin: 0 0 4px;">Detection Patterns</h4>
+              <p style="color: #888; font-size: 13px; margin-bottom: 8px;">Template for detection patterns</p>
+              <button nz-button nzType="default" nzBlock (click)="downloadPatternTemplate()">
+                <span nz-icon nzType="download" nzTheme="outline"></span> Download
+              </button>
+            </div>
+          </div>
+        </nz-card>
+      </div>
+      <div nz-col nzXs="24" nzMd="8">
+        <nz-card nzSize="small" nzBordered>
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <span nz-icon nzType="audit" nzTheme="outline" style="font-size: 24px; color: #52c41a;"></span>
+            <div style="flex: 1;">
+              <h4 style="margin: 0 0 4px;">Rules Template</h4>
+              <p style="color: #888; font-size: 13px; margin-bottom: 8px;">Template for rules and patterns</p>
+              <button nz-button nzType="default" nzBlock (click)="downloadRulesTemplate()">
+                <span nz-icon nzType="download" nzTheme="outline"></span> Download
+              </button>
+            </div>
+          </div>
+        </nz-card>
+      </div>
+      <div nz-col nzXs="24" nzMd="8">
+        <nz-card nzSize="small" nzBordered>
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <span nz-icon nzType="file-excel" nzTheme="outline" style="font-size: 24px; color: #1890ff;"></span>
+            <div style="flex: 1;">
+              <h4 style="margin: 0 0 4px;">Import Template</h4>
+              <p style="color: #888; font-size: 13px; margin-bottom: 8px;">Blank template for importing</p>
+              <button nz-button nzType="default" nzBlock (click)="downloadImportTemplate()">
+                <span nz-icon nzType="download" nzTheme="outline"></span> Download
+              </button>
+            </div>
+          </div>
+        </nz-card>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Step 3: Upload Files -->
+  <nz-card>
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-weight: 600; font-size: 15px;">
+      <span class="step-number">3</span>
+      <span nz-icon nzType="upload" nzTheme="outline"></span>
+      Upload Your Files
+    </div>
+
+    <p style="color: #888; margin-bottom: 12px;">Select and upload your completed Excel files</p>
+
+    <div nz-row [nzGutter]="16">
+      <!-- Append Upload -->
+      <div nz-col nzXs="24" nzMd="12">
+        <div class="upload-card" [class.uploading]="uploadProgress['append']" [class.success]="uploadSuccess['append']">
+          <div style="text-align: center;">
+            <span nz-icon [nzType]="uploadSuccess['append'] ? 'check-circle' : 'plus-circle'" nzTheme="outline"
+                  class="upload-icon" [style.color]="uploadSuccess['append'] ? '#52c41a' : '#bfbfbf'"></span>
+            <h4 style="margin-bottom: 4px;">ABAP Rules (Append)</h4>
+            <p style="color: #888; font-size: 13px; margin-bottom: 12px;">
+              Update existing items by name, add new ones. Existing items not in file remain unchanged.
+            </p>
+
+            <input type="file" #fileInputAppend (change)="onFileChanged($event, 'append')" accept=".xlsx,.xls"
+                   style="display: none;">
+
+            <button nz-button nzType="primary" [disabled]="uploadProgress['append']"
+                    (click)="fileInputAppend.click()">
+              <span nz-icon [nzType]="uploadProgress['append'] ? 'loading' : 'upload'" nzTheme="outline"></span>
+              {{ uploadProgress['append'] ? 'Processing...' : 'Choose File' }}
+            </button>
+
+            <p *ngIf="getFileName('append')" style="color: #888; font-size: 12px; margin-top: 8px;">
+              {{ getFileName('append') }}
+            </p>
+            <p *ngIf="uploadSuccess['append']" style="color: #52c41a; font-size: 13px; margin-top: 8px;">
+              <span nz-icon nzType="check-circle" nzTheme="outline"></span> Upload successful!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overwrite Upload -->
+      <div nz-col nzXs="24" nzMd="12">
+        <div class="upload-card" [class.uploading]="uploadProgress['overwrite']" [class.success]="uploadSuccess['overwrite']">
+          <div style="text-align: center;">
+            <span nz-icon [nzType]="uploadSuccess['overwrite'] ? 'check-circle' : 'sync'" nzTheme="outline"
+                  class="upload-icon" [style.color]="uploadSuccess['overwrite'] ? '#52c41a' : '#bfbfbf'"></span>
+            <h4 style="margin-bottom: 4px;">ABAP Rules (Overwrite)</h4>
+            <p style="color: #888; font-size: 13px; margin-bottom: 12px;">
+              <strong style="color: #fa541c;">Delete all existing data</strong> and import fresh data from file.
+            </p>
+
+            <input type="file" #fileInputOverwrite (change)="onFileChanged($event, 'overwrite')" accept=".xlsx,.xls"
+                   style="display: none;">
+
+            <button nz-button nzType="primary" nzDanger [disabled]="uploadProgress['overwrite']"
+                    (click)="fileInputOverwrite.click()">
+              <span nz-icon [nzType]="uploadProgress['overwrite'] ? 'loading' : 'upload'" nzTheme="outline"></span>
+              {{ uploadProgress['overwrite'] ? 'Processing...' : 'Choose File' }}
+            </button>
+
+            <p *ngIf="getFileName('overwrite')" style="color: #888; font-size: 12px; margin-top: 8px;">
+              {{ getFileName('overwrite') }}
+            </p>
+            <p *ngIf="uploadSuccess['overwrite']" style="color: #52c41a; font-size: 13px; margin-top: 8px;">
+              <span nz-icon nzType="check-circle" nzTheme="outline"></span> Upload successful!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- File requirements info -->
+    <nz-alert style="margin-top: 16px;" nzType="info" nzShowIcon
+      nzMessage="File Requirements"
+      nzDescription="Supported formats: Excel files (.xlsx, .xls). Maximum file size: 10MB. Required sheet names: 'DetectionPatterns', 'Rules', 'ScheduledScans'. Remove any empty rows before uploading.">
+    </nz-alert>
+  </nz-card>
+</div>

@@ -1,0 +1,18 @@
+<div class="scan-results-list-page">
+  <app-advanced-table
+    title="Scan Execution History"
+    [columns]="columns"
+    [data]="data"
+    [loading]="loading"
+    [serverSide]="true"
+    [totalRecords]="totalRecords"
+    [actions]="actions"
+    [showSearch]="true"
+    [showRefresh]="true"
+    [maxVisibleActions]="1"
+    [defaultPageSize]="20"
+    tableLayout="fixed"
+    (queryParamsChange)="onQueryParamsChange($event)"
+    (rowClick)="onRowClick($event)">
+  </app-advanced-table>
+</div>

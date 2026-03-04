@@ -2,6 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { ApiResponse } from "../../core/models/api-response";
+import { GridRequestBuilder } from "../../core/utils/grid-request.builder";
 
 @Injectable({ providedIn: 'root' })
 export class CentralUsersService {
@@ -180,7 +181,12 @@ export class CentralUsersService {
     }
 
     getLicTypeData(request: any, licMgmtId: number): Observable<ApiResponse> {
-        return this.http.post<ApiResponse>(`sysLicenseInfo/getLicTypeData?licMgmtId=${licMgmtId}`, request);
+        const body = GridRequestBuilder.toLegacy(request);
+        const url =
+            `sysLicenseInfo/getLicTypeData?first=${body.first}&rows=${body.rows}` +
+            `&sortOrder=${body.sortOrder}&sortField=${body.sortField}` +
+            `&filters=${encodeURI(JSON.stringify(body.filters))}&licMgmtId=${licMgmtId}`;
+        return this.http.get<ApiResponse>(url);
     }
 
     changeLicType(ids: number[], licType: string): Observable<ApiResponse> {

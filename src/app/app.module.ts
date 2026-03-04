@@ -172,6 +172,11 @@ import {
   UserSwitchOutline,
   FormOutline,
   PauseCircleOutline,
+  AlignLeftOutline,
+  AlertOutline,
+  BulbOutline,
+  FolderOpenOutline,
+  HourglassOutline,
 } from '@ant-design/icons-angular/icons';
 
 registerLocaleData(en);
@@ -214,6 +219,7 @@ const icons = [
   PaperClipOutline, ProfileOutline,
   PartitionOutline, PauseOutline, FileProtectOutline,
   NodeExpandOutline, NodeCollapseOutline, TableOutline, CarryOutOutline,
+  AlignLeftOutline, AlertOutline, BulbOutline, FolderOpenOutline, HourglassOutline,
 ];
 
 @NgModule({

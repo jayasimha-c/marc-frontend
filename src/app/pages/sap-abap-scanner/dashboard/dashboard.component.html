@@ -1,0 +1,203 @@
+<div class="dashboard-page">
+  <!-- Header + Filters -->
+  <div class="page-header">
+    <div class="header-left">
+      <span class="page-title">ABAP Scanner Dashboard</span>
+      <span class="last-refresh" *ngIf="lastRefresh">
+        Updated {{ lastRefresh | date:'HH:mm' }}
+      </span>
+    </div>
+    <div class="header-actions">
+      <nz-range-picker
+        [(ngModel)]="dateRange"
+        nzSize="small"
+        (ngModelChange)="onDateRangeChange($event)">
+      </nz-range-picker>
+      <nz-select [(ngModel)]="selectedSystemId"
+                 nzPlaceHolder="All Systems"
+                 nzAllowClear nzShowSearch
+                 nzSize="small"
+                 style="width: 180px;"
+                 (ngModelChange)="onSystemChange()">
+        <nz-option *ngFor="let sys of sapSystems"
+                   [nzValue]="sys.id"
+                   [nzLabel]="sys.destinationName || sys.name || sys.systemName">
+        </nz-option>
+      </nz-select>
+      <button nz-button nzSize="small" nzType="default" nz-tooltip nzTooltipTitle="Refresh" (click)="onRefresh()">
+        <span nz-icon nzType="reload" nzTheme="outline"></span>
+      </button>
+      <button nz-button nzSize="small" nzType="primary" (click)="navigateToCodeScan()">
+        <span nz-icon nzType="plus" nzTheme="outline"></span> New Scan
+      </button>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <nz-alert *ngIf="error" nzType="error" [nzMessage]="error" nzShowIcon nzCloseable
+            style="margin-bottom: 16px;" (nzOnClose)="error = null">
+  </nz-alert>
+
+  <nz-spin [nzSpinning]="loading">
+    <ng-container *ngIf="dashboardData">
+      <!-- Stats Cards -->
+      <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+        <div nz-col nzXs="24" nzSm="12" nzMd="6">
+          <nz-card nzSize="small" nzHoverable>
+            <nz-statistic nzTitle="Total Scans"
+              [nzValue]="dashboardData.totalScans || 0"
+              [nzPrefix]="scanIcon"
+              [nzValueStyle]="{ color: '#1890ff' }">
+            </nz-statistic>
+            <ng-template #scanIcon><span nz-icon nzType="scan" nzTheme="outline"></span></ng-template>
+          </nz-card>
+        </div>
+        <div nz-col nzXs="24" nzSm="12" nzMd="6">
+          <nz-card nzSize="small" nzHoverable>
+            <nz-statistic nzTitle="Active Scans"
+              [nzValue]="dashboardData.running || 0"
+              [nzPrefix]="runIcon"
+              [nzValueStyle]="{ color: '#52c41a' }">
+            </nz-statistic>
+            <ng-template #runIcon><span nz-icon nzType="play-circle" nzTheme="outline"></span></ng-template>
+          </nz-card>
+        </div>
+        <div nz-col nzXs="24" nzSm="12" nzMd="6">
+          <nz-card nzSize="small" nzHoverable>
+            <nz-statistic nzTitle="Total Findings"
+              [nzValue]="dashboardData.totalFindings || 0"
+              [nzPrefix]="findingIcon"
+              [nzValueStyle]="{ color: '#fa8c16' }">
+            </nz-statistic>
+            <ng-template #findingIcon><span nz-icon nzType="bug" nzTheme="outline"></span></ng-template>
+          </nz-card>
+        </div>
+        <div nz-col nzXs="24" nzSm="12" nzMd="6">
+          <nz-card nzSize="small" nzHoverable>
+            <nz-statistic nzTitle="Critical Issues"
+              [nzValue]="dashboardData.criticalIssues || 0"
+              [nzPrefix]="critIcon"
+              [nzValueStyle]="{ color: '#cf1322' }">
+            </nz-statistic>
+            <ng-template #critIcon><span nz-icon nzType="exclamation-circle" nzTheme="outline"></span></ng-template>
+          </nz-card>
+        </div>
+      </div>
+
+      <!-- Active Scans (Progress Bars) -->
+      <nz-card *ngIf="activeScans.length > 0" nzSize="small" nzTitle="Active Scans" style="margin-bottom: 16px;">
+        <div *ngFor="let scan of activeScans" class="active-scan-row">
+          <div class="active-scan-info">
+            <nz-badge nzStatus="processing"></nz-badge>
+            <div>
+              <div class="scan-name">{{ scan.name || scan.schedulerName || 'Running Scan' }}</div>
+              <div class="scan-meta">Started: {{ scan.startedAt | date:'short' }}</div>
+            </div>
+          </div>
+          <div class="active-scan-progress">
+            <nz-progress [nzPercent]="scan.progress || 0" nzSize="small" nzStatus="active"></nz-progress>
+          </div>
+        </div>
+      </nz-card>
+
+      <!-- Charts: Severity + Trends -->
+      <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+        <!-- Severity Distribution -->
+        <div nz-col nzXs="24" nzMd="8">
+          <nz-card nzSize="small" nzTitle="Findings by Severity">
+            <div *ngIf="severityItems.length > 0">
+              <div *ngFor="let item of severityItems" class="severity-row">
+                <nz-tag [nzColor]="getSeverityTagColor(item.severity)">{{ item.severity | titlecase }}</nz-tag>
+                <div class="severity-bar-wrapper">
+                  <div class="severity-bar"
+                       [style.width.%]="getSeverityPercent(item.count)"
+                       [style.background]="getSeverityColor(item.severity)">
+                  </div>
+                </div>
+                <span class="severity-count">{{ item.count }}</span>
+              </div>
+              <div class="severity-total">
+                Total: <strong>{{ severityTotal }}</strong>
+              </div>
+            </div>
+            <nz-empty *ngIf="severityItems.length === 0" nzNotFoundContent="No severity data available"></nz-empty>
+          </nz-card>
+        </div>
+
+        <!-- Findings Trend -->
+        <div nz-col nzXs="24" nzMd="16">
+          <nz-card nzSize="small" nzTitle="Findings Trend">
+            <div *ngIf="trendItems.length > 0" class="trend-container">
+              <div *ngFor="let item of trendItems" class="trend-row">
+                <span class="trend-date">{{ item.date }}</span>
+                <nz-progress
+                  [nzPercent]="getTrendPercent(item.count)"
+                  [nzShowInfo]="false"
+                  nzSize="small"
+                  nzStrokeColor="#1890ff"
+                  style="flex: 1;">
+                </nz-progress>
+                <span class="trend-count">{{ item.count }}</span>
+              </div>
+            </div>
+            <nz-empty *ngIf="trendItems.length === 0" nzNotFoundContent="No trend data available"></nz-empty>
+          </nz-card>
+        </div>
+      </div>
+
+      <!-- Recent Scans Table -->
+      <nz-card nzSize="small" [nzTitle]="recentTitle" [nzExtra]="recentExtra">
+        <ng-template #recentTitle>Recent Scans</ng-template>
+        <ng-template #recentExtra>
+          <a (click)="navigateToScanHistory()">View All</a>
+        </ng-template>
+
+        <nz-table #recentTable
+                  [nzData]="recentScans"
+                  nzSize="small"
+                  [nzShowPagination]="false"
+                  nzTableLayout="fixed"
+                  [nzScroll]="{ x: '800px' }">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th nzWidth="100px">Status</th>
+              <th nzWidth="120px">System</th>
+              <th nzWidth="90px">Programs</th>
+              <th nzWidth="90px">Findings</th>
+              <th nzWidth="90px">Duration</th>
+              <th nzWidth="150px">Created</th>
+              <th nzWidth="70px">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let scan of recentTable.data">
+              <td nzEllipsis>{{ scan.name || scan.schedulerName || '-' }}</td>
+              <td>
+                <nz-tag [nzColor]="getStatusTag(scan.status).color">
+                  {{ getStatusTag(scan.status).label }}
+                </nz-tag>
+              </td>
+              <td nzEllipsis>{{ scan.sapSystemName || scan.sapSystem || '-' }}</td>
+              <td>{{ scan.totalPrograms || 0 }}</td>
+              <td>{{ scan.findingsCount || scan.totalFindings || 0 }}</td>
+              <td>{{ scan.duration ? (scan.duration + ' min') : '-' }}</td>
+              <td>{{ scan.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+              <td>
+                <button nz-button nzSize="small" nzType="link"
+                        nz-tooltip nzTooltipTitle="View scan results"
+                        (click)="viewScanResult(scan)">
+                  <span nz-icon nzType="eye" nzTheme="outline"></span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+
+        <nz-empty *ngIf="recentScans.length === 0"
+                  nzNotFoundContent="No recent scans found">
+        </nz-empty>
+      </nz-card>
+    </ng-container>
+  </nz-spin>
+</div>

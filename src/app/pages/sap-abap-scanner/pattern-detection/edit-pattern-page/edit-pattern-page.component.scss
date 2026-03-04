@@ -1,0 +1,563 @@
+// Edit Pattern Page - Full Page Implementation (NG-ZORRO)
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+// Page Header
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .back-btn {
+      color: rgba(0, 0, 0, 0.45);
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+
+      h1 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: rgba(0, 0, 0, 0.85);
+      }
+
+      .pattern-name {
+        font-size: 12px;
+        color: rgba(0, 0, 0, 0.45);
+      }
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+}
+
+// Loading State
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 16px;
+
+  p {
+    color: rgba(0, 0, 0, 0.45);
+  }
+}
+
+// Main Content
+.page-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+
+  &.resizing {
+    user-select: none;
+    cursor: col-resize;
+  }
+}
+
+// Shared Panel Section Header
+.panel-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+  min-height: 48px;
+  font-weight: 600;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.85);
+  gap: 8px;
+
+  span[nz-icon] {
+    font-size: 16px;
+    color: #1890ff;
+  }
+
+  &.compact {
+    padding: 6px 12px;
+    min-height: 40px;
+    font-size: 12px;
+
+    .header-left-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+  }
+}
+
+.header-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+// Resizable Divider
+.resize-handle {
+  width: 6px;
+  background: #f0f0f0;
+  cursor: col-resize;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.15s;
+
+  &:hover,
+  &:active {
+    background: #1890ff;
+
+    .resize-indicator {
+      opacity: 1;
+    }
+  }
+
+  .resize-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    opacity: 0;
+    transition: opacity 0.15s;
+
+    &::before,
+    &::after {
+      content: '';
+      width: 4px;
+      height: 4px;
+      background: #fff;
+      border-radius: 50%;
+    }
+  }
+}
+
+// Left Panel: Configuration
+.config-panel {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  .config-form {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+  }
+}
+
+.form-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 8px;
+
+  .flex-1 {
+    flex: 1;
+  }
+
+  .active-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 30px;
+
+    .active-label {
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.65);
+    }
+  }
+}
+
+// Patterns Section
+.patterns-section {
+  margin-bottom: 16px;
+
+  .section-header-inline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    span {
+      font-weight: 500;
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.85);
+    }
+  }
+
+  .patterns-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+// Pattern Card
+.pattern-card {
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: #1890ff;
+  }
+
+  &.has-error {
+    border-color: #ff4d4f;
+  }
+
+  .pattern-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+
+    .pattern-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .pattern-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #1890ff;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .stage-select {
+        width: 90px;
+      }
+
+      .capture-group-input {
+        width: 54px;
+      }
+    }
+
+    .pattern-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+
+      .status-icon {
+        font-size: 16px;
+
+        &.valid {
+          color: #52c41a;
+        }
+
+        &.invalid {
+          color: #ff4d4f;
+        }
+      }
+
+      .remove-btn:not(:disabled) {
+        color: rgba(0, 0, 0, 0.45);
+
+        &:hover {
+          color: #ff4d4f;
+        }
+      }
+    }
+  }
+
+  .regex-input {
+    border: none;
+    border-radius: 0;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 12px;
+
+    &:focus {
+      box-shadow: none;
+    }
+  }
+
+  .pattern-error {
+    border-radius: 0;
+  }
+}
+
+.strategy-warning {
+  margin-top: 10px;
+}
+
+// Right Panel: Test & Simulate
+.test-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.code-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 200px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  overflow: hidden;
+}
+
+.code-editor-container {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.line-numbers {
+  width: 48px;
+  flex-shrink: 0;
+  background: #fafafa;
+  border-right: 1px solid #f0f0f0;
+  padding: 12px 0;
+  overflow: hidden;
+  user-select: none;
+
+  .line-num {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    height: calc(13px * 1.6);
+    padding-right: 12px;
+    text-align: right;
+    color: rgba(0, 0, 0, 0.25);
+  }
+}
+
+.abap-editor {
+  flex: 1;
+  margin: 0;
+  padding: 12px 16px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.85);
+  background: #fff;
+  border: none;
+  outline: none;
+  overflow: auto;
+  white-space: pre;
+  word-wrap: normal;
+  tab-size: 4;
+
+  &:empty::before {
+    content: attr(data-placeholder);
+    color: rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  // Syntax highlighting
+  .kw {
+    color: #7c3aed;
+    font-weight: 500;
+  }
+
+  .str {
+    color: #059669;
+  }
+
+  .cmt {
+    color: #8c8c8c;
+    font-style: italic;
+  }
+}
+
+// Results Section
+.results-section {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  max-height: 50%;
+  overflow: hidden;
+
+  .results-content {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+  }
+}
+
+.match-count {
+  font-size: 11px;
+  font-weight: normal;
+  color: rgba(0, 0, 0, 0.45);
+  margin-left: 4px;
+}
+
+// Verdict classes for nz-tag
+.verdict-detected {
+  background: #fff7e6 !important;
+  border-color: #ffd591 !important;
+  color: #d46b08 !important;
+}
+
+.verdict-not-detected {
+  background: #f6ffed !important;
+  border-color: #b7eb8f !important;
+  color: #389e0d !important;
+}
+
+.verdict-partial {
+  background: #e6f7ff !important;
+  border-color: #91d5ff !important;
+  color: #096dd9 !important;
+}
+
+// Stage Results
+.stage-results {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stage-block {
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+
+  &.passed .stage-status-icon {
+    color: #52c41a;
+  }
+
+  &.failed .stage-status-icon {
+    color: #ff4d4f;
+  }
+
+  .stage-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+
+    .stage-label {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(0, 0, 0, 0.85);
+      padding-left: 8px;
+      border-left: 3px solid;
+    }
+
+    .stage-status-icon {
+      font-size: 14px;
+      margin-left: auto;
+    }
+  }
+
+  .match-list {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+
+  .match-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    padding: 4px 6px;
+    background: #fafafa;
+    border-radius: 3px;
+    font-size: 11px;
+
+    .line-tag {
+      flex-shrink: 0;
+    }
+
+    .matched-code {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 11px;
+      color: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.04);
+      padding: 1px 4px;
+      border-radius: 2px;
+      word-break: break-all;
+    }
+
+    .capture-groups {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      width: 100%;
+      margin-top: 2px;
+      padding-top: 4px;
+      border-top: 1px dashed #f0f0f0;
+    }
+  }
+
+  .no-matches-inline {
+    padding: 8px 10px;
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.25);
+    font-style: italic;
+  }
+}
+
+// Empty State
+.results-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  flex: 0 0 auto;
+  min-height: 120px;
+}
+
+// Utility
+.w-full {
+  width: 100%;
+}

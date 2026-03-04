@@ -1,0 +1,274 @@
+<!-- Page Header -->
+<div class="page-header">
+  <div class="header-left">
+    <button nz-button nzType="text" nzShape="circle" (click)="goBack()" class="back-btn">
+      <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+    </button>
+    <div class="header-title">
+      <h1>{{ isEditMode ? 'Edit' : 'Create' }} Detection Pattern</h1>
+      <span class="pattern-name" *ngIf="isEditMode && form.get('name')?.value">
+        {{ form.get('name')?.value }}
+      </span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button nz-button nzType="default" (click)="goBack()" [disabled]="isSaving">Cancel</button>
+    <button nz-button nzType="primary" (click)="save()"
+            [disabled]="!form.valid || !allPatternsValid || isSaving"
+            [nzLoading]="isSaving">
+      {{ isSaving ? 'Saving...' : 'Save Pattern' }}
+    </button>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div class="loading-container" *ngIf="isLoading">
+  <nz-spin nzSimple nzSize="large"></nz-spin>
+  <p>Loading pattern...</p>
+</div>
+
+<!-- Main Content -->
+<div class="page-content" *ngIf="!isLoading" [class.resizing]="isResizing">
+  <!-- Left Panel: Pattern Configuration -->
+  <div class="config-panel" [style.width.px]="leftPanelWidth">
+    <div class="panel-section-header">
+      <span nz-icon nzType="setting" nzTheme="outline"></span>
+      <span>Pattern Configuration</span>
+    </div>
+
+    <form [formGroup]="form" class="config-form">
+      <!-- Name -->
+      <nz-form-item>
+        <nz-form-label nzRequired>Pattern Name</nz-form-label>
+        <nz-form-control nzErrorTip="Name is required">
+          <input nz-input formControlName="name" placeholder="Enter pattern name" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <!-- Strategy and Active Toggle Row -->
+      <div class="form-row">
+        <nz-form-item class="flex-1">
+          <nz-form-label>Evaluation Strategy</nz-form-label>
+          <nz-form-control>
+            <nz-select formControlName="evaluationStrategy" nzPlaceHolder="Select strategy">
+              <nz-option *ngFor="let strategy of evaluationStrategies"
+                         [nzValue]="strategy.value"
+                         [nzLabel]="strategy.label"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <div class="active-toggle">
+          <nz-switch formControlName="active"></nz-switch>
+          <span class="active-label">Active</span>
+        </div>
+      </div>
+
+      <!-- Regex Patterns Section -->
+      <div class="patterns-section">
+        <div class="section-header-inline">
+          <span>Regex Patterns</span>
+          <button nz-button nzType="primary" nzShape="circle" nzSize="small"
+                  type="button" (click)="addRegexPattern()"
+                  nz-tooltip nzTooltipTitle="Add Pattern">
+            <span nz-icon nzType="plus" nzTheme="outline"></span>
+          </button>
+        </div>
+
+        <div formArrayName="regexPatterns" class="patterns-list">
+          <div *ngFor="let pattern of regexPatterns.controls; let i = index"
+               [formGroupName]="i"
+               class="pattern-card"
+               [class.has-error]="regexValidations[i] && !regexValidations[i].isValid">
+
+            <div class="pattern-header">
+              <div class="pattern-info">
+                <span class="pattern-number">{{ i + 1 }}</span>
+                <nz-select *ngIf="isMultiStage"
+                           formControlName="patternStage"
+                           class="stage-select"
+                           nzSize="small">
+                  <nz-option *ngFor="let stage of patternStages"
+                             [nzValue]="stage.value"
+                             [nzLabel]="stage.label"></nz-option>
+                </nz-select>
+                <nz-input-number *ngIf="isMultiStage"
+                                 formControlName="contextCaptureGroup"
+                                 [nzMin]="0" [nzMax]="9"
+                                 nzSize="small"
+                                 nzPlaceHolder="Grp"
+                                 class="capture-group-input"
+                                 nz-tooltip nzTooltipTitle="Capture group index">
+                </nz-input-number>
+              </div>
+              <div class="pattern-actions">
+                <span *ngIf="regexValidations[i]?.isValid && pattern.get('regexPattern')?.value"
+                      nz-icon nzType="check-circle" nzTheme="outline"
+                      class="status-icon valid"></span>
+                <span *ngIf="regexValidations[i] && !regexValidations[i].isValid"
+                      nz-icon nzType="exclamation-circle" nzTheme="outline"
+                      class="status-icon invalid"></span>
+                <button nz-button nzType="text" nzShape="circle" nzSize="small"
+                        type="button" (click)="removeRegexPattern(i)"
+                        [disabled]="regexPatterns.length === 1"
+                        class="remove-btn"
+                        nz-tooltip nzTooltipTitle="Remove pattern">
+                  <span nz-icon nzType="close" nzTheme="outline"></span>
+                </button>
+              </div>
+            </div>
+
+            <textarea nz-input
+                      [nzAutosize]="{ minRows: 2, maxRows: 4 }"
+                      class="regex-input"
+                      placeholder="Enter regex pattern..."
+                      formControlName="regexPattern"
+                      (blur)="validateRegexAtIndex(i)"
+                      (input)="validateRegexAtIndex(i)"
+                      spellcheck="false"></textarea>
+
+            <nz-alert *ngIf="regexValidations[i] && !regexValidations[i].isValid"
+                      nzType="error"
+                      [nzMessage]="regexValidations[i].error!"
+                      nzShowIcon
+                      class="pattern-error">
+            </nz-alert>
+          </div>
+        </div>
+
+        <nz-alert *ngIf="getStrategyValidationError()"
+                  nzType="warning"
+                  [nzMessage]="getStrategyValidationError()!"
+                  nzShowIcon
+                  class="strategy-warning">
+        </nz-alert>
+      </div>
+
+      <!-- Description -->
+      <nz-form-item>
+        <nz-form-label>Description</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="description" placeholder="Enter description"
+                    [nzAutosize]="{ minRows: 3, maxRows: 6 }"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </div>
+
+  <!-- Resizable Divider -->
+  <div class="resize-handle" (mousedown)="startResize($event)">
+    <div class="resize-indicator"></div>
+  </div>
+
+  <!-- Right Panel: Test & Simulate -->
+  <div class="test-panel">
+    <!-- ABAP Code Editor -->
+    <div class="code-section">
+      <div class="panel-section-header compact">
+        <div class="header-left-group">
+          <span nz-icon nzType="code" nzTheme="outline"></span>
+          <span>ABAP Code</span>
+        </div>
+        <div class="header-actions-group">
+          <button nz-button nzType="primary" nzSize="small" (click)="runSimulation()"
+                  [disabled]="!abapCode || isSimulating || regexPatterns.length === 0"
+                  [nzLoading]="isSimulating">
+            <span *ngIf="!isSimulating" nz-icon nzType="caret-right" nzTheme="outline"></span>
+            {{ isSimulating ? 'Testing...' : 'Run' }}
+          </button>
+          <button nz-button nzType="text" nzShape="circle" nzSize="small"
+                  nz-dropdown [nzDropdownMenu]="codeActionsMenu">
+            <span nz-icon nzType="more" nzTheme="outline"></span>
+          </button>
+          <nz-dropdown-menu #codeActionsMenu="nzDropdownMenu">
+            <ul nz-menu>
+              <li nz-menu-item (click)="loadSampleCode()">
+                <span nz-icon nzType="experiment" nzTheme="outline"></span>
+                Load Sample Code
+              </li>
+              <li nz-menu-item (click)="clearCode()" [nzDisabled]="!abapCode">
+                <span nz-icon nzType="clear" nzTheme="outline"></span>
+                Clear Code
+              </li>
+            </ul>
+          </nz-dropdown-menu>
+        </div>
+      </div>
+
+      <!-- ABAP Code Editor -->
+      <div class="code-editor-container">
+        <div class="line-numbers" #lineNumbers>
+          <div class="line-num" *ngFor="let line of lineNumbersArray">{{ line }}</div>
+        </div>
+        <pre class="abap-editor" #abapEditor
+             contenteditable="true"
+             spellcheck="false"
+             (input)="onEditorInput($event)"
+             (paste)="onEditorPaste($event)"
+             (scroll)="onEditorScroll()"
+             [attr.data-placeholder]="'Paste ABAP code here...'"></pre>
+      </div>
+    </div>
+
+    <!-- Simulation Results -->
+    <div class="results-section" *ngIf="simulationResult">
+      <div class="panel-section-header compact">
+        <div class="header-left-group">
+          <span nz-icon nzType="bar-chart" nzTheme="outline"></span>
+          <span>Results</span>
+          <nz-tag [ngClass]="getVerdictClass()">
+            <span nz-icon [nzType]="getVerdictIcon()" nzTheme="outline"></span>
+            {{ simulationResult.finalVerdict === 'DETECTED' ? 'FOUND' :
+               simulationResult.finalVerdict === 'NOT_DETECTED' ? 'CLEAN' : 'PARTIAL' }}
+          </nz-tag>
+          <span class="match-count">{{ simulationResult.totalMatches }} match{{ simulationResult.totalMatches !== 1 ? 'es' : '' }}</span>
+        </div>
+        <button nz-button nzType="text" nzShape="circle" nzSize="small"
+                (click)="clearSimulation()" nz-tooltip nzTooltipTitle="Clear results">
+          <span nz-icon nzType="close" nzTheme="outline"></span>
+        </button>
+      </div>
+
+      <div class="results-content">
+        <div class="stage-results">
+          <div *ngFor="let stageResult of simulationResult.stageResults"
+               class="stage-block"
+               [class.passed]="stageResult.passed"
+               [class.failed]="!stageResult.passed">
+
+            <div class="stage-title">
+              <span class="stage-label" [style.border-left-color]="getStageColor(stageResult.stage)">
+                {{ stageResult.stage }}
+              </span>
+              <nz-tag>{{ stageResult.matches.length }}</nz-tag>
+              <span nz-icon class="stage-status-icon"
+                    [nzType]="stageResult.passed ? 'check' : 'close'"
+                    nzTheme="outline"></span>
+            </div>
+
+            <div class="match-list" *ngIf="stageResult.matches.length > 0">
+              <div *ngFor="let match of stageResult.matches" class="match-row">
+                <nz-tag nzColor="blue" class="line-tag">L{{ match.lineNumber }}</nz-tag>
+                <code class="matched-code">{{ match.matchedText | slice:0:80 }}{{ match.matchedText.length > 80 ? '...' : '' }}</code>
+                <div class="capture-groups" *ngIf="match.captureGroups.length > 0">
+                  <nz-tag *ngFor="let group of match.captureGroups; let gi = index" nzColor="purple">
+                    ${{ gi + 1 }}={{ group | slice:0:20 }}{{ group.length > 20 ? '...' : '' }}
+                  </nz-tag>
+                </div>
+              </div>
+            </div>
+
+            <div class="no-matches-inline" *ngIf="stageResult.matches.length === 0">
+              No matches
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="results-empty" *ngIf="!simulationResult">
+      <nz-empty nzNotFoundContent="Paste ABAP code and click Run to simulate pattern detection">
+      </nz-empty>
+    </div>
+  </div>
+</div>

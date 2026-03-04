@@ -1,0 +1,120 @@
+<div class="import-dialog">
+  <!-- Dialog Header -->
+  <div class="dialog-header">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span nz-icon [nzType]="currentPhase === 'preview' ? 'eye' : currentPhase === 'import' ? 'upload' : 'check-circle'"
+            nzTheme="outline" style="font-size: 22px;"></span>
+      <div>
+        <h3 style="margin: 0; font-size: 16px; font-weight: 600;">
+          ABAP Data Import
+          <span *ngIf="currentPhase === 'preview'">(Preview)</span>
+          <span *ngIf="currentPhase === 'import'">(Importing...)</span>
+          <span *ngIf="currentPhase === 'completed'">(Complete)</span>
+        </h3>
+        <span style="color: #888; font-size: 13px;">{{ getFileInfo() }}</span>
+      </div>
+    </div>
+    <button nz-button nzType="text" nzShape="circle" (click)="onClose()" [disabled]="isLoading">
+      <span nz-icon nzType="close" nzTheme="outline"></span>
+    </button>
+  </div>
+
+  <!-- Import Details Bar -->
+  <div class="dialog-details-bar">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <span style="font-size: 13px;">
+        <span nz-icon nzType="setting" nzTheme="outline" style="margin-right: 4px; color: #1890ff;"></span>
+        <strong>Mode:</strong> {{ getModeDisplay() }}
+      </span>
+    </div>
+
+    <div *ngIf="!isLoading" style="display: flex; align-items: center; gap: 16px;">
+      <nz-tag [nzColor]="statusColor">
+        <span nz-icon [nzType]="statusIcon" nzTheme="outline" style="margin-right: 4px;"></span>
+        {{ successStatus }}
+      </nz-tag>
+      <nz-tag *ngIf="numErrors > 0" nzColor="red">{{ numErrors }} Errors</nz-tag>
+      <nz-tag *ngIf="numWarnings > 0" nzColor="orange">{{ numWarnings }} Warnings</nz-tag>
+      <nz-tag *ngIf="numInfo > 0" nzColor="blue">{{ numInfo }} Info</nz-tag>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="dialog-loading">
+    <nz-spin nzSimple [nzSize]="'large'"></nz-spin>
+    <p style="font-size: 16px; font-weight: 500; margin: 16px 0 4px;">
+      {{ currentPhase === 'preview' ? 'Analyzing Import...' : 'Importing Data...' }}
+    </p>
+    <p style="color: #888; font-size: 13px;">
+      {{ currentPhase === 'preview' ? 'Validating data and checking for conflicts' : 'Applying changes to database' }}
+    </p>
+  </div>
+
+  <!-- Results Content -->
+  <div *ngIf="!isLoading" class="dialog-content">
+    <nz-tabset *ngIf="tables.length > 0" nzSize="small" nzAnimated>
+      <nz-tab *ngFor="let table of tables" [nzTitle]="table.name + ' (' + table.logs.length + ')'">
+        <nz-table [nzData]="table.logs" nzSize="small" [nzPageSize]="50"
+                  [nzShowSizeChanger]="true" nzTableLayout="fixed"
+                  [nzScroll]="{ y: '400px' }">
+          <thead>
+            <tr>
+              <th *ngFor="let col of table.columns"
+                  [nzWidth]="col.field === 'index' ? '50px' : col.field === 'level' ? '80px' : col.field === 'objectId' ? '80px' : col.field === 'rowNumber' ? '60px' : col.field === 'object' ? '120px' : col.field === 'sheetName' ? '100px' : col.field === 'fieldName' ? '100px' : null">
+                {{ col.header }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of table.logs">
+              <td *ngFor="let col of table.columns">
+                <ng-container [ngSwitch]="col.field">
+                  <nz-tag *ngSwitchCase="'level'" [nzColor]="getLevelColor(log[col.field])">
+                    {{ log[col.field] }}
+                  </nz-tag>
+                  <span *ngSwitchDefault>{{ log[col.field] ?? '-' }}</span>
+                </ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </nz-tab>
+    </nz-tabset>
+
+    <!-- No Results -->
+    <div *ngIf="tables.length === 0" style="text-align: center; padding: 48px 0; color: #888;">
+      <span nz-icon nzType="inbox" nzTheme="outline" style="font-size: 48px; color: #d9d9d9;"></span>
+      <p style="font-size: 16px; margin-top: 12px;">No import logs available</p>
+      <p style="font-size: 13px;">The import process did not generate any logs.</p>
+    </div>
+  </div>
+
+  <!-- Dialog Footer -->
+  <div class="dialog-footer">
+    <div style="font-size: 13px; color: #888;">
+      <span *ngIf="currentPhase === 'preview'">
+        <span nz-icon nzType="info-circle" nzTheme="outline" style="margin-right: 4px; color: #1890ff;"></span>
+        This is a preview. No changes have been made yet.
+      </span>
+      <span *ngIf="currentPhase === 'import'">
+        <span nz-icon nzType="hourglass" nzTheme="outline" style="margin-right: 4px; color: #fa8c16;"></span>
+        Import in progress...
+      </span>
+      <span *ngIf="currentPhase === 'completed'">
+        <span nz-icon nzType="check" nzTheme="outline" style="margin-right: 4px; color: #52c41a;"></span>
+        Import process completed.
+      </span>
+    </div>
+
+    <div style="display: flex; gap: 8px;">
+      <button nz-button nzType="default" (click)="onClose()" [disabled]="isLoading">
+        {{ importDone ? 'Close' : 'Cancel' }}
+      </button>
+      <button *ngIf="currentPhase === 'preview'" nz-button nzType="primary"
+              (click)="onImport()" [disabled]="isLoading || !importSuccess">
+        <span nz-icon nzType="upload" nzTheme="outline"></span>
+        {{ numErrors > 0 ? 'Import with Errors' : 'Perform Import' }}
+      </button>
+    </div>
+  </div>
+</div>

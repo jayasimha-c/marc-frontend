@@ -1,0 +1,120 @@
+<input type="file" #jsonFileInput accept=".json" style="display:none" (change)="onJsonFileSelected($event)">
+
+<div class="pattern-detection-page">
+  <app-advanced-table
+    title="Detection Patterns"
+    [columns]="columns"
+    [data]="data"
+    [loading]="loading || isImporting"
+    [serverSide]="true"
+    [totalRecords]="totalRecords"
+    [actions]="actions"
+    [showSearch]="true"
+    [showRefresh]="true"
+    [maxVisibleActions]="4"
+    [defaultPageSize]="20"
+    tableLayout="fixed"
+    (queryParamsChange)="onQueryParamsChange($event)"
+    (rowClick)="onRowClick($event)">
+
+    <!-- Custom cell rendering for patterns column -->
+    <ng-template #customStatusTemplate let-row let-column="column">
+      <ng-container [ngSwitch]="column.field">
+        <ng-container *ngSwitchCase="'regexPatterns'">
+          <nz-tag>{{ formatPatternCount(row.regexPatterns) }}</nz-tag>
+        </ng-container>
+        <ng-container *ngSwitchCase="'active'">
+          <nz-tag [nzColor]="row.active ? 'green' : 'red'">
+            {{ row.active ? 'Active' : 'Inactive' }}
+          </nz-tag>
+        </ng-container>
+      </ng-container>
+    </ng-template>
+  </app-advanced-table>
+</div>
+
+<!-- Side Panel for Pattern Details -->
+<nz-drawer
+  [nzVisible]="showDetailPanel"
+  [nzWidth]="420"
+  nzPlacement="right"
+  nzTitle="Pattern Details"
+  (nzOnClose)="closeDetailPanel()">
+
+  <ng-container *nzDrawerContent>
+    <div *ngIf="selectedPattern" class="detail-content">
+      <!-- Header Info -->
+      <div class="detail-header">
+        <h3>{{ selectedPattern.name }}</h3>
+        <div class="header-meta">
+          <nz-tag [nzColor]="selectedPattern.active ? 'green' : 'red'">
+            <span nz-icon [nzType]="selectedPattern.active ? 'check-circle' : 'close-circle'" nzTheme="outline"></span>
+            {{ selectedPattern.active ? 'Active' : 'Inactive' }}
+          </nz-tag>
+          <nz-tag nzColor="blue">{{ selectedPattern.evaluationStrategy }}</nz-tag>
+        </div>
+      </div>
+
+      <nz-divider></nz-divider>
+
+      <!-- Actions -->
+      <div class="detail-actions">
+        <button nz-button nzType="primary" nzSize="small" (click)="editPatternFromPanel()">
+          <span nz-icon nzType="edit" nzTheme="outline"></span>
+          Edit
+        </button>
+        <button nz-button nzDanger nzSize="small" (click)="deletePatternFromPanel()">
+          <span nz-icon nzType="delete" nzTheme="outline"></span>
+          Delete
+        </button>
+      </div>
+
+      <nz-divider></nz-divider>
+
+      <!-- Overview -->
+      <nz-descriptions nzTitle="Overview" nzBordered [nzColumn]="1" nzSize="small">
+        <nz-descriptions-item nzTitle="Category">
+          <nz-tag>
+            <span nz-icon [nzType]="getCategoryIcon(selectedPattern.category)" nzTheme="outline"></span>
+            {{ selectedPattern.category }}
+          </nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Complexity">
+          <nz-tag [nzColor]="selectedPattern.complexity === 'Complex' ? 'red' :
+                             selectedPattern.complexity === 'Medium' ? 'orange' : 'green'">
+            {{ selectedPattern.complexity }}
+          </nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Pattern Count">{{ selectedPattern.patternCount }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Created">{{ selectedPattern.createdDate | date:'medium' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Modified">{{ selectedPattern.modifiedDate | date:'medium' }}</nz-descriptions-item>
+      </nz-descriptions>
+
+      <!-- Description -->
+      <div class="detail-section" *ngIf="selectedPattern.description">
+        <h4>
+          <span nz-icon nzType="file-text" nzTheme="outline"></span>
+          Description
+        </h4>
+        <p class="description-text">{{ selectedPattern.description }}</p>
+      </div>
+
+      <!-- Regex Patterns -->
+      <div class="detail-section" *ngIf="selectedPattern.regexPatterns?.length > 0">
+        <h4>
+          <span nz-icon nzType="code" nzTheme="outline"></span>
+          Regex Patterns
+        </h4>
+        <div class="regex-list">
+          <div *ngFor="let pattern of selectedPattern.regexPatterns; let i = index" class="regex-item">
+            <div class="regex-item-header">
+              <span class="regex-index">{{ i + 1 }}</span>
+              <nz-tag *ngIf="pattern.patternStage" nzColor="processing">{{ pattern.patternStage }}</nz-tag>
+            </div>
+            <code class="regex-code">{{ pattern.regexPattern }}</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</nz-drawer>

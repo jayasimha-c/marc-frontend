@@ -1,0 +1,93 @@
+.rules-management-page {
+  padding: 16px;
+}
+
+.stats-row {
+  margin-bottom: 16px;
+}
+
+.detail-content {
+  .detail-header {
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .header-meta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+  }
+
+  .detail-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .detail-section {
+    margin-top: 16px;
+
+    h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-text {
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.65);
+      line-height: 1.6;
+      margin: 0;
+    }
+  }
+
+  .pattern-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .pattern-card {
+      .pattern-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .pattern-desc {
+        font-size: 12px;
+        color: rgba(0, 0, 0, 0.45);
+        margin: 4px 0 8px 0;
+      }
+
+      .regex-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .regex-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          .regex-stage {
+            flex-shrink: 0;
+          }
+
+          .regex-code {
+            font-size: 12px;
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            word-break: break-all;
+          }
+        }
+      }
+    }
+  }
+}

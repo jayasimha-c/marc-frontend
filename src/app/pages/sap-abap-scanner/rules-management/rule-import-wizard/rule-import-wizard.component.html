@@ -1,0 +1,376 @@
+<div class="import-wizard-page">
+  <nz-card>
+    <!-- Header -->
+    <div class="wizard-header">
+      <div class="header-left">
+        <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()">
+          <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+        </button>
+        <span class="header-title">Import ABAP Rules</span>
+      </div>
+      <button nz-button nzType="default" (click)="downloadTemplate()">
+        <span nz-icon nzType="download" nzTheme="outline"></span>
+        Download Template
+      </button>
+    </div>
+
+    <!-- Stepper -->
+    <nz-steps [nzCurrent]="currentStep" class="steps-container">
+      <nz-step nzTitle="Upload File"></nz-step>
+      <nz-step nzTitle="Import Mode"></nz-step>
+      <nz-step nzTitle="Validate"></nz-step>
+      <nz-step nzTitle="Import"></nz-step>
+    </nz-steps>
+
+    <!-- Step 1: Upload File -->
+    <div *ngIf="currentStep === 0" class="step-content">
+      <p class="step-description">Upload an Excel file containing ABAP rules to import:</p>
+
+      <div class="drop-zone"
+           [class.drag-over]="dragOver"
+           [class.has-file]="selectedFile"
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave($event)"
+           (drop)="onDrop($event)">
+
+        <div *ngIf="!selectedFile && !validating" class="drop-zone-empty">
+          <span nz-icon nzType="cloud-upload" nzTheme="outline" class="upload-icon"></span>
+          <p class="drop-text">Drag and drop an Excel file here</p>
+          <p class="drop-subtext">or</p>
+          <button nz-button nzType="default" (click)="fileInput.click()">
+            <span nz-icon nzType="folder-open" nzTheme="outline"></span>
+            Browse Files
+          </button>
+          <input #fileInput type="file" accept=".xlsx,.xls" hidden (change)="onFileSelected($event)">
+        </div>
+
+        <div *ngIf="validating" class="drop-zone-loading">
+          <nz-spin nzSimple></nz-spin>
+          <p>Validating file...</p>
+        </div>
+
+        <div *ngIf="selectedFile && !validating" class="file-info">
+          <span nz-icon nzType="file-excel" nzTheme="outline" class="file-icon"></span>
+          <div class="file-details">
+            <span class="file-name">{{ selectedFile.name }}</span>
+            <span class="file-size">{{ formatFileSize(selectedFile.size) }}</span>
+          </div>
+          <button nz-button nzType="text" nzShape="circle" nzDanger (click)="removeFile()">
+            <span nz-icon nzType="close" nzTheme="outline"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Validation Results -->
+      <div *ngIf="previewResult" class="validation-results">
+        <!-- Global Errors -->
+        <nz-alert *ngIf="previewResult.globalErrors?.length"
+                  nzType="error"
+                  nzShowIcon
+                  [nzMessage]="'Validation Errors'"
+                  [nzDescription]="errorListTpl">
+        </nz-alert>
+        <ng-template #errorListTpl>
+          <ul class="msg-list">
+            <li *ngFor="let error of previewResult.globalErrors">{{ error }}</li>
+          </ul>
+        </ng-template>
+
+        <!-- Global Warnings -->
+        <nz-alert *ngIf="previewResult.globalWarnings?.length"
+                  nzType="warning"
+                  nzShowIcon
+                  [nzMessage]="'Warnings'"
+                  [nzDescription]="warningListTpl">
+        </nz-alert>
+        <ng-template #warningListTpl>
+          <ul class="msg-list">
+            <li *ngFor="let warning of previewResult.globalWarnings">{{ warning }}</li>
+          </ul>
+        </ng-template>
+
+        <!-- Success -->
+        <nz-alert *ngIf="!previewResult.globalErrors?.length"
+                  nzType="success"
+                  nzShowIcon
+                  nzMessage="File Validated Successfully">
+        </nz-alert>
+
+        <div *ngIf="!previewResult.globalErrors?.length" class="summary-stats">
+          <nz-statistic nzTitle="Total Rules" [nzValue]="previewResult.totalRules"></nz-statistic>
+          <nz-statistic nzTitle="New Rules" [nzValue]="previewResult.newRules" [nzValueStyle]="{ color: '#52c41a' }"></nz-statistic>
+          <nz-statistic nzTitle="Existing Rules" [nzValue]="previewResult.existingRules" [nzValueStyle]="{ color: '#faad14' }"></nz-statistic>
+        </div>
+
+        <!-- Preview Table -->
+        <div *ngIf="previewResult.previewRules?.length && !previewResult.globalErrors?.length" class="preview-table">
+          <h4>Preview (First {{ previewResult.previewRules.length }} Rules)</h4>
+          <nz-table #previewTable [nzData]="previewResult.previewRules" nzSize="small"
+                    [nzShowPagination]="false" nzTableLayout="fixed">
+            <thead>
+              <tr>
+                <th nzWidth="60px">Row</th>
+                <th>Rule Name</th>
+                <th nzWidth="120px">Category</th>
+                <th nzWidth="100px">Severity</th>
+                <th nzWidth="80px">Exists</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let rule of previewTable.data">
+                <td>{{ rule.rowNumber }}</td>
+                <td nzEllipsis>{{ rule.name }}</td>
+                <td>{{ rule.category }}</td>
+                <td>{{ rule.severity }}</td>
+                <td>
+                  <nz-tag [nzColor]="rule.existsInDatabase ? 'orange' : 'green'">
+                    {{ rule.existsInDatabase ? 'Yes' : 'No' }}
+                  </nz-tag>
+                </td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Import Mode -->
+    <div *ngIf="currentStep === 1" class="step-content">
+      <p class="step-description">Choose how to handle existing rules in the database:</p>
+
+      <div class="import-modes">
+        <nz-card *ngFor="let mode of importModes"
+                 class="mode-card"
+                 [class.selected]="selectedImportMode === mode.id"
+                 [class.danger-mode]="mode.warning"
+                 (click)="onImportModeSelected(mode.id)"
+                 nzHoverable>
+          <div class="mode-card-content">
+            <div class="mode-icon">
+              <span nz-icon [nzType]="mode.icon" nzTheme="outline"></span>
+            </div>
+            <div class="mode-info">
+              <h4>{{ mode.name }}</h4>
+              <p>{{ mode.description }}</p>
+              <p *ngIf="mode.warning" class="mode-warning">
+                <span nz-icon nzType="warning" nzTheme="outline"></span>
+                {{ mode.warning }}
+              </p>
+            </div>
+            <span *ngIf="selectedImportMode === mode.id"
+                  nz-icon nzType="check-circle" nzTheme="fill"
+                  class="check-icon"></span>
+          </div>
+        </nz-card>
+      </div>
+
+      <!-- Mode Summary -->
+      <nz-alert *ngIf="previewResult && selectedImportMode" nzType="info" nzShowIcon
+                [nzMessage]="modeSummaryTpl" class="mode-summary">
+      </nz-alert>
+      <ng-template #modeSummaryTpl>
+        <span *ngIf="selectedImportMode === 'merge'">
+          <strong>{{ previewResult?.newRules }}</strong> new rules will be imported.
+          <strong>{{ previewResult?.existingRules }}</strong> existing rules will be skipped.
+        </span>
+        <span *ngIf="selectedImportMode === 'update'">
+          <strong>{{ previewResult?.newRules }}</strong> new rules will be imported.
+          <strong>{{ previewResult?.existingRules }}</strong> existing rules will be updated.
+        </span>
+        <span *ngIf="selectedImportMode === 'overwrite'">
+          All existing rules will be deleted and <strong>{{ previewResult?.totalRules }}</strong> rules will be imported.
+        </span>
+      </ng-template>
+    </div>
+
+    <!-- Step 3: Validate -->
+    <div *ngIf="currentStep === 2" class="step-content">
+      <div *ngIf="simulating" class="loading-section">
+        <nz-spin nzSimple nzSize="large"></nz-spin>
+        <p>Validating import data...</p>
+      </div>
+
+      <div *ngIf="simulationResult && !simulating">
+        <!-- Global Errors -->
+        <nz-alert *ngIf="simulationResult.globalErrors?.length"
+                  nzType="error" nzShowIcon
+                  [nzMessage]="'Validation Errors'"
+                  [nzDescription]="simErrorsTpl">
+        </nz-alert>
+        <ng-template #simErrorsTpl>
+          <ul class="msg-list">
+            <li *ngFor="let error of simulationResult.globalErrors">{{ error }}</li>
+          </ul>
+        </ng-template>
+
+        <!-- Can Proceed -->
+        <nz-alert *ngIf="simulationResult.canProceed"
+                  nzType="success" nzShowIcon
+                  [nzMessage]="'Ready to Import'"
+                  [nzDescription]="'All validations passed. ' + simulationResult.rulesToCreate + ' rule(s) to create, ' + simulationResult.rulesToUpdate + ' to update, ' + simulationResult.rulesToSkip + ' to skip.'">
+        </nz-alert>
+
+        <!-- Cannot Proceed -->
+        <nz-alert *ngIf="!simulationResult.canProceed"
+                  nzType="error" nzShowIcon
+                  nzMessage="Cannot Proceed"
+                  [nzDescription]="'Please fix the ' + simulationResult.rulesWithErrors + ' validation error(s) before importing.'">
+        </nz-alert>
+
+        <!-- Simulation Details Table -->
+        <div class="preview-table">
+          <h4>Validation Details</h4>
+          <nz-table #simTable [nzData]="simulationResult.simulationDetails" nzSize="small"
+                    [nzShowPagination]="simulationResult.simulationDetails.length > 10"
+                    [nzPageSize]="10" nzTableLayout="fixed">
+            <thead>
+              <tr>
+                <th nzWidth="60px">Row</th>
+                <th>Rule Name</th>
+                <th nzWidth="100px">Action</th>
+                <th nzWidth="100px">Status</th>
+                <th>Message</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of simTable.data">
+                <td>{{ item.rowNumber }}</td>
+                <td nzEllipsis>{{ item.name }}</td>
+                <td>
+                  <nz-tag [nzColor]="item.action === 'CREATE' ? 'green' : item.action === 'UPDATE' ? 'blue' : item.action === 'SKIP' ? 'default' : 'red'">
+                    {{ item.action }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <nz-tag [nzColor]="item.status === 'VALID' ? 'green' : item.status === 'WARNING' ? 'orange' : 'red'">
+                    {{ item.status }}
+                  </nz-tag>
+                </td>
+                <td nzEllipsis>{{ item.statusMessage }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Import -->
+    <div *ngIf="currentStep === 3" class="step-content">
+      <!-- Import Complete -->
+      <div *ngIf="importComplete && importResult" class="import-complete">
+        <nz-result
+          [nzStatus]="importResult.success && !importResult.partialSuccess ? 'success' : importResult.partialSuccess ? 'warning' : 'error'"
+          [nzTitle]="importResult.success && !importResult.partialSuccess ? 'Import Complete!' : importResult.partialSuccess ? 'Import Completed with Errors' : 'Import Failed'">
+          <div nz-result-extra>
+            <div class="result-stats">
+              <nz-statistic *ngIf="importResult.rulesCreated > 0" nzTitle="Created"
+                            [nzValue]="importResult.rulesCreated" [nzValueStyle]="{ color: '#52c41a' }"></nz-statistic>
+              <nz-statistic *ngIf="importResult.rulesUpdated > 0" nzTitle="Updated"
+                            [nzValue]="importResult.rulesUpdated" [nzValueStyle]="{ color: '#1890ff' }"></nz-statistic>
+              <nz-statistic *ngIf="importResult.rulesSkipped > 0" nzTitle="Skipped"
+                            [nzValue]="importResult.rulesSkipped"></nz-statistic>
+              <nz-statistic *ngIf="importResult.rulesFailed > 0" nzTitle="Failed"
+                            [nzValue]="importResult.rulesFailed" [nzValueStyle]="{ color: '#ff4d4f' }"></nz-statistic>
+              <nz-statistic *ngIf="importResult.rulesDeleted > 0" nzTitle="Deleted"
+                            [nzValue]="importResult.rulesDeleted" [nzValueStyle]="{ color: '#faad14' }"></nz-statistic>
+            </div>
+
+            <p class="result-duration">Completed in {{ importResult.duration }}ms</p>
+
+            <!-- Errors List -->
+            <nz-alert *ngIf="importResult.errors?.length" nzType="error" nzShowIcon
+                      [nzMessage]="'Errors (' + importResult.errors.length + ')'"
+                      [nzDescription]="importErrorsTpl">
+            </nz-alert>
+            <ng-template #importErrorsTpl>
+              <ul class="msg-list">
+                <li *ngFor="let error of importResult.errors.slice(0, 10)">
+                  <strong>Row {{ error.rowNumber }} - {{ error.ruleName }}:</strong> {{ error.message }}
+                </li>
+                <li *ngIf="importResult.errors.length > 10">
+                  + {{ importResult.errors.length - 10 }} more errors
+                </li>
+              </ul>
+            </ng-template>
+
+            <div class="result-actions">
+              <button nz-button nzType="default" (click)="startNewImport()">
+                <span nz-icon nzType="reload" nzTheme="outline"></span>
+                Import More
+              </button>
+              <button nz-button nzType="primary" (click)="navigateBack()">
+                <span nz-icon nzType="check" nzTheme="outline"></span>
+                Done
+              </button>
+            </div>
+          </div>
+        </nz-result>
+      </div>
+
+      <!-- Review Before Import -->
+      <div *ngIf="!importComplete">
+        <p class="step-description">Review the import configuration and click "Import Rules" to proceed:</p>
+
+        <div nz-row [nzGutter]="16" class="review-cards">
+          <div nz-col [nzSpan]="12">
+            <nz-card nzTitle="File Summary" nzSize="small">
+              <nz-descriptions [nzColumn]="1" nzSize="small" nzBordered *ngIf="previewResult">
+                <nz-descriptions-item nzTitle="File">{{ selectedFile?.name }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Total Rules">{{ previewResult.totalRules }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="New / Existing">
+                  {{ previewResult.newRules }} / {{ previewResult.existingRules }}
+                </nz-descriptions-item>
+              </nz-descriptions>
+            </nz-card>
+          </div>
+          <div nz-col [nzSpan]="12">
+            <nz-card nzTitle="Import Mode" nzSize="small">
+              <nz-descriptions [nzColumn]="1" nzSize="small" nzBordered>
+                <nz-descriptions-item nzTitle="Mode">{{ selectedImportModeObj?.name }}</nz-descriptions-item>
+                <nz-descriptions-item nzTitle="Description">{{ selectedImportModeObj?.description }}</nz-descriptions-item>
+              </nz-descriptions>
+            </nz-card>
+          </div>
+        </div>
+
+        <!-- Overwrite Warning -->
+        <nz-alert *ngIf="selectedImportMode === 'overwrite'" nzType="warning" nzShowIcon
+                  nzMessage="Warning: Overwrite mode will delete ALL existing ABAP rules before importing. This action cannot be undone."
+                  class="overwrite-warning">
+        </nz-alert>
+
+        <!-- Import Progress -->
+        <div *ngIf="importing" class="import-progress">
+          <nz-spin nzSimple></nz-spin>
+          <span>Importing rules...</span>
+          <nz-progress [nzPercent]="0" nzStatus="active"></nz-progress>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="wizard-actions" *ngIf="!importComplete">
+      <button nz-button nzType="default"
+              (click)="currentStep = currentStep - 1"
+              [disabled]="currentStep === 0">
+        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+        Back
+      </button>
+      <button nz-button nzType="primary"
+              (click)="onNext()"
+              [disabled]="!canProceedToNext()"
+              *ngIf="showNextButton">
+        Next
+        <span nz-icon nzType="arrow-right" nzTheme="outline"></span>
+      </button>
+      <button nz-button nzType="primary"
+              (click)="onImport()"
+              [disabled]="importing || !simulationResult?.canProceed"
+              [nzLoading]="importing"
+              *ngIf="showImportButton">
+        <span nz-icon nzType="upload" nzTheme="outline"></span>
+        Import Rules
+      </button>
+    </div>
+  </nz-card>
+</div>

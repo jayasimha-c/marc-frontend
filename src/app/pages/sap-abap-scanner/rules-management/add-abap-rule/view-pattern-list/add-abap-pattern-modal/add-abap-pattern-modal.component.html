@@ -1,0 +1,49 @@
+<!-- Search -->
+<nz-input-group [nzPrefix]="searchIcon" class="search-box">
+  <input nz-input placeholder="Search patterns by name..." [(ngModel)]="searchText" (ngModelChange)="onSearch()" />
+</nz-input-group>
+<ng-template #searchIcon><span nz-icon nzType="search" nzTheme="outline"></span></ng-template>
+
+<!-- Table -->
+<nz-table
+  #patternTable
+  [nzData]="filteredPatterns"
+  nzSize="small"
+  [nzShowPagination]="true"
+  [nzPageSize]="10"
+  nzShowSizeChanger
+  [nzPageSizeOptions]="[10, 20, 50]"
+  [nzFrontPagination]="true"
+  nzTableLayout="fixed">
+  <thead>
+    <tr>
+      <th nzWidth="50px"
+          [nzChecked]="allChecked"
+          [nzIndeterminate]="indeterminate"
+          (nzCheckedChange)="onAllChecked($event)">
+      </th>
+      <th>Name</th>
+      <th nzWidth="120px">Patterns</th>
+      <th nzWidth="160px">Created Date</th>
+      <th nzWidth="160px">Modified Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let pattern of patternTable.data">
+      <td [nzChecked]="checkedPatterns.has(pattern.id)"
+          (nzCheckedChange)="onItemChecked(pattern.id, $event)">
+      </td>
+      <td nzEllipsis>{{ pattern.name }}</td>
+      <td><nz-tag>{{ formatPatternCount(pattern.regexPatterns) }}</nz-tag></td>
+      <td>{{ pattern.createdDate | date:'medium' }}</td>
+      <td>{{ pattern.modifiedDate | date:'medium' }}</td>
+    </tr>
+  </tbody>
+</nz-table>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="onClose()">Close</button>
+  <button nz-button nzType="primary" [disabled]="!hasSelection" (click)="onAdd()">
+    Add Selected ({{ checkedPatterns.size }})
+  </button>
+</div>

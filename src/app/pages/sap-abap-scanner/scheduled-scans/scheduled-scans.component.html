@@ -1,0 +1,51 @@
+<div class="scheduled-scans-page">
+  <!-- Statistics Cards -->
+  <div nz-row [nzGutter]="16" class="stats-row">
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <nz-card nzSize="small">
+        <nz-statistic nzTitle="Total Scheduled Scans" [nzValue]="scheduledCount.total || 0"
+                      [nzPrefix]="totalIcon"></nz-statistic>
+        <ng-template #totalIcon><span nz-icon nzType="clock-circle" nzTheme="outline"></span></ng-template>
+      </nz-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <nz-card nzSize="small">
+        <nz-statistic nzTitle="Active Scans" [nzValue]="scheduledCount.active || 0"
+                      [nzPrefix]="activeIcon" [nzValueStyle]="{ color: '#52c41a' }"></nz-statistic>
+        <ng-template #activeIcon><span nz-icon nzType="play-circle" nzTheme="outline"></span></ng-template>
+      </nz-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <nz-card nzSize="small">
+        <nz-statistic nzTitle="Recent Executions" [nzValue]="scheduledCount.recent || 0"
+                      [nzPrefix]="recentIcon" [nzValueStyle]="{ color: '#faad14' }"></nz-statistic>
+        <ng-template #recentIcon><span nz-icon nzType="history" nzTheme="outline"></span></ng-template>
+      </nz-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <nz-card nzSize="small">
+        <nz-statistic nzTitle="Total Scan Rules" [nzValue]="scheduledCount.rules || 0"
+                      [nzPrefix]="rulesIcon" [nzValueStyle]="{ color: '#722ed1' }"></nz-statistic>
+        <ng-template #rulesIcon><span nz-icon nzType="audit" nzTheme="outline"></span></ng-template>
+      </nz-card>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <app-advanced-table
+    title="Scheduled Scans"
+    [columns]="columns"
+    [data]="data"
+    [loading]="loading"
+    [serverSide]="true"
+    [totalRecords]="totalRecords"
+    [actions]="actions"
+    [showSearch]="true"
+    [showRefresh]="true"
+    [maxVisibleActions]="3"
+    [defaultPageSize]="20"
+    tableLayout="fixed"
+    (queryParamsChange)="onQueryParamsChange($event)"
+    (rowClick)="onRowClick($event)">
+  </app-advanced-table>
+</div>

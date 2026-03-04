@@ -1,0 +1,39 @@
+<div class="whitelist-details-page">
+  <!-- Header -->
+  <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+    <button nz-button nzType="text" nzShape="circle" (click)="goBack()">
+      <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+    </button>
+    <span style="font-size: 18px; font-weight: 600;">{{ pageTitle }}</span>
+    <div style="margin-left: auto;">
+      <button nz-button nzDanger (click)="removeFromWhitelist()">
+        <span nz-icon nzType="delete" nzTheme="outline"></span> Remove from Whitelist
+      </button>
+    </div>
+  </div>
+
+  <nz-spin [nzSpinning]="loading">
+    <nz-table [nzData]="data" nzSize="small" [nzShowPagination]="true" nzTableLayout="fixed"
+              [nzPageSize]="20">
+      <thead>
+        <tr>
+          <th *ngFor="let col of columns" [nzWidth]="col.width || null">{{ col.header }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of data"
+            [class.selected-row]="selectedRow === row"
+            (click)="onRowClick(row)">
+          <td *ngFor="let col of columns">
+            <span *ngIf="col.type === 'date'">{{ row[col.field] | date:'yyyy-MM-dd HH:mm' }}</span>
+            <span *ngIf="col.type !== 'date'">{{ row[col.field] }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+
+    <div *ngIf="data.length === 0 && !loading" style="text-align: center; padding: 40px 0; color: #888;">
+      No whitelist entries found.
+    </div>
+  </nz-spin>
+</div>

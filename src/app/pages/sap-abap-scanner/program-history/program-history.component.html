@@ -1,0 +1,242 @@
+<div class="program-history-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <button nz-button nzType="text" nzShape="circle" (click)="goBack()">
+        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+      </button>
+      <span class="page-title">Program Violation History</span>
+    </div>
+    <div class="header-right">
+      <button nz-button nzType="default" (click)="viewProgramDetails()" *ngIf="programDetails">
+        <span nz-icon nzType="eye" nzTheme="outline"></span> View Violations
+      </button>
+      <button nz-button nzType="default" (click)="refreshData()">
+        <span nz-icon nzType="reload" nzTheme="outline"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <nz-result *ngIf="error && !loading" nzStatus="error"
+             nzTitle="Error Loading Data" [nzSubTitle]="error">
+    <div nz-result-extra>
+      <button nz-button nzType="primary" nzDanger (click)="refreshData()">
+        <span nz-icon nzType="reload" nzTheme="outline"></span> Try Again
+      </button>
+    </div>
+  </nz-result>
+
+  <nz-spin [nzSpinning]="loading">
+    <ng-container *ngIf="!error">
+      <!-- Stats Cards -->
+      <div *ngIf="programDetails" nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+        <div nz-col nzXs="24" nzSm="12" nzMd="6">
+          <nz-card nzSize="small">
+            <nz-statistic nzTitle="Total Violations"
+                          [nzValue]="programDetails.totalViolations || 0"
+                          [nzValueStyle]="{ color: '#cf1322' }"
+                          [nzPrefix]="bugIcon">
+            </nz-statistic>
+            <ng-template #bugIcon><span nz-icon nzType="bug" nzTheme="outline"></span></ng-template>
+          </nz-card>
+        </div>
+        <div nz-col nzXs="24" nzSm="12" nzMd="6">
+          <nz-card nzSize="small">
+            <nz-statistic nzTitle="Rules Violated"
+                          [nzValue]="programDetails.rulesViolated || 0"
+                          [nzValueStyle]="{ color: '#fa8c16' }"
+                          [nzPrefix]="auditIcon">
+            </nz-statistic>
+            <ng-template #auditIcon><span nz-icon nzType="audit" nzTheme="outline"></span></ng-template>
+          </nz-card>
+        </div>
+        <div nz-col nzXs="24" nzSm="12" nzMd="6">
+          <nz-card nzSize="small">
+            <nz-statistic nzTitle="Highest Severity"
+                          [nzValue]="getProgramSeverity()"
+                          [nzValueStyle]="{ color: getSeverityColor(getProgramSeverity()) }">
+            </nz-statistic>
+          </nz-card>
+        </div>
+        <div nz-col nzXs="24" nzSm="12" nzMd="6">
+          <nz-card nzSize="small">
+            <nz-statistic nzTitle="Last Scanned"
+                          [nzValue]="formatDate(programDetails.lastScanned)"
+                          [nzPrefix]="clockIcon">
+            </nz-statistic>
+            <ng-template #clockIcon><span nz-icon nzType="clock-circle" nzTheme="outline"></span></ng-template>
+          </nz-card>
+        </div>
+      </div>
+
+      <!-- Program Details Cards -->
+      <div *ngIf="programDetails" nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+        <!-- Program Information -->
+        <div nz-col nzXs="24" nzLg="12">
+          <nz-card nzSize="small" nzTitle="Program Information" [nzExtra]="viewSourceTpl">
+            <ng-template #viewSourceTpl>
+              <button nz-button nzSize="small" nzType="link"
+                      nz-tooltip nzTooltipTitle="View ABAP Source Code"
+                      (click)="onViewProgram(programDetails!.programId, programDetails!.sapSystemId)">
+                <span nz-icon nzType="eye" nzTheme="outline"></span> Source
+              </button>
+            </ng-template>
+            <nz-descriptions nzSize="small" [nzColumn]="1" nzBordered>
+              <nz-descriptions-item nzTitle="Program Name">
+                <strong>{{ programDetails.programName || 'N/A' }}</strong>
+              </nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Program Type">
+                {{ formatProgramType(programDetails.programType) }}
+                <nz-tag *ngIf="isCdsType(programDetails.programType)" nzColor="purple" style="margin-left: 8px;">CDS</nz-tag>
+              </nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Package">
+                {{ programDetails.progPackage || 'N/A' }}
+              </nz-descriptions-item>
+            </nz-descriptions>
+          </nz-card>
+        </div>
+
+        <!-- System & Metadata -->
+        <div nz-col nzXs="24" nzLg="12">
+          <nz-card nzSize="small" nzTitle="System & Metadata">
+            <nz-descriptions nzSize="small" [nzColumn]="1" nzBordered>
+              <nz-descriptions-item nzTitle="SAP System">
+                <strong>{{ programDetails.systemName || 'Unknown' }}</strong>
+              </nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Changed By">
+                {{ programDetails.changedBy || 'Unknown' }}
+              </nz-descriptions-item>
+              <nz-descriptions-item nzTitle="Changed On">
+                {{ formatDate(programDetails.changedOn) }}
+              </nz-descriptions-item>
+            </nz-descriptions>
+          </nz-card>
+        </div>
+      </div>
+
+      <!-- Scan History Table -->
+      <nz-card nzSize="small" [nzTitle]="historyCardTitle" [nzExtra]="historyCardExtra">
+        <ng-template #historyCardTitle>
+          <span>Scan History</span>
+          <nz-tag style="margin-left: 8px;">{{ getTotalHistoryEntries() }}</nz-tag>
+        </ng-template>
+        <ng-template #historyCardExtra>
+          <nz-select [(ngModel)]="historyTimeframe" nzSize="small" style="width: 150px;"
+                     (ngModelChange)="applyHistoryFilters()">
+            <nz-option [nzValue]="7" nzLabel="Last 7 days"></nz-option>
+            <nz-option [nzValue]="30" nzLabel="Last 30 days"></nz-option>
+            <nz-option [nzValue]="90" nzLabel="Last 90 days"></nz-option>
+            <nz-option [nzValue]="180" nzLabel="Last 6 months"></nz-option>
+            <nz-option [nzValue]="365" nzLabel="Last year"></nz-option>
+          </nz-select>
+        </ng-template>
+
+        <nz-spin [nzSpinning]="loadingHistory">
+          <nz-table #historyTable
+                    [nzData]="violationHistory"
+                    nzSize="small"
+                    [nzShowPagination]="false"
+                    nzTableLayout="fixed"
+                    [nzScroll]="{ x: '900px' }">
+            <thead>
+              <tr>
+                <th nzWidth="60px">#</th>
+                <th nzWidth="150px">Scan Date</th>
+                <th nzWidth="100px">Type</th>
+                <th nzWidth="100px">Status</th>
+                <th nzWidth="120px">Scheduler</th>
+                <th nzWidth="70px" class="severity-col">
+                  <span nz-tooltip nzTooltipTitle="Critical">C</span>
+                </th>
+                <th nzWidth="70px" class="severity-col">
+                  <span nz-tooltip nzTooltipTitle="High">H</span>
+                </th>
+                <th nzWidth="70px" class="severity-col">
+                  <span nz-tooltip nzTooltipTitle="Medium">M</span>
+                </th>
+                <th nzWidth="70px" class="severity-col">
+                  <span nz-tooltip nzTooltipTitle="Low">L</span>
+                </th>
+                <th nzWidth="80px">Total</th>
+                <th nzWidth="70px">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let h of historyTable.data">
+                <td>{{ h.executionId }}</td>
+                <td>{{ formatDate(h.scanDate) }}</td>
+                <td>
+                  <nz-tag [nzColor]="getExecutionTypeTag(h.executionType).color">
+                    {{ getExecutionTypeTag(h.executionType).label }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <nz-tag [nzColor]="getStatusTag(h.status).color">
+                    {{ getStatusTag(h.status).label }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <span>{{ h.schedulerName || '-' }}</span>
+                </td>
+                <td class="severity-col">
+                  <span class="severity-critical">{{ h.criticalViolations || 0 }}</span>
+                </td>
+                <td class="severity-col">
+                  <span class="severity-high">{{ h.highViolations || 0 }}</span>
+                </td>
+                <td class="severity-col">
+                  <span class="severity-medium">{{ h.mediumViolations || 0 }}</span>
+                </td>
+                <td class="severity-col">
+                  <span class="severity-low">{{ h.lowViolations || 0 }}</span>
+                </td>
+                <td>
+                  <strong>{{ getTotalViolations(h) }}</strong>
+                </td>
+                <td>
+                  <button nz-button nzSize="small" nzType="link"
+                          nz-tooltip nzTooltipTitle="View violations for this scan"
+                          (click)="viewDetails(h)">
+                    <span nz-icon nzType="eye" nzTheme="outline"></span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </nz-table>
+
+          <!-- Empty State -->
+          <nz-empty *ngIf="violationHistory.length === 0 && !loadingHistory"
+                    nzNotFoundContent="No scan history found for this program.">
+          </nz-empty>
+
+          <!-- Pagination -->
+          <div *ngIf="getTotalHistoryEntries() > 0" class="pagination-bar">
+            <div class="pagination-info">
+              Showing {{ ((historyPage - 1) * historyPageSize) + 1 }}
+              - {{ historyPage * historyPageSize > getTotalHistoryEntries() ? getTotalHistoryEntries() : historyPage * historyPageSize }}
+              of {{ getTotalHistoryEntries() }} entries
+            </div>
+            <div class="pagination-controls">
+              <nz-select [(ngModel)]="historyPageSize" nzSize="small" style="width: 80px; margin-right: 12px;"
+                         (ngModelChange)="onHistoryPageSizeChange($event)">
+                <nz-option [nzValue]="5" nzLabel="5"></nz-option>
+                <nz-option [nzValue]="10" nzLabel="10"></nz-option>
+                <nz-option [nzValue]="20" nzLabel="20"></nz-option>
+                <nz-option [nzValue]="50" nzLabel="50"></nz-option>
+              </nz-select>
+              <nz-pagination
+                [nzPageIndex]="historyPage"
+                [nzTotal]="getTotalHistoryEntries()"
+                [nzPageSize]="historyPageSize"
+                nzSize="small"
+                [nzShowSizeChanger]="false"
+                (nzPageIndexChange)="onHistoryPageChange($event)">
+              </nz-pagination>
+            </div>
+          </div>
+        </nz-spin>
+      </nz-card>
+    </ng-container>
+  </nz-spin>
+</div>

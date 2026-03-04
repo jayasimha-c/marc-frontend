@@ -1,0 +1,421 @@
+<nz-page-header nzTitle="Code Scan" [nzSubtitle]="formType === 'edit' ? 'Edit Scan Configuration' : 'New Scan Configuration'" nzBackIcon (nzBack)="navigateBack()">
+</nz-page-header>
+
+<div class="code-scan-page">
+  <!-- Stepper -->
+  <nz-steps [nzCurrent]="currentStep" nzSize="small" class="scan-steps">
+    <nz-step nzTitle="Configuration"></nz-step>
+    <nz-step nzTitle="Transport Objects" *ngIf="isTransportMode()"></nz-step>
+    <nz-step nzTitle="Rules"></nz-step>
+    <nz-step nzTitle="Advanced Config"></nz-step>
+  </nz-steps>
+
+  <nz-divider></nz-divider>
+
+  <form nz-form [formGroup]="scanForm" nzLayout="vertical">
+
+    <!-- Step 0: Configuration -->
+    <div *ngIf="currentStep === 0">
+      <nz-card nzTitle="Basic Information" nzSize="small">
+        <div nz-row [nzGutter]="16">
+          <div nz-col nzSpan="12">
+            <nz-form-item>
+              <nz-form-label nzRequired>Scan Name</nz-form-label>
+              <nz-form-control nzErrorTip="Name is required (3-100 characters)">
+                <input nz-input formControlName="name" placeholder="Enter scan name" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="12">
+            <nz-form-item>
+              <nz-form-label nzRequired>Scan Type</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="scanType" nzPlaceHolder="Select scan type">
+                  <nz-option nzValue="SAP_SYSTEM" nzLabel="SAP System"></nz-option>
+                  <nz-option nzValue="FILE_UPLOAD" nzLabel="File Upload"></nz-option>
+                  <nz-option nzValue="GIT_REPOSITORY" nzLabel="Git Repository"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <nz-form-item>
+          <nz-form-label>Description</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input formControlName="description" placeholder="Enter description" [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </nz-card>
+
+      <!-- SAP System Config -->
+      <nz-card nzTitle="SAP System Configuration" nzSize="small" class="section-card"
+               *ngIf="scanForm.get('scanType')?.value === 'SAP_SYSTEM'">
+        <div nz-row [nzGutter]="16">
+          <div nz-col nzSpan="12">
+            <nz-form-item>
+              <nz-form-label>SAP System</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="sapSystemId" nzPlaceHolder="Select SAP System" nzShowSearch>
+                  <nz-option *ngFor="let sys of availableSapSystems"
+                             [nzValue]="sys.id"
+                             [nzLabel]="sys.destinationName || sys.name">
+                  </nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="12">
+            <nz-form-item>
+              <nz-form-label>Program Filter Mode</nz-form-label>
+              <nz-form-control>
+                <nz-radio-group formControlName="programFilterMode">
+                  <label nz-radio nzValue="PATTERN">Pattern</label>
+                  <label nz-radio nzValue="LIST">Program List</label>
+                  <label nz-radio nzValue="TRANSPORT">Transport</label>
+                </nz-radio-group>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <!-- Pattern Mode -->
+        <div *ngIf="scanForm.get('programFilterMode')?.value === 'PATTERN'">
+          <nz-form-item>
+            <nz-form-label>Program Pattern</nz-form-label>
+            <nz-form-control nzExtra="Use * as wildcard. Example: Z* or Y_REPORT*">
+              <input nz-input formControlName="programPattern" placeholder="e.g. Z*" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <!-- List Mode -->
+        <div *ngIf="scanForm.get('programFilterMode')?.value === 'LIST'">
+          <nz-form-item>
+            <nz-form-label>Program Names</nz-form-label>
+            <nz-form-control nzExtra="Enter one program name per line, or separate with commas">
+              <textarea nz-input formControlName="programNames" placeholder="Enter program names..." [nzAutosize]="{ minRows: 3, maxRows: 8 }"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+          <button nz-button nzType="dashed" (click)="openBrowsePrograms()" class="browse-btn">
+            <span nz-icon nzType="search"></span> Browse Programs
+          </button>
+        </div>
+
+        <!-- Transport Mode -->
+        <div *ngIf="scanForm.get('programFilterMode')?.value === 'TRANSPORT'">
+          <nz-form-item>
+            <nz-form-label>Transport Numbers</nz-form-label>
+            <nz-form-control nzExtra="Enter one transport number per line, or separate with commas">
+              <textarea nz-input formControlName="transportNumbers" placeholder="e.g. DEVK900123" [nzAutosize]="{ minRows: 3, maxRows: 6 }"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+          <button nz-button nzType="dashed" (click)="resolveTransportObjects()" [nzLoading]="isLoadingTransportObjects">
+            <span nz-icon nzType="sync"></span> Resolve Transport Objects
+          </button>
+        </div>
+
+        <!-- Date Filter (non-transport modes) -->
+        <div *ngIf="!isTransportMode()" class="section-card">
+          <div nz-row [nzGutter]="16">
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label>Date Filter</nz-form-label>
+                <nz-form-control>
+                  <nz-select formControlName="dateFilterType" nzPlaceHolder="Select date filter">
+                    <nz-option nzValue="NONE" nzLabel="No Date Filter"></nz-option>
+                    <nz-option nzValue="EQUALS" nzLabel="Equals"></nz-option>
+                    <nz-option nzValue="GREATER_THAN" nzLabel="Greater Than"></nz-option>
+                    <nz-option nzValue="BETWEEN" nzLabel="Between"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8" *ngIf="shouldShowDateFields() && scanForm.get('dateFilterType')?.value !== 'BETWEEN'">
+              <nz-form-item>
+                <nz-form-label>{{ getFromDateLabel() }}</nz-form-label>
+                <nz-form-control [nzExtra]="getDateHelpText()">
+                  <nz-date-picker formControlName="programDate" nzPlaceHolder="Select date" style="width: 100%"></nz-date-picker>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="16" *ngIf="scanForm.get('dateFilterType')?.value === 'BETWEEN'">
+              <nz-form-item>
+                <nz-form-label>Date Range</nz-form-label>
+                <nz-form-control>
+                  <nz-range-picker [(ngModel)]="dateRange" [ngModelOptions]="{standalone: true}" (ngModelChange)="onDateRangeChange($event)" style="width: 100%"></nz-range-picker>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </div>
+        </div>
+      </nz-card>
+
+      <!-- File Upload Config -->
+      <nz-card nzTitle="File Upload" nzSize="small" class="section-card"
+               *ngIf="scanForm.get('scanType')?.value === 'FILE_UPLOAD'">
+        <div class="upload-area" [class.drag-over]="isDragOver"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)"
+             (drop)="onDrop($event)">
+          <p><span nz-icon nzType="inbox" nzTheme="outline" class="upload-icon"></span></p>
+          <p class="upload-text">Click or drag ABAP files to upload</p>
+          <p class="upload-hint">Supported: .abap, .txt, .inc (Max 50MB)</p>
+          <input type="file" #fileInput multiple accept=".abap,.txt,.inc" (change)="onFileSelected($event)" style="display: none;" />
+          <button nz-button nzType="dashed" (click)="fileInput.click()">
+            <span nz-icon nzType="upload"></span> Select Files
+          </button>
+        </div>
+
+        <nz-list *ngIf="selectedFiles.length > 0" nzSize="small" class="file-list">
+          <nz-list-item *ngFor="let file of selectedFiles; let i = index">
+            <nz-list-item-meta [nzTitle]="file.name" [nzDescription]="formatFileSize(file.size)">
+              <nz-list-item-meta-avatar>
+                <span nz-icon nzType="file-text" nzTheme="outline"></span>
+              </nz-list-item-meta-avatar>
+            </nz-list-item-meta>
+            <ul nz-list-item-actions>
+              <nz-list-item-action>
+                <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeFile(i)">
+                  <span nz-icon nzType="delete"></span>
+                </button>
+              </nz-list-item-action>
+            </ul>
+          </nz-list-item>
+        </nz-list>
+      </nz-card>
+
+      <!-- Git Repository Config -->
+      <nz-card nzTitle="Git Repository" nzSize="small" class="section-card"
+               *ngIf="scanForm.get('scanType')?.value === 'GIT_REPOSITORY'">
+        <div nz-row [nzGutter]="16">
+          <div nz-col nzSpan="24">
+            <nz-form-item>
+              <nz-form-label nzRequired>Repository URL</nz-form-label>
+              <nz-form-control nzErrorTip="Repository URL is required">
+                <input nz-input formControlName="repositoryUrl" placeholder="https://github.com/org/repo.git" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="12">
+            <nz-form-item>
+              <nz-form-label>Branch</nz-form-label>
+              <nz-form-control>
+                <input nz-input formControlName="repositoryBranch" placeholder="main" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="12">
+            <nz-form-item>
+              <nz-form-label>Path (optional)</nz-form-label>
+              <nz-form-control>
+                <input nz-input formControlName="repositoryPath" placeholder="src/abap" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+      </nz-card>
+    </div>
+
+    <!-- Step 1 (Transport Mode): Transport Objects -->
+    <div *ngIf="currentStep === 1 && isTransportMode()">
+      <nz-card nzTitle="Resolved Transport Objects" nzSize="small">
+        <nz-alert *ngIf="transportError" nzType="error" [nzMessage]="transportError" nzShowIcon class="transport-alert"></nz-alert>
+
+        <nz-spin [nzSpinning]="isLoadingTransportObjects">
+          <nz-table
+            #transportTable
+            [nzData]="transportObjects"
+            nzSize="small"
+            [nzShowPagination]="true"
+            [nzPageSize]="20"
+            [nzFrontPagination]="true"
+            nzTableLayout="fixed">
+            <thead>
+              <tr>
+                <th>Object Name</th>
+                <th nzWidth="120px">Object Type</th>
+                <th>Transport Number</th>
+                <th nzWidth="160px">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let obj of transportTable.data">
+                <td nzEllipsis>{{ obj.objName }}</td>
+                <td><nz-tag>{{ obj.objType }}</nz-tag></td>
+                <td>{{ obj.transportNumber }}</td>
+                <td nzEllipsis>{{ obj.description || '-' }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </nz-spin>
+
+        <nz-empty *ngIf="!isLoadingTransportObjects && transportObjects.length === 0 && !transportError"
+                  nzNotFoundContent="No transport objects resolved. Go back and resolve transports first.">
+        </nz-empty>
+      </nz-card>
+    </div>
+
+    <!-- Step: Rules (step 1 for non-transport, step 2 for transport) -->
+    <div *ngIf="(isTransportMode() && currentStep === 2) || (!isTransportMode() && currentStep === 1)">
+      <nz-card nzTitle="Rules Selection" nzSize="small">
+        <app-view-rules-list
+          [selectedRules]="selectedRules"
+          (abapRuleChanged)="onAbapRuleChanges($event)">
+        </app-view-rules-list>
+      </nz-card>
+    </div>
+
+    <!-- Step: Advanced Config (last step) -->
+    <div *ngIf="(isTransportMode() && currentStep === 3) || (!isTransportMode() && currentStep === 2)">
+      <nz-card nzTitle="Advanced Configuration" nzSize="small">
+        <div nz-row [nzGutter]="16">
+          <div nz-col nzSpan="12">
+            <nz-form-item>
+              <nz-form-label>Max Findings</nz-form-label>
+              <nz-form-control nzExtra="Maximum number of findings to report (1-10000)">
+                <nz-input-number formControlName="maxFindings" [nzMin]="1" [nzMax]="10000" [nzStep]="100" style="width: 100%"></nz-input-number>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="12">
+            <nz-form-item>
+              <nz-form-label>Timeout (seconds)</nz-form-label>
+              <nz-form-control nzExtra="Maximum scan duration (60-7200 seconds)">
+                <nz-input-number formControlName="timeout" [nzMin]="60" [nzMax]="7200" [nzStep]="60" style="width: 100%"></nz-input-number>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-control>
+                <label nz-checkbox formControlName="parallelProcessing">Parallel Processing</label>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-control>
+                <label nz-checkbox formControlName="generateReport">Generate Report</label>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-control>
+                <label nz-checkbox formControlName="notifyOnCompletion">Notify on Completion</label>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+      </nz-card>
+    </div>
+
+  </form>
+
+  <!-- Step Navigation -->
+  <div class="step-actions">
+    <button nz-button nzType="default" (click)="navigateBack()">Cancel</button>
+    <div>
+      <button nz-button nzType="default" *ngIf="currentStep > 0" (click)="currentStep = currentStep - 1" class="step-btn">
+        <span nz-icon nzType="left"></span> Previous
+      </button>
+      <button nz-button nzType="primary"
+              *ngIf="(isTransportMode() && currentStep < 3) || (!isTransportMode() && currentStep < 2)"
+              (click)="currentStep = currentStep + 1" class="step-btn">
+        Next <span nz-icon nzType="right"></span>
+      </button>
+      <button nz-button nzType="primary" nzDanger
+              *ngIf="(isTransportMode() && currentStep === 3) || (!isTransportMode() && currentStep === 2)"
+              [nzLoading]="isSubmitting"
+              (click)="onSubmit()">
+        <span nz-icon nzType="thunderbolt"></span> Run Scan
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Scan Progress Modal -->
+<nz-modal
+  [(nzVisible)]="showProgressDialog"
+  nzTitle="Scan Progress"
+  [nzClosable]="false"
+  [nzMaskClosable]="false"
+  [nzWidth]="600"
+  [nzFooter]="progressFooter">
+
+  <ng-container *nzModalContent>
+    <div *ngIf="scanProgress; else progressLoading">
+      <!-- Phase -->
+      <nz-descriptions nzBordered nzSize="small" [nzColumn]="2" class="progress-desc">
+        <nz-descriptions-item nzTitle="Phase" [nzSpan]="2">
+          <nz-tag [nzColor]="scanProgress.isCompleted ? 'green' : scanProgress.isFailed ? 'red' : scanProgress.isCancelled ? 'orange' : 'processing'">
+            {{ getPhaseLabel(scanProgress.phase) }}
+          </nz-tag>
+        </nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Programs">
+          {{ scanProgress.scannedPrograms }} / {{ scanProgress.totalPrograms }}
+        </nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Rules Applied">
+          {{ scanProgress.appliedRules }} / {{ scanProgress.totalRules }}
+        </nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Violations Found">
+          <span nz-typography nzType="danger">{{ scanProgress.violationsFound }}</span>
+        </nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Elapsed Time">
+          {{ scanProgress.elapsedTime || '-' }}
+        </nz-descriptions-item>
+      </nz-descriptions>
+
+      <!-- Progress Bar -->
+      <div class="progress-bar-wrapper">
+        <nz-progress
+          [nzPercent]="scanProgress.progressPercent || 0"
+          [nzStatus]="scanProgress.isCompleted ? 'success' : scanProgress.isFailed ? 'exception' : 'active'"
+          nzStrokeLinecap="round">
+        </nz-progress>
+      </div>
+
+      <!-- Current Item -->
+      <div *ngIf="scanProgress.currentProgram" class="current-item">
+        <span nz-typography nzType="secondary">Current: </span>
+        <span>{{ scanProgress.currentProgram }}</span>
+        <span *ngIf="scanProgress.currentRule"> &mdash; {{ scanProgress.currentRule }}</span>
+      </div>
+
+      <!-- Error -->
+      <nz-alert *ngIf="scanProgress.isFailed && scanProgress.errorMessage"
+                nzType="error" [nzMessage]="scanProgress.errorMessage" nzShowIcon class="progress-error">
+      </nz-alert>
+    </div>
+
+    <ng-template #progressLoading>
+      <div class="progress-loading">
+        <nz-spin nzSimple nzSize="large"></nz-spin>
+        <p>Starting scan...</p>
+      </div>
+    </ng-template>
+  </ng-container>
+
+  <ng-template #progressFooter>
+    <button nz-button nzType="default" (click)="dismissProgress()"
+            *ngIf="scanProgress && scanProgress.isRunning">
+      Run in Background
+    </button>
+    <button nz-button nzType="default" nzDanger (click)="cancelScan()"
+            *ngIf="scanProgress && scanProgress.isRunning">
+      Cancel Scan
+    </button>
+    <button nz-button nzType="primary" (click)="viewScanResults()"
+            *ngIf="scanProgress && scanProgress.isCompleted">
+      View Results
+    </button>
+    <button nz-button nzType="default" (click)="showProgressDialog = false"
+            *ngIf="scanProgress && (scanProgress.isFailed || scanProgress.isCancelled)">
+      Close
+    </button>
+  </ng-template>
+</nz-modal>

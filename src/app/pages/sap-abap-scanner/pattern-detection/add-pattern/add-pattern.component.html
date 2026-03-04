@@ -1,0 +1,133 @@
+<form [formGroup]="form">
+  <!-- Row 1: Name and Active toggle -->
+  <div class="form-row">
+    <nz-form-item class="flex-1">
+      <nz-form-control nzErrorTip="Name is required">
+        <nz-input-group>
+          <input nz-input placeholder="Pattern Name" formControlName="name" />
+        </nz-input-group>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-switch formControlName="active" class="active-toggle"></nz-switch>
+    <span class="active-label">Active</span>
+  </div>
+
+  <!-- Row 2: Evaluation Strategy -->
+  <nz-form-item class="w-full" *ngIf="isMultiStage || formType === 'Edit'">
+    <nz-form-control>
+      <nz-select formControlName="evaluationStrategy" nzPlaceHolder="Evaluation Strategy">
+        <nz-option *ngFor="let strategy of evaluationStrategies"
+                   [nzValue]="strategy.value"
+                   [nzLabel]="strategy.label"></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <!-- Regex Patterns Section -->
+  <div class="patterns-section">
+    <div class="patterns-header">
+      <span class="patterns-title">Regex Patterns</span>
+      <button nz-button nzType="primary" nzShape="circle" nzSize="small"
+              type="button" (click)="addRegexPattern()"
+              nz-tooltip nzTooltipTitle="Add Pattern">
+        <span nz-icon nzType="plus" nzTheme="outline"></span>
+      </button>
+    </div>
+
+    <div formArrayName="regexPatterns" class="patterns-list">
+      <div *ngFor="let pattern of regexPatterns.controls; let i = index"
+           [formGroupName]="i"
+           class="pattern-card"
+           [class.has-error]="regexValidations[i] && !regexValidations[i].isValid">
+
+        <!-- Pattern Header -->
+        <div class="pattern-card-header">
+          <div class="pattern-info">
+            <span class="pattern-num">{{ i + 1 }}</span>
+            <nz-select *ngIf="isMultiStage"
+                       formControlName="patternStage"
+                       nzPlaceHolder="Stage"
+                       class="stage-select"
+                       nzSize="small">
+              <nz-option nzValue="MAIN" nzLabel="Main"></nz-option>
+              <nz-option nzValue="SECOND_STAGE" nzLabel="2nd Stage"></nz-option>
+              <nz-option nzValue="PARAM" nzLabel="Param"></nz-option>
+            </nz-select>
+            <nz-input-number *ngIf="isMultiStage"
+                             formControlName="contextCaptureGroup"
+                             [nzMin]="0" [nzMax]="9"
+                             nzSize="small"
+                             nzPlaceHolder="Grp"
+                             class="capture-input"
+                             nz-tooltip nzTooltipTitle="Capture group index (optional)">
+            </nz-input-number>
+          </div>
+          <div class="pattern-actions">
+            <span *ngIf="regexValidations[i]?.isValid && pattern.get('regexPattern')?.value"
+                  nz-icon nzType="check-circle" nzTheme="outline"
+                  class="status-icon valid"
+                  nz-tooltip nzTooltipTitle="Valid regex"></span>
+            <span *ngIf="regexValidations[i] && !regexValidations[i].isValid"
+                  nz-icon nzType="exclamation-circle" nzTheme="outline"
+                  class="status-icon invalid"
+                  nz-tooltip nzTooltipTitle="Invalid regex"></span>
+            <button nz-button nzType="text" nzShape="circle" nzSize="small"
+                    type="button"
+                    (click)="removeRegexPattern(i)"
+                    [disabled]="regexPatterns.length === 1"
+                    class="remove-btn"
+                    nz-tooltip nzTooltipTitle="Remove">
+              <span nz-icon nzType="close" nzTheme="outline"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Regex Input -->
+        <textarea nz-input
+                  [nzAutosize]="{ minRows: 2, maxRows: 5 }"
+                  class="regex-textarea"
+                  placeholder="Enter regex pattern..."
+                  formControlName="regexPattern"
+                  (blur)="validateRegexAtIndex(i)"
+                  (input)="validateRegexAtIndex(i)"
+                  spellcheck="false"></textarea>
+
+        <!-- Error Message -->
+        <nz-alert *ngIf="regexValidations[i] && !regexValidations[i].isValid"
+                  nzType="error"
+                  [nzMessage]="regexValidations[i].error!"
+                  nzShowIcon
+                  class="pattern-error-alert">
+        </nz-alert>
+      </div>
+    </div>
+
+    <!-- Strategy Warning -->
+    <nz-alert *ngIf="getStrategyValidationError()"
+              nzType="warning"
+              [nzMessage]="getStrategyValidationError()!"
+              nzShowIcon
+              class="strategy-warning">
+    </nz-alert>
+  </div>
+
+  <!-- Description -->
+  <nz-form-item class="w-full">
+    <nz-form-control>
+      <textarea nz-input placeholder="Description"
+                formControlName="description"
+                [nzAutosize]="{ minRows: 2, maxRows: 5 }"></textarea>
+    </nz-form-control>
+  </nz-form-item>
+</form>
+
+<!-- Footer -->
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="modal.close()" [disabled]="isSaving">Cancel</button>
+  <button nz-button nzType="primary"
+          (click)="save()"
+          [disabled]="!form.valid || !allPatternsValid || isSaving"
+          [nzLoading]="isSaving">
+    {{ isSaving ? 'Saving...' : 'Save' }}
+  </button>
+</div>

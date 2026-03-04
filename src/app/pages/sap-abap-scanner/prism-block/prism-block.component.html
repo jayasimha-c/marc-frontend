@@ -1,0 +1,9 @@
+<div class="code-block-container" [class.with-line-numbers]="lineNumbers">
+  <!-- Line Numbers Column -->
+  <div *ngIf="lineNumbers" class="line-numbers-col" #lineNumbersEl>
+    <span *ngFor="let num of lineNumbersList" class="line-number">{{ padLineNumber(num) }}</span>
+  </div>
+
+  <!-- Code Content -->
+  <pre class="code-content" #codeEl><code [innerHTML]="processedHtml"></code></pre>
+</div>

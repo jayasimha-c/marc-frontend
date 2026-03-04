@@ -1,0 +1,272 @@
+.import-wizard-page {
+  padding: 16px;
+
+  .wizard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .header-title {
+        font-size: 18px;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .steps-container {
+    margin-bottom: 24px;
+  }
+
+  .step-content {
+    margin-top: 16px;
+  }
+
+  .step-description {
+    color: rgba(0, 0, 0, 0.65);
+    margin-bottom: 16px;
+  }
+
+  // Drop Zone
+  .drop-zone {
+    border: 2px dashed #d9d9d9;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: pointer;
+
+    &.drag-over {
+      border-color: #1890ff;
+      background: #e6f7ff;
+    }
+
+    &.has-file {
+      border-style: solid;
+      border-color: #52c41a;
+      background: #f6ffed;
+      cursor: default;
+    }
+
+    .drop-zone-empty {
+      .upload-icon {
+        font-size: 48px;
+        color: #d9d9d9;
+        display: block;
+        margin-bottom: 16px;
+      }
+
+      .drop-text {
+        font-size: 16px;
+        color: rgba(0, 0, 0, 0.65);
+        margin-bottom: 4px;
+      }
+
+      .drop-subtext {
+        font-size: 13px;
+        color: rgba(0, 0, 0, 0.45);
+        margin-bottom: 12px;
+      }
+    }
+
+    .drop-zone-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+
+      .file-icon {
+        font-size: 32px;
+        color: #52c41a;
+      }
+
+      .file-details {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+
+        .file-name {
+          font-weight: 500;
+        }
+
+        .file-size {
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.45);
+        }
+      }
+    }
+  }
+
+  // Validation Results
+  .validation-results {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .msg-list {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .summary-stats {
+      display: flex;
+      gap: 32px;
+      padding: 16px;
+      background: #fafafa;
+      border-radius: 4px;
+    }
+
+    .preview-table {
+      margin-top: 8px;
+
+      h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+    }
+  }
+
+  // Import Modes
+  .import-modes {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .mode-card {
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &.selected {
+        border-color: #1890ff;
+        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+      }
+
+      &.danger-mode.selected {
+        border-color: #ff4d4f;
+        box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+      }
+
+      .mode-card-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+
+        .mode-icon {
+          font-size: 24px;
+          color: #1890ff;
+          flex-shrink: 0;
+          padding-top: 2px;
+        }
+
+        .mode-info {
+          flex: 1;
+
+          h4 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            font-weight: 600;
+          }
+
+          p {
+            margin: 0;
+            font-size: 13px;
+            color: rgba(0, 0, 0, 0.65);
+          }
+
+          .mode-warning {
+            color: #ff4d4f;
+            margin-top: 4px;
+            font-size: 12px;
+          }
+        }
+
+        .check-icon {
+          font-size: 20px;
+          color: #1890ff;
+          flex-shrink: 0;
+        }
+      }
+    }
+  }
+
+  .mode-summary {
+    margin-top: 12px;
+  }
+
+  // Loading
+  .loading-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 40px;
+  }
+
+  // Review Cards
+  .review-cards {
+    margin-bottom: 16px;
+  }
+
+  .overwrite-warning {
+    margin-top: 12px;
+  }
+
+  // Import Progress
+  .import-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 16px;
+    background: #fafafa;
+    border-radius: 4px;
+  }
+
+  // Import Complete
+  .import-complete {
+    .result-stats {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin: 16px 0;
+    }
+
+    .result-duration {
+      text-align: center;
+      color: rgba(0, 0, 0, 0.45);
+      font-size: 13px;
+    }
+
+    .result-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+  }
+
+  // Wizard Actions
+  .wizard-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+  }
+}

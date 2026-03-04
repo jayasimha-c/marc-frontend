@@ -1,0 +1,156 @@
+<div class="add-rule-page">
+  <nz-card>
+    <!-- Header -->
+    <div class="page-header">
+      <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()">
+        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+      </button>
+      <span class="page-title">{{ formType === 'edit' ? 'Edit' : 'Add' }} Rule</span>
+    </div>
+
+    <form [formGroup]="form">
+      <nz-steps [nzCurrent]="currentStep" class="steps-container">
+        <nz-step nzTitle="Rule Details"></nz-step>
+        <nz-step nzTitle="Detection Patterns"></nz-step>
+      </nz-steps>
+
+      <!-- Step 1: Rule Details -->
+      <div *ngIf="currentStep === 0" class="step-content">
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-label [nzSpan]="24" nzRequired>Rule Name</nz-form-label>
+              <nz-form-control [nzSpan]="24" nzErrorTip="Rule name is required">
+                <input nz-input formControlName="name" placeholder="Enter rule name" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-label [nzSpan]="24" nzRequired>Category</nz-form-label>
+              <nz-form-control [nzSpan]="24" nzErrorTip="Category is required">
+                <nz-select formControlName="categoryId" nzPlaceHolder="Select category" nzShowSearch nzAllowClear>
+                  <nz-option *ngFor="let cat of categoryList" [nzValue]="cat.id" [nzLabel]="cat.name"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-label [nzSpan]="24" nzRequired>Severity</nz-form-label>
+              <nz-form-control [nzSpan]="24" nzErrorTip="Severity is required">
+                <nz-select formControlName="severity" nzPlaceHolder="Select severity" nzShowSearch>
+                  <nz-option *ngFor="let sev of severityList" [nzValue]="sev.value" [nzLabel]="sev.label"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-label [nzSpan]="24">Active</nz-form-label>
+              <nz-form-control [nzSpan]="24">
+                <nz-switch formControlName="active"></nz-switch>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24">Description</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <textarea nz-input formControlName="description" placeholder="Enter description"
+                      [nzAutosize]="{ minRows: 3, maxRows: 5 }"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24">Recommendation</nz-form-label>
+          <nz-form-control [nzSpan]="24" nzExtra="Describe how developers should fix this vulnerability">
+            <textarea nz-input formControlName="recommendation" placeholder="Enter recommendation"
+                      [nzAutosize]="{ minRows: 3, maxRows: 5 }"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24">Fix Example (Code)</nz-form-label>
+          <nz-form-control [nzSpan]="24" nzExtra="Use &quot;* BAD:&quot; and &quot;* GOOD:&quot; markers for diff-style highlighting">
+            <textarea nz-input formControlName="fixExample" placeholder="Enter fix example code"
+                      [nzAutosize]="{ minRows: 4, maxRows: 8 }"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24">Reference URL</nz-form-label>
+          <nz-form-control [nzSpan]="24" nzExtra="Link to SAP documentation or best practices">
+            <nz-input-group [nzSuffix]="suffixIconLink">
+              <input nz-input formControlName="referenceUrl" placeholder="https://" type="url" />
+            </nz-input-group>
+            <ng-template #suffixIconLink>
+              <span nz-icon nzType="link" nzTheme="outline"></span>
+            </ng-template>
+          </nz-form-control>
+        </nz-form-item>
+
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="8">
+            <nz-form-item>
+              <nz-form-label [nzSpan]="24">Tags</nz-form-label>
+              <nz-form-control [nzSpan]="24">
+                <nz-select formControlName="tags" nzPlaceHolder="Select tags" nzMode="multiple" nzShowSearch>
+                  <nz-option *ngFor="let tag of tagList" [nzValue]="tag.id" [nzLabel]="tag.name"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <nz-form-item>
+              <nz-form-label [nzSpan]="24">CWE ID</nz-form-label>
+              <nz-form-control [nzSpan]="24">
+                <input nz-input formControlName="cweId" placeholder="e.g. CWE-89" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <nz-form-item>
+              <nz-form-label [nzSpan]="24" nzRequired>OWASP Category</nz-form-label>
+              <nz-form-control [nzSpan]="24" nzErrorTip="OWASP Category is required">
+                <nz-select formControlName="owaspCategoryId" nzPlaceHolder="Select OWASP category" nzShowSearch nzAllowClear>
+                  <nz-option *ngFor="let owasp of owaspCategoryList" [nzValue]="owasp.id"
+                             [nzLabel]="owasp.code + ' ' + owasp.title"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button nz-button nzType="primary" (click)="currentStep = 1">
+            Next
+            <span nz-icon nzType="arrow-right" nzTheme="outline"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Detection Patterns -->
+      <div *ngIf="currentStep === 1" class="step-content">
+        <app-view-pattern-list
+          [selectedPatterns]="selectedPatterns"
+          (abapPatternChanged)="onPatternsChanged($event)">
+        </app-view-pattern-list>
+
+        <div class="step-actions">
+          <button nz-button nzType="default" (click)="currentStep = 0">
+            <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+            Back
+          </button>
+          <button nz-button nzType="primary" (click)="onSave()" [nzLoading]="isSaving">
+            Save
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+</div>

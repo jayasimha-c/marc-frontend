@@ -1,0 +1,18 @@
+<div class="code-scan-list-page">
+  <app-advanced-table
+    title="Code Scan List"
+    [columns]="columns"
+    [data]="data"
+    [loading]="loading"
+    [serverSide]="true"
+    [totalRecords]="totalRecords"
+    [actions]="actions"
+    [showSearch]="true"
+    [showRefresh]="true"
+    [maxVisibleActions]="3"
+    [defaultPageSize]="20"
+    tableLayout="fixed"
+    (queryParamsChange)="onQueryParamsChange($event)"
+    (rowClick)="onRowClick($event)">
+  </app-advanced-table>
+</div>

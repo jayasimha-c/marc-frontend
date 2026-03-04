@@ -434,10 +434,16 @@ export class NavigationService {
         title: 'ABAP Scanner',
         icon: 'scan',
         type: 'submenu',
-        authorities: ['OP_ABAP_SCANNER'],
         children: [
+          { id: 'abap-dashboard', title: 'Dashboard', icon: 'dashboard', link: '/sap-abap-scanner/dashboard', type: 'item' },
+          { id: 'detection-patterns', title: 'Detection Patterns', icon: 'radar-chart', link: '/sap-abap-scanner/detection-patterns', type: 'item' },
+          { id: 'rules-management', title: 'Rules Management', icon: 'file-text', link: '/sap-abap-scanner/rules-management', type: 'item' },
           { id: 'code-scan', title: 'Code Scan', icon: 'code', link: '/sap-abap-scanner/code-scan', type: 'item' },
+          { id: 'scheduled-scans', title: 'Scheduled Scans', icon: 'schedule', link: '/sap-abap-scanner/scheduled-scans', type: 'item' },
           { id: 'scan-results', title: 'Scan Results', icon: 'file-done', link: '/sap-abap-scanner/scan-results', type: 'item' },
+          { id: 'scan-history', title: 'Scan History', icon: 'history', link: '/sap-abap-scanner/scan-history', type: 'item' },
+          { id: 'abap-import', title: 'Import Data', icon: 'import', link: '/sap-abap-scanner/import', type: 'item' },
+          { id: 'whitelist-management', title: 'Whitelist Management', icon: 'stop', link: '/sap-abap-scanner/whitelist-management', type: 'item' },
         ],
       },
       {

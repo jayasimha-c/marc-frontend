@@ -1,0 +1,22 @@
+<app-advanced-table
+  title="Detection Patterns"
+  [columns]="columns"
+  [data]="data"
+  [loading]="false"
+  [serverSide]="false"
+  [totalRecords]="data.length"
+  [actions]="actions"
+  [showSearch]="false"
+  [showRefresh]="false"
+  [maxVisibleActions]="2"
+  tableLayout="fixed"
+  (rowClick)="onRowClick($event)">
+
+  <ng-template #customStatusTemplate let-row let-column="column">
+    <ng-container [ngSwitch]="column.field">
+      <ng-container *ngSwitchCase="'regexPatterns'">
+        <nz-tag>{{ formatPatternCount(row.regexPatterns) }}</nz-tag>
+      </ng-container>
+    </ng-container>
+  </ng-template>
+</app-advanced-table>

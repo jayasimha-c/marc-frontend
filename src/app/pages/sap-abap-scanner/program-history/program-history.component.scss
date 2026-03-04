@@ -1,0 +1,81 @@
+.program-history-page {
+  padding: 16px;
+}
+
+// ==================== Page Header ====================
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// ==================== Severity Columns ====================
+.severity-col {
+  text-align: center;
+}
+
+.severity-critical {
+  color: #cf1322;
+  font-weight: 600;
+}
+
+.severity-high {
+  color: #fa541c;
+  font-weight: 600;
+}
+
+.severity-medium {
+  color: #fa8c16;
+  font-weight: 600;
+}
+
+.severity-low {
+  color: #52c41a;
+  font-weight: 600;
+}
+
+// ==================== Pagination ====================
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 4px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 12px;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: #888;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+}
+
+// ==================== Responsive ====================
+@media (max-width: 768px) {
+  .pagination-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

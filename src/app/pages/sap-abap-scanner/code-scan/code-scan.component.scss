@@ -1,0 +1,99 @@
+.code-scan-page {
+  padding: 0 16px 16px;
+}
+
+.scan-steps {
+  margin-bottom: 16px;
+}
+
+.section-card {
+  margin-top: 16px;
+}
+
+.browse-btn {
+  margin-top: 8px;
+}
+
+// File Upload
+.upload-area {
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.3s;
+
+  &:hover,
+  &.drag-over {
+    border-color: #1890ff;
+  }
+}
+
+.upload-icon {
+  font-size: 48px;
+  color: #1890ff;
+}
+
+.upload-text {
+  margin: 8px 0 4px;
+  font-size: 14px;
+}
+
+.upload-hint {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.file-list {
+  margin-top: 16px;
+}
+
+// Step Navigation
+.step-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.step-btn {
+  margin-left: 8px;
+}
+
+// Transport
+.transport-alert {
+  margin-bottom: 16px;
+}
+
+// Progress Dialog
+.progress-desc {
+  margin-bottom: 16px;
+}
+
+.progress-bar-wrapper {
+  margin: 16px 0;
+}
+
+.current-item {
+  padding: 8px 12px;
+  background: #fafafa;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.progress-error {
+  margin-top: 12px;
+}
+
+.progress-loading {
+  text-align: center;
+  padding: 40px 0;
+
+  p {
+    margin-top: 16px;
+    color: rgba(0, 0, 0, 0.45);
+  }
+}

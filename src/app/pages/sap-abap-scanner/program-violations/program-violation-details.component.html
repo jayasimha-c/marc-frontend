@@ -1,0 +1,321 @@
+<div class="program-violations-page">
+  <!-- Header -->
+  <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+    <button nz-button nzType="text" nzShape="circle" (click)="back()">
+      <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+    </button>
+    <span style="font-size: 18px; font-weight: 600;">Program Violation Details</span>
+    <div style="margin-left: auto; display: flex; gap: 8px;">
+      <button nz-button nzType="default" (click)="viewProgramScanHistory()">
+        <span nz-icon nzType="history" nzTheme="outline"></span> History
+      </button>
+      <button nz-button nz-dropdown [nzDropdownMenu]="actionsMenu">
+        <span nz-icon nzType="more" nzTheme="outline"></span> Actions <span nz-icon nzType="down"></span>
+      </button>
+      <nz-dropdown-menu #actionsMenu="nzDropdownMenu">
+        <ul nz-menu>
+          <li nz-menu-item (click)="toggleRuleSelectionMode()" [nzDisabled]="whitelistProcessing">
+            <span nz-icon nzType="check-square" nzTheme="outline"></span> Select Rules
+          </li>
+          <li nz-menu-item (click)="whitelistAllRules()" [nzDisabled]="whitelistProcessing">
+            <span nz-icon nzType="stop" nzTheme="outline"></span> Whitelist All
+          </li>
+          <li nz-menu-divider></li>
+          <li nz-menu-item *ngIf="!hasIssue()" (click)="createIssueForProgram()">
+            <span nz-icon nzType="plus-circle" nzTheme="outline"></span> Create Issue
+          </li>
+          <li nz-menu-item *ngIf="hasIssue() && programDetails?.issueLink" (click)="openIssueLink()">
+            <span nz-icon nzType="link" nzTheme="outline"></span> {{ getIssueLabel() }}
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+    </div>
+  </div>
+
+  <nz-spin [nzSpinning]="loading">
+    <!-- Statistics Cards -->
+    <div *ngIf="programDetails" nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+      <div nz-col nzXs="24" nzSm="12" nzMd="6">
+        <nz-card nzSize="small">
+          <nz-statistic nzTitle="Total Violations" [nzValue]="programDetails.totalViolations || 0"
+            [nzValueStyle]="{ color: '#ff4d4f' }" [nzPrefix]="violIcon"></nz-statistic>
+          <ng-template #violIcon><span nz-icon nzType="bug" nzTheme="outline"></span></ng-template>
+        </nz-card>
+      </div>
+      <div nz-col nzXs="24" nzSm="12" nzMd="6">
+        <nz-card nzSize="small">
+          <nz-statistic nzTitle="Rules Violated" [nzValue]="programDetails.rulesViolated || 0"
+            [nzValueStyle]="{ color: '#fa8c16' }" [nzPrefix]="ruleIcon"></nz-statistic>
+          <ng-template #ruleIcon><span nz-icon nzType="audit" nzTheme="outline"></span></ng-template>
+        </nz-card>
+      </div>
+      <div nz-col nzXs="24" nzSm="12" nzMd="6">
+        <nz-card nzSize="small">
+          <nz-statistic nzTitle="Severity" [nzValue]="programDetails.highestSeverity || 'N/A'"
+            [nzValueStyle]="{ color: programDetails.highestSeverity === 'HIGH' ? '#cf1322' : '#fa8c16' }"
+            [nzPrefix]="sevIcon"></nz-statistic>
+          <ng-template #sevIcon><span nz-icon nzType="exclamation-circle" nzTheme="outline"></span></ng-template>
+        </nz-card>
+      </div>
+      <div nz-col nzXs="24" nzSm="12" nzMd="6">
+        <nz-card nzSize="small">
+          <nz-statistic nzTitle="Last Scanned" [nzValue]="formatDate(programDetails.lastScanned)"
+            [nzPrefix]="clockIcon"></nz-statistic>
+          <ng-template #clockIcon><span nz-icon nzType="clock-circle" nzTheme="outline"></span></ng-template>
+        </nz-card>
+      </div>
+    </div>
+
+    <!-- Program Info Cards -->
+    <div *ngIf="programDetails" nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+      <div nz-col nzXs="24" nzMd="12">
+        <nz-card nzSize="small" nzTitle="Program Information" [nzExtra]="viewSourceTpl">
+          <ng-template #viewSourceTpl>
+            <button nz-button nzSize="small" nzType="text" nz-tooltip nzTooltipTitle="View source code"
+                    (click)="onViewProgram(programDetails.programId, programDetails.sapSystemId)">
+              <span nz-icon nzType="eye" nzTheme="outline"></span>
+            </button>
+          </ng-template>
+          <nz-descriptions nzSize="small" [nzColumn]="1" nzBordered>
+            <nz-descriptions-item nzTitle="Program Name">{{ programDetails.programName }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Program Type">
+              {{ formatProgramType(programDetails.programType) }}
+              <nz-tag *ngIf="isCdsType(programDetails.programType)" nzColor="purple" style="margin-left: 8px;">CDS</nz-tag>
+            </nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Package">{{ programDetails.progPackage || 'N/A' }}</nz-descriptions-item>
+          </nz-descriptions>
+        </nz-card>
+      </div>
+      <div nz-col nzXs="24" nzMd="12">
+        <nz-card nzSize="small" nzTitle="System & Metadata">
+          <nz-descriptions nzSize="small" [nzColumn]="1" nzBordered>
+            <nz-descriptions-item nzTitle="SAP System">{{ programDetails.systemName || 'Unknown' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Changed By">{{ programDetails.changedBy || 'Unknown' }}</nz-descriptions-item>
+            <nz-descriptions-item nzTitle="Changed On">{{ formatDate(programDetails.changedOn) }}</nz-descriptions-item>
+          </nz-descriptions>
+        </nz-card>
+      </div>
+    </div>
+
+    <!-- Split Panel: Violations + Findings -->
+    <div class="split-container">
+      <!-- LEFT PANEL: Violations List -->
+      <div class="panel left-panel">
+        <div class="panel-header">
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <span style="font-weight: 600;">Violations</span>
+            <div style="display: flex; align-items: center; gap: 8px;" *ngIf="violationDetails.length > 0">
+              <nz-select [(ngModel)]="severityFilter" nzSize="small" style="width: 110px;"
+                         (ngModelChange)="applyViolationFilters()">
+                <nz-option nzValue="ALL" nzLabel="All"></nz-option>
+                <nz-option nzValue="CRITICAL" nzLabel="Critical"></nz-option>
+                <nz-option nzValue="HIGH" nzLabel="High"></nz-option>
+                <nz-option nzValue="MEDIUM" nzLabel="Medium"></nz-option>
+                <nz-option nzValue="LOW" nzLabel="Low"></nz-option>
+              </nz-select>
+            </div>
+          </div>
+
+          <!-- Selection Mode Bar -->
+          <div *ngIf="showRuleSelection" style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0;">
+            <span class="selection-count-badge">{{ selectedRuleIds.size }}</span>
+            <div style="display: flex; gap: 4px;">
+              <button nz-button nzSize="small" nzType="text" (click)="selectAllRules()" nz-tooltip nzTooltipTitle="Select all">
+                <span nz-icon nzType="check-square" nzTheme="outline"></span>
+              </button>
+              <button nz-button nzSize="small" nzType="text" (click)="clearSelectedRules()" nz-tooltip nzTooltipTitle="Clear">
+                <span nz-icon nzType="minus-square" nzTheme="outline"></span>
+              </button>
+              <button nz-button nzSize="small" nzType="text" nzDanger (click)="whitelistSelectedRules()"
+                      [disabled]="selectedRuleIds.size === 0" nz-tooltip [nzTooltipTitle]="'Whitelist ' + selectedRuleIds.size">
+                <span nz-icon nzType="stop" nzTheme="outline"></span>
+              </button>
+              <button nz-button nzSize="small" nzType="text" (click)="toggleRuleSelectionMode()" nz-tooltip nzTooltipTitle="Exit selection">
+                <span nz-icon nzType="close" nzTheme="outline"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Violations List -->
+        <div class="panel-content">
+          <div *ngIf="loadingViolations" class="empty-state">
+            <nz-spin nzSimple></nz-spin>
+            <p style="margin-top: 12px; color: #888; font-size: 13px;">Loading...</p>
+          </div>
+
+          <div *ngIf="!loadingViolations">
+            <div *ngFor="let violation of violationDetails"
+                 class="violation-item"
+                 [class.active]="selectedViolation?.ruleId === violation.ruleId"
+                 (click)="selectViolation(violation)">
+              <div class="severity-indicator"
+                   [style.background-color]="violation.severity === 'HIGH' || violation.severity === 'CRITICAL' ? '#ff4d4f' : violation.severity === 'MEDIUM' ? '#faad14' : '#1890ff'">
+              </div>
+              <div class="violation-item-content">
+                <label nz-checkbox *ngIf="showRuleSelection"
+                       [ngModel]="isRuleSelected(violation.ruleId)"
+                       (ngModelChange)="toggleRuleSelection(violation.ruleId)"
+                       (click)="$event.stopPropagation()"
+                       style="margin-right: 8px;">
+                </label>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    {{ violation.ruleName }}
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                    <nz-tag [nzColor]="getSeverityColor(violation.severity)" style="margin: 0; font-size: 10px;">
+                      {{ violation.severity }}
+                    </nz-tag>
+                    <span style="font-size: 12px; color: #888;">{{ violation.category }}</span>
+                    <span style="font-size: 12px; color: #aaa;">{{ violation.violationCount }}</span>
+                  </div>
+                </div>
+                <span *ngIf="violation.whiteListed" style="font-size: 10px; color: #aaa; font-style: italic;">Ignored</span>
+              </div>
+            </div>
+
+            <div *ngIf="violationDetails.length === 0 && !error" class="empty-state">
+              <span nz-icon nzType="check-circle" nzTheme="outline" style="font-size: 40px; color: #52c41a;"></span>
+              <p style="margin-top: 8px; color: #888; font-size: 13px;">No violations found</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Violations Pagination -->
+        <div *ngIf="violationsPagedResponse && violationsPagedResponse.totalElements > 0" class="panel-footer">
+          <span style="font-size: 12px; color: #888;">
+            {{ (violationPagination.pageIndex * violationPagination.pageSize) + 1 }}-{{ Math.min((violationPagination.pageIndex + 1) * violationPagination.pageSize, violationsPagedResponse.totalElements) }}
+            of {{ violationsPagedResponse.totalElements }}
+          </span>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <nz-select [(ngModel)]="violationPagination.pageSize" nzSize="small" style="width: 60px;"
+                       (ngModelChange)="onViolationPageSizeChange($event)">
+              <nz-option [nzValue]="5" nzLabel="5"></nz-option>
+              <nz-option [nzValue]="10" nzLabel="10"></nz-option>
+              <nz-option [nzValue]="20" nzLabel="20"></nz-option>
+            </nz-select>
+            <button nz-button nzSize="small" nzType="text" nzShape="circle"
+                    [disabled]="violationPagination.pageIndex === 0"
+                    (click)="onViolationPageChange({pageIndex: violationPagination.pageIndex - 1, pageSize: violationPagination.pageSize})">
+              <span nz-icon nzType="left" nzTheme="outline"></span>
+            </button>
+            <span style="font-size: 12px; color: #888; min-width: 40px; text-align: center;">
+              {{ violationPagination.pageIndex + 1 }}/{{ Math.ceil(violationsPagedResponse.totalElements / violationPagination.pageSize) }}
+            </span>
+            <button nz-button nzSize="small" nzType="text" nzShape="circle"
+                    [disabled]="violationPagination.pageIndex >= Math.ceil(violationsPagedResponse.totalElements / violationPagination.pageSize) - 1"
+                    (click)="onViolationPageChange({pageIndex: violationPagination.pageIndex + 1, pageSize: violationPagination.pageSize})">
+              <span nz-icon nzType="right" nzTheme="outline"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL: Findings -->
+      <div class="panel right-panel">
+        <!-- Empty State -->
+        <div *ngIf="!selectedViolation && !error" class="empty-state" style="flex: 1;">
+          <span nz-icon nzType="audit" nzTheme="outline" style="font-size: 48px; color: #d9d9d9;"></span>
+          <p style="margin-top: 12px; font-weight: 500; color: #888;">Select a violation</p>
+          <p style="font-size: 13px; color: #aaa;">Choose a violation from the list to view its details</p>
+        </div>
+
+        <!-- Selected Violation -->
+        <ng-container *ngIf="selectedViolation">
+          <!-- Detail Header -->
+          <div class="panel-header" style="padding: 16px;">
+            <p style="font-size: 14px; line-height: 1.6; margin: 0;">{{ selectedViolation.ruleDescription }}</p>
+            <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+              <button *ngIf="!selectedViolation.whiteListed" nz-button nzSize="small"
+                      (click)="whitelistSingleRule(selectedViolation.ruleId, selectedViolation.ruleName)"
+                      [disabled]="whitelistProcessing">
+                <span nz-icon nzType="stop" nzTheme="outline"></span> Ignore Rule
+              </button>
+              <nz-tag *ngIf="selectedViolation.whiteListed" nzColor="default">Ignored</nz-tag>
+            </div>
+          </div>
+
+          <!-- Occurrences Header -->
+          <div class="occurrences-header">
+            <span style="font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
+              Occurrences
+              <span style="color: #aaa; margin-left: 4px;">({{ getFindingsTotalCount(selectedViolation) }})</span>
+            </span>
+          </div>
+
+          <!-- Findings Content -->
+          <div class="panel-content">
+            <div *ngIf="selectedViolation.findingsLoading" class="empty-state">
+              <nz-spin nzSimple></nz-spin>
+              <p style="margin-top: 8px; color: #888; font-size: 13px;">Loading findings...</p>
+            </div>
+
+            <div *ngIf="!selectedViolation.findingsLoading">
+              <ng-container *ngFor="let group of getGroupedFindings(selectedViolation) | keyvalue">
+                <div *ngFor="let finding of group.value" class="finding-item">
+                  <!-- Location -->
+                  <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                    <span nz-icon nzType="code" nzTheme="outline" style="color: #aaa;"></span>
+                    <span class="text-code" style="font-size: 12px; font-weight: 500;">Line {{ finding.lineNumber }}</span>
+                    <span style="font-size: 12px; color: #aaa;">in</span>
+                    <span class="pattern-name">{{ finding.pattern?.patternName }}</span>
+                  </div>
+
+                  <!-- Code Block -->
+                  <div class="code-block-wrapper">
+                    <div class="code-line-number">{{ finding.lineNumber }}</div>
+                    <pre class="code-snippet"><code>{{ finding.matchedCodeSnippet }}</code></pre>
+                  </div>
+
+                  <!-- Pattern Description -->
+                  <p *ngIf="finding.pattern?.description" class="finding-description">
+                    {{ finding.pattern.description }}
+                  </p>
+                </div>
+              </ng-container>
+
+              <div *ngIf="getFindingsTotalCount(selectedViolation) === 0" class="empty-state" style="padding: 32px 0;">
+                <p style="color: #888; font-size: 13px;">No occurrences found</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Findings Pagination -->
+          <div *ngIf="shouldShowFindingsPagination(selectedViolation)" class="panel-footer">
+            <span style="font-size: 12px; color: #888;">
+              {{ getFindingsPageInfo(selectedViolation).start }}-{{ getFindingsPageInfo(selectedViolation).end }}
+              of {{ getFindingsPageInfo(selectedViolation).total }}
+            </span>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <button nz-button nzSize="small" nzType="text" nzShape="circle"
+                      [disabled]="(selectedViolation.findingsCurrentPage || 0) === 0"
+                      (click)="changeFindingsPage(selectedViolation, (selectedViolation.findingsCurrentPage || 0) - 1)">
+                <span nz-icon nzType="left" nzTheme="outline"></span>
+              </button>
+              <span style="font-size: 12px; color: #888; min-width: 40px; text-align: center;">
+                {{ (selectedViolation.findingsCurrentPage || 0) + 1 }}/{{ Math.ceil(getFindingsTotalCount(selectedViolation) / (selectedViolation.findingsPageSize || DEFAULT_FINDINGS_PAGE_SIZE)) }}
+              </span>
+              <button nz-button nzSize="small" nzType="text" nzShape="circle"
+                      [disabled]="(selectedViolation.findingsCurrentPage || 0) >= Math.ceil(getFindingsTotalCount(selectedViolation) / (selectedViolation.findingsPageSize || DEFAULT_FINDINGS_PAGE_SIZE)) - 1"
+                      (click)="changeFindingsPage(selectedViolation, (selectedViolation.findingsCurrentPage || 0) + 1)">
+                <span nz-icon nzType="right" nzTheme="outline"></span>
+              </button>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Error State -->
+        <div *ngIf="error" style="padding: 16px;">
+          <nz-alert nzType="error" nzShowIcon [nzMessage]="error"
+            [nzDescription]="errorActions" nzCloseable></nz-alert>
+          <ng-template #errorActions>
+            <button nz-button nzType="default" nzDanger nzSize="small" (click)="loadAllData()" style="margin-top: 8px;">
+              <span nz-icon nzType="reload" nzTheme="outline"></span> Try Again
+            </button>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </nz-spin>
+</div>

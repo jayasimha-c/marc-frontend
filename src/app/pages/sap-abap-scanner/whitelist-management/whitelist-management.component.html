@@ -1,0 +1,212 @@
+<nz-page-header nzTitle="Whitelist Management">
+  <nz-page-header-extra>
+    <button nz-button (click)="loadWhitelist(); loadWhitelistCount()">
+      <span nz-icon nzType="reload"></span> Refresh
+    </button>
+  </nz-page-header-extra>
+</nz-page-header>
+
+<!-- Stats -->
+<div nz-row [nzGutter]="[16, 16]" style="margin-bottom: 16px;">
+  <div nz-col nzXs="12" nzSm="12" nzMd="6">
+    <nz-card nzSize="small">
+      <nz-statistic nzTitle="Total Whitelists" [nzValue]="whiteListCount?.total || 0"
+                    [nzPrefix]="totalIcon" [nzValueStyle]="{ color: '#1890ff' }"></nz-statistic>
+      <ng-template #totalIcon><span nz-icon nzType="unordered-list" nzTheme="outline"></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col nzXs="12" nzSm="12" nzMd="6">
+    <nz-card nzSize="small">
+      <nz-statistic nzTitle="Active" [nzValue]="whiteListCount?.active || 0"
+                    [nzPrefix]="activeIcon" [nzValueStyle]="{ color: '#52c41a' }"></nz-statistic>
+      <ng-template #activeIcon><span nz-icon nzType="check-circle" nzTheme="outline"></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col nzXs="12" nzSm="12" nzMd="6">
+    <nz-card nzSize="small">
+      <nz-statistic nzTitle="Disabled" [nzValue]="whiteListCount?.inactive || 0"
+                    [nzPrefix]="inactiveIcon" [nzValueStyle]="{ color: '#ff4d4f' }"></nz-statistic>
+      <ng-template #inactiveIcon><span nz-icon nzType="stop" nzTheme="outline"></span></ng-template>
+    </nz-card>
+  </div>
+  <div nz-col nzXs="12" nzSm="12" nzMd="6">
+    <nz-card nzSize="small">
+      <nz-statistic nzTitle="Recently Modified" [nzValue]="whiteListCount?.recent || 0"
+                    [nzPrefix]="recentIcon" [nzValueStyle]="{ color: '#faad14' }"></nz-statistic>
+      <ng-template #recentIcon><span nz-icon nzType="clock-circle" nzTheme="outline"></span></ng-template>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Whitelist Entries -->
+<nz-card nzSize="small" nzTitle="Whitelist Entries" [nzExtra]="whitelistExtra" style="margin-bottom: 16px;">
+  <ng-template #whitelistExtra>
+    <nz-space [nzSize]="8">
+      <nz-input-group *nzSpaceItem nzSearch nzSize="small" [nzSuffix]="searchIcon" style="width: 200px;">
+        <input nz-input nzSize="small" placeholder="Search..." [formControl]="filterForm.controls['search']" />
+      </nz-input-group>
+      <ng-template #searchIcon><span nz-icon nzType="search"></span></ng-template>
+
+      <nz-select *nzSpaceItem nzSize="small" [formControl]="filterForm.controls['type']"
+                 nzPlaceHolder="All Types" nzAllowClear style="width: 120px;">
+        <nz-option *ngFor="let t of whitelistTypeOptions" [nzValue]="t.value" [nzLabel]="t.label"></nz-option>
+      </nz-select>
+
+      <nz-select *nzSpaceItem nzSize="small" [formControl]="filterForm.controls['isActive']"
+                 nzPlaceHolder="All Status" nzAllowClear style="width: 120px;">
+        <nz-option [nzValue]="true" nzLabel="Active"></nz-option>
+        <nz-option [nzValue]="false" nzLabel="Inactive"></nz-option>
+      </nz-select>
+
+      <nz-divider *nzSpaceItem nzType="vertical"></nz-divider>
+
+      <button *nzSpaceItem nz-button nzSize="small" nzType="primary" (click)="openAddModal()">
+        <span nz-icon nzType="plus"></span> Add
+      </button>
+      <button *nzSpaceItem nz-button nzSize="small" (click)="openEditModal()" [disabled]="!selectedRow">
+        <span nz-icon nzType="edit"></span> Edit
+      </button>
+      <button *nzSpaceItem nz-button nzSize="small" nzDanger (click)="deleteWhitelist()" [disabled]="!selectedRow">
+        <span nz-icon nzType="delete"></span> Delete
+      </button>
+    </nz-space>
+  </ng-template>
+
+  <nz-table #whitelistTable
+            [nzData]="whitelistData"
+            nzSize="small"
+            [nzShowPagination]="whitelistData.length > 10"
+            [nzPageSize]="10"
+            nzTableLayout="fixed">
+    <thead>
+      <tr>
+        <th nzWidth="40px"></th>
+        <th>Name</th>
+        <th nzWidth="100px">Type</th>
+        <th nzWidth="120px">Field</th>
+        <th nzWidth="80px">Active</th>
+        <th nzWidth="160px">Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of whitelistTable.data"
+          [class.ant-table-row-selected]="selectedRow === row"
+          (click)="onWhitelistRowClick(row)"
+          style="cursor: pointer;">
+        <td>
+          <label nz-radio [ngModel]="selectedRow === row" (ngModelChange)="onWhitelistRowClick(row)"></label>
+        </td>
+        <td>{{ row.name }}</td>
+        <td>
+          <nz-tag>{{ row.type }}</nz-tag>
+        </td>
+        <td>{{ row.field }}</td>
+        <td>
+          <nz-badge [nzStatus]="row.active ? 'success' : 'default'" [nzText]="row.active ? 'Active' : 'Inactive'"></nz-badge>
+        </td>
+        <td>{{ row.createdDate || row.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- Violation Whitelists -->
+<nz-card nzSize="small" nzTitle="Violation Whitelists" [nzExtra]="violationExtra">
+  <ng-template #violationExtra>
+    <button nz-button nzSize="small" [disabled]="!violationSelectedRow"
+            (click)="openViolationDetail()">
+      <span nz-icon nzType="eye"></span> View Details
+    </button>
+  </ng-template>
+
+  <app-advanced-table
+    [columns]="violationColumns"
+    [data]="violationData"
+    [loading]="violationLoading"
+    [serverSide]="true"
+    [totalRecords]="violationTotal"
+    [showSearch]="true"
+    [defaultPageSize]="20"
+    tableLayout="fixed"
+    (queryParamsChange)="onViolationQueryChange($event)"
+    (rowClick)="onViolationRowClick($event)">
+  </app-advanced-table>
+</nz-card>
+
+<!-- Add/Edit Modal -->
+<nz-modal
+  [(nzVisible)]="showAddModal"
+  [nzTitle]="editingWhitelist ? 'Edit Whitelist Entry' : 'Add Whitelist Entry'"
+  [nzFooter]="modalFooter"
+  (nzOnCancel)="showAddModal = false"
+  [nzWidth]="520">
+
+  <ng-container *nzModalContent>
+    <form [formGroup]="whitelistForm" nz-form nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>Name</nz-form-label>
+        <nz-form-control nzErrorTip="Name is required">
+          <input nz-input formControlName="name" placeholder="Enter whitelist name" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <div nz-row [nzGutter]="16">
+        <div nz-col nzSpan="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Type</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="type">
+                <nz-option *ngFor="let t of whitelistTypeOptions" [nzValue]="t.value" [nzLabel]="t.label"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col nzSpan="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>Field</nz-form-label>
+            <nz-form-control>
+              <nz-select formControlName="field">
+                <nz-option *ngFor="let f of whitelistFieldOptions" [nzValue]="f.value" [nzLabel]="f.label"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <nz-form-item *ngIf="whitelistForm.get('type')?.value === 'PATTERN'">
+        <nz-form-label>Pattern</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="pattern" placeholder="Enter regex pattern"
+            [nzAutosize]="{ minRows: 3, maxRows: 5 }"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item *ngIf="whitelistForm.get('type')?.value === 'LIST'">
+        <nz-form-label>Values</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="valueList" placeholder="Enter values (one per line)"
+            [nzAutosize]="{ minRows: 3, maxRows: 5 }"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>Description</nz-form-label>
+        <nz-form-control>
+          <textarea nz-input formControlName="description" placeholder="Enter description"
+            [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-control>
+          <label nz-checkbox formControlName="active">Active</label>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+
+  <ng-template #modalFooter>
+    <button nz-button (click)="showAddModal = false">Cancel</button>
+    <button nz-button nzType="primary" (click)="saveWhitelist()">Save</button>
+  </ng-template>
+</nz-modal>

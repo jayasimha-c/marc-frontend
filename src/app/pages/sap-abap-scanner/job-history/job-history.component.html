@@ -1,0 +1,177 @@
+<div class="job-history-page">
+  <!-- Header -->
+  <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+    <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()">
+      <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+    </button>
+    <span style="font-size: 18px; font-weight: 600;">ABAP Scan Job History</span>
+  </div>
+
+  <!-- Table -->
+  <app-advanced-table
+    title="Job History"
+    [columns]="columns"
+    [data]="data"
+    [loading]="loading"
+    [serverSide]="true"
+    [totalRecords]="totalRecords"
+    [actions]="actions"
+    [showSearch]="true"
+    [showRefresh]="true"
+    [maxVisibleActions]="2"
+    [defaultPageSize]="20"
+    tableLayout="fixed"
+    (queryParamsChange)="onQueryParamsChange($event)"
+    (rowClick)="onRowClick($event)">
+  </app-advanced-table>
+</div>
+
+<!-- Progress Modal -->
+<nz-modal
+  [(nzVisible)]="showProgressModal"
+  nzTitle="Scan Progress"
+  [nzFooter]="progressFooter"
+  (nzOnCancel)="closeProgressModal()"
+  [nzWidth]="500">
+
+  <!-- Loading -->
+  <ng-container *nzModalContent>
+    <div *ngIf="!scanProgress && !noProgressFound" style="text-align: center; padding: 40px 0;">
+      <nz-spin nzSimple></nz-spin>
+      <p style="margin-top: 16px; color: #888;">Loading progress...</p>
+    </div>
+
+    <!-- No progress found -->
+    <div *ngIf="noProgressFound" style="text-align: center; padding: 40px 0;">
+      <span nz-icon nzType="info-circle" nzTheme="outline" style="font-size: 48px; color: #ccc;"></span>
+      <p style="margin-top: 16px; color: #888;">No progress data available for this job.</p>
+    </div>
+
+    <!-- Progress content -->
+    <div *ngIf="scanProgress">
+      <!-- Phase -->
+      <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+        <nz-tag [nzColor]="scanProgress.phase === 'COMPLETED' ? 'success' :
+                           scanProgress.phase === 'FAILED' ? 'error' :
+                           scanProgress.phase === 'CANCELLED' ? 'warning' : 'processing'">
+          {{ scanProgress.phase }}
+        </nz-tag>
+      </div>
+
+      <!-- Progress bar -->
+      <nz-progress
+        [nzPercent]="scanProgress.progressPercent || 0"
+        [nzStatus]="getProgressStatus()">
+      </nz-progress>
+
+      <div style="display: flex; justify-content: space-between; margin: 8px 0 16px; color: #888; font-size: 13px;">
+        <span>Progress: {{ scanProgress.progressPercent || 0 }}%</span>
+        <span>Elapsed: {{ formatElapsedTime(scanProgress.elapsedSeconds) }}</span>
+      </div>
+
+      <!-- Stats -->
+      <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
+        <div nz-col nzSpan="12">
+          <nz-statistic nzTitle="Programs Scanned"
+            [nzValue]="(scanProgress.scannedPrograms || 0) + ' / ' + (scanProgress.totalPrograms || 0)">
+          </nz-statistic>
+        </div>
+        <div nz-col nzSpan="12">
+          <nz-statistic nzTitle="Violations Found"
+            [nzValue]="scanProgress.violationsFound || 0"
+            [nzValueStyle]="{ color: '#fa8c16' }">
+          </nz-statistic>
+        </div>
+      </div>
+
+      <!-- Batch Progress -->
+      <div *ngIf="scanProgress.totalBatches > 0">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px;">
+          <span>Batch Progress</span>
+          <span style="color: #888;">Batch {{ scanProgress.currentBatch || 0 }} of {{ scanProgress.totalBatches }}</span>
+        </div>
+        <nz-progress [nzPercent]="getBatchPercent()" nzStatus="active" [nzShowInfo]="false"></nz-progress>
+        <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 12px; color: #888;">
+          <span>Batch Size: {{ scanProgress.batchSize || 500 }}</span>
+          <span *ngIf="scanProgress.failedPrograms > 0" style="color: #ff4d4f;">
+            Failed: {{ scanProgress.failedPrograms }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Current program -->
+      <div *ngIf="scanProgress.currentProgram && scanProgress.phase === 'SCANNING'"
+           style="margin-top: 12px; font-size: 13px;">
+        <span style="color: #888;">Currently scanning: </span>
+        <nz-tag>{{ scanProgress.currentProgram }}</nz-tag>
+      </div>
+
+      <!-- Error message -->
+      <nz-alert *ngIf="scanProgress.errorMessage"
+        nzType="error"
+        [nzMessage]="scanProgress.errorMessage"
+        nzShowIcon
+        style="margin-top: 12px;">
+      </nz-alert>
+
+      <!-- Completed/Cancelled message -->
+      <nz-alert *ngIf="scanProgress.phase === 'COMPLETED'"
+        nzType="success" nzMessage="Scan completed successfully!" nzShowIcon
+        style="margin-top: 12px;">
+      </nz-alert>
+      <nz-alert *ngIf="scanProgress.phase === 'CANCELLED'"
+        nzType="warning" nzMessage="Scan was cancelled." nzShowIcon
+        style="margin-top: 12px;">
+      </nz-alert>
+    </div>
+  </ng-container>
+
+  <ng-template #progressFooter>
+    <button nz-button nzType="primary" (click)="closeProgressModal()">Close</button>
+  </ng-template>
+</nz-modal>
+
+<!-- Logs Modal -->
+<nz-modal
+  [(nzVisible)]="showLogsModal"
+  nzTitle="Job Logs"
+  [nzFooter]="logsFooter"
+  (nzOnCancel)="showLogsModal = false"
+  [nzWidth]="700">
+
+  <ng-container *nzModalContent>
+    <nz-spin [nzSpinning]="logsLoading">
+      <div *ngIf="jobLogs.length === 0 && !logsLoading" style="text-align: center; padding: 40px 0; color: #888;">
+        No logs available.
+      </div>
+      <nz-table *ngIf="jobLogs.length > 0"
+        [nzData]="jobLogs"
+        nzSize="small"
+        [nzShowPagination]="false"
+        [nzScroll]="{ y: '400px' }">
+        <thead>
+          <tr>
+            <th nzWidth="160px">Timestamp</th>
+            <th nzWidth="80px">Level</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of jobLogs">
+            <td>{{ log.timestamp | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+            <td>
+              <nz-tag [nzColor]="log.level === 'ERROR' ? 'error' : log.level === 'WARN' ? 'warning' : 'default'">
+                {{ log.level }}
+              </nz-tag>
+            </td>
+            <td>{{ log.message }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </nz-spin>
+  </ng-container>
+
+  <ng-template #logsFooter>
+    <button nz-button nzType="primary" (click)="showLogsModal = false">Close</button>
+  </ng-template>
+</nz-modal>

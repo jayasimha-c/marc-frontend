@@ -1,0 +1,52 @@
+<!-- Search -->
+<nz-input-group [nzPrefix]="searchIcon" class="search-box">
+  <input nz-input placeholder="Search programs..." [(ngModel)]="searchText" (keyup.enter)="onSearch()" />
+</nz-input-group>
+<ng-template #searchIcon><span nz-icon nzType="search" nzTheme="outline"></span></ng-template>
+
+<!-- Table -->
+<nz-table
+  #programTable
+  [nzData]="programs"
+  nzSize="small"
+  [nzLoading]="loading"
+  [nzTotal]="totalRecords"
+  [nzPageIndex]="pageIndex"
+  [nzPageSize]="pageSize"
+  [nzFrontPagination]="false"
+  [nzShowPagination]="true"
+  nzShowSizeChanger
+  [nzPageSizeOptions]="[10, 20, 50]"
+  (nzPageIndexChange)="onPageIndexChange($event)"
+  (nzPageSizeChange)="onPageSizeChange($event)"
+  nzTableLayout="fixed">
+  <thead>
+    <tr>
+      <th nzWidth="50px"
+          [nzChecked]="allChecked"
+          [nzIndeterminate]="indeterminate"
+          (nzCheckedChange)="onAllChecked($event)">
+      </th>
+      <th>Program Name</th>
+      <th nzWidth="120px">Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let prog of programTable.data">
+      <td [nzChecked]="checkedPrograms.has(prog.name || prog.objName)"
+          (nzCheckedChange)="onItemChecked(prog.name || prog.objName, $event)">
+      </td>
+      <td nzEllipsis>{{ prog.name || prog.objName }}</td>
+      <td><nz-tag>{{ prog.type || prog.objType || '-' }}</nz-tag></td>
+      <td nzEllipsis>{{ prog.description || '-' }}</td>
+    </tr>
+  </tbody>
+</nz-table>
+
+<div class="modal-footer">
+  <button nz-button nzType="default" (click)="onClose()">Close</button>
+  <button nz-button nzType="primary" [disabled]="!hasSelection" (click)="onAdd()">
+    Add Selected ({{ checkedPrograms.size }})
+  </button>
+</div>

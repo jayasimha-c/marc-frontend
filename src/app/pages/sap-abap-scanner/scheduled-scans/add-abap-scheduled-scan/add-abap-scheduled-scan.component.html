@@ -1,0 +1,318 @@
+<nz-page-header [nzTitle]="(formType === 'edit' ? 'Edit' : 'Add') + ' Scheduled Scan'" nzBackIcon (nzBack)="navigateBack()">
+</nz-page-header>
+
+<div class="scheduled-scan-form-page">
+  <form nz-form [formGroup]="form" nzLayout="vertical">
+
+    <nz-steps [nzCurrent]="currentStep" nzSize="small" class="form-steps">
+      <nz-step nzTitle="Configuration"></nz-step>
+      <nz-step nzTitle="Rules"></nz-step>
+    </nz-steps>
+
+    <nz-divider></nz-divider>
+
+    <!-- ==================== STEP 0: Configuration ==================== -->
+    <div *ngIf="currentStep === 0">
+
+      <!-- General -->
+      <nz-card nzTitle="General" nzSize="small">
+        <div nz-row [nzGutter]="16">
+          <div nz-col nzSpan="12">
+            <nz-form-item>
+              <nz-form-label nzRequired>Scheduler Name</nz-form-label>
+              <nz-form-control nzErrorTip="Name is required">
+                <input nz-input formControlName="name" placeholder="Enter scheduler name" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="12">
+            <nz-form-item>
+              <nz-form-label nzRequired>SAP Systems</nz-form-label>
+              <nz-form-control nzErrorTip="At least one system is required">
+                <nz-select formControlName="systems" nzMode="multiple" nzPlaceHolder="Select systems" nzShowSearch>
+                  <nz-option *ngFor="let sys of availableSapSystems"
+                             [nzValue]="sys.id"
+                             [nzLabel]="sys.destinationName || sys.name">
+                  </nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <nz-form-item>
+          <nz-form-label>Description</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input formControlName="description" placeholder="Enter description"
+                      [nzAutosize]="{ minRows: 2, maxRows: 4 }"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </nz-card>
+
+      <!-- Schedule -->
+      <nz-card nzTitle="Schedule" nzSize="small" class="section-card">
+        <div nz-row [nzGutter]="16">
+          <div nz-col nzSpan="12">
+            <nz-form-item>
+              <nz-form-label nzRequired>Start Date & Time</nz-form-label>
+              <nz-form-control nzErrorTip="Start date is required">
+                <nz-date-picker formControlName="startDateTime" nzShowTime nzFormat="yyyy-MM-dd HH:mm"
+                                nzPlaceHolder="Select start date/time" style="width: 100%"></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="12" *ngIf="form.get('repeatPeriodically')?.value">
+            <nz-form-item>
+              <nz-form-label>End Date & Time</nz-form-label>
+              <nz-form-control>
+                <nz-date-picker formControlName="endDateTime" nzShowTime nzFormat="yyyy-MM-dd HH:mm"
+                                nzPlaceHolder="Select end date/time (optional)" style="width: 100%"></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div nz-row [nzGutter]="16" class="schedule-options">
+          <div nz-col nzSpan="8">
+            <label nz-checkbox formControlName="repeatPeriodically">Repeat Periodically</label>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label>Status</nz-form-label>
+              <nz-form-control>
+                <nz-switch formControlName="active"></nz-switch>
+                <span class="status-label">{{ form.get('active')?.value ? 'Active' : 'Inactive' }}</span>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div nz-row [nzGutter]="16" *ngIf="form.get('repeatPeriodically')?.value">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label>Repeat After (days)</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="days" nzPlaceHolder="Days">
+                  <nz-option *ngFor="let i of daysList" [nzValue]="i" [nzLabel]="'' + i"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label>Repeat After (hours)</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="hours" nzPlaceHolder="Hours">
+                  <nz-option *ngFor="let i of hoursList" [nzValue]="i" [nzLabel]="'' + i"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label>Repeat After (mins)</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="mins" nzPlaceHolder="Minutes">
+                  <nz-option *ngFor="let i of minsList" [nzValue]="i" [nzLabel]="'' + i"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <div *ngIf="form.get('cronExpression')?.value" class="cron-display">
+          <span nz-typography nzType="secondary">Cron Expression: </span>
+          <nz-tag>{{ form.get('cronExpression')?.value }}</nz-tag>
+        </div>
+      </nz-card>
+
+      <!-- Program Scope -->
+      <nz-card nzTitle="Program Scope" nzSize="small" class="section-card">
+        <div nz-row [nzGutter]="16">
+          <div nz-col [nzSpan]="isPatternMode() ? 8 : 24">
+            <nz-form-item>
+              <nz-form-label>Program Filter Mode</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="programFilterMode" nzPlaceHolder="Select filter mode">
+                  <nz-option nzValue="PATTERN" nzLabel="Pattern (e.g., Z*)"></nz-option>
+                  <nz-option nzValue="LIST" nzLabel="Program Name List"></nz-option>
+                  <nz-option nzValue="TRANSPORT" nzLabel="Transport Request"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="16" *ngIf="isPatternMode()">
+            <nz-form-item>
+              <nz-form-label>Program Pattern</nz-form-label>
+              <nz-form-control nzExtra="Use * as wildcard. Example: Z* matches all programs starting with Z">
+                <input nz-input formControlName="programPattern" placeholder="e.g. Z*" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </div>
+
+        <!-- PATTERN MODE: Changed By + Date Filters -->
+        <ng-container *ngIf="isPatternMode()">
+          <div nz-row [nzGutter]="16">
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label>Changed By</nz-form-label>
+                <nz-form-control>
+                  <nz-select formControlName="changedByFilterType" nzPlaceHolder="Select filter">
+                    <nz-option nzValue="NONE" nzLabel="No Filter"></nz-option>
+                    <nz-option nzValue="EQUALS" nzLabel="Equals"></nz-option>
+                    <nz-option nzValue="NOT_EQUALS" nzLabel="Not Equals"></nz-option>
+                    <nz-option nzValue="IN" nzLabel="In"></nz-option>
+                    <nz-option nzValue="NOT_IN" nzLabel="Not In"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="16" *ngIf="showChangedByValueField()">
+              <nz-form-item>
+                <nz-form-label>User ID(s)</nz-form-label>
+                <nz-form-control [nzExtra]="getChangedByHint()">
+                  <input nz-input formControlName="changedByValue" [placeholder]="getChangedByPlaceholder()" />
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </div>
+
+          <div nz-row [nzGutter]="16">
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label>Date Modified</nz-form-label>
+                <nz-form-control>
+                  <nz-select formControlName="dateFilterType" nzPlaceHolder="Select date filter">
+                    <nz-option nzValue="NONE" nzLabel="No Date Filter"></nz-option>
+                    <nz-option nzValue="GREATER_THAN" nzLabel="Modified After"></nz-option>
+                    <nz-option nzValue="BETWEEN" nzLabel="Between"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8" *ngIf="form.get('dateFilterType')?.value === 'GREATER_THAN'">
+              <nz-form-item>
+                <nz-form-label>{{ getFromDateLabel() }}</nz-form-label>
+                <nz-form-control [nzExtra]="getDateHelpText()">
+                  <nz-date-picker formControlName="programDate" nzPlaceHolder="Select date" style="width: 100%"></nz-date-picker>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="16" *ngIf="form.get('dateFilterType')?.value === 'BETWEEN'">
+              <nz-form-item>
+                <nz-form-label>Date Range</nz-form-label>
+                <nz-form-control>
+                  <nz-range-picker
+                    [ngModel]="[dateRangeForm.get('start')?.value, dateRangeForm.get('end')?.value]"
+                    (ngModelChange)="dateRangeForm.patchValue({start: $event?.[0] || null, end: $event?.[1] || null})"
+                    [ngModelOptions]="{standalone: true}"
+                    style="width: 100%">
+                  </nz-range-picker>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- LIST MODE: Program Names -->
+        <ng-container *ngIf="isListMode()">
+          <nz-form-item>
+            <nz-form-label>Program Names</nz-form-label>
+            <nz-form-control nzExtra="Enter program names, one per line or use Browse to select from the system">
+              <textarea nz-input formControlName="programNames" placeholder="Enter program names..."
+                        [nzAutosize]="{ minRows: 4, maxRows: 10 }"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+          <button nz-button nzType="dashed" (click)="openBrowsePrograms()">
+            <span nz-icon nzType="search"></span> Browse Programs
+          </button>
+        </ng-container>
+
+        <!-- TRANSPORT MODE -->
+        <ng-container *ngIf="isTransportMode()">
+          <nz-form-item>
+            <nz-form-label>Transport Numbers</nz-form-label>
+            <nz-form-control nzExtra="Enter transport numbers, one per line or separated by commas">
+              <textarea nz-input formControlName="transportNumbers" placeholder="e.g. DEVK900123"
+                        [nzAutosize]="{ minRows: 3, maxRows: 6 }"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+          <button nz-button nzType="dashed" [nzLoading]="isLoadingTransportObjects" (click)="resolveTransportObjects()">
+            <span nz-icon nzType="sync"></span> Resolve Objects
+          </button>
+
+          <nz-alert *ngIf="transportError && !isLoadingTransportObjects"
+                    nzType="error" [nzMessage]="transportError" nzShowIcon class="transport-alert"></nz-alert>
+
+          <nz-table *ngIf="!isLoadingTransportObjects && transportObjects.length > 0"
+            #transportTable
+            [nzData]="transportObjects"
+            nzSize="small"
+            [nzShowPagination]="true"
+            [nzPageSize]="20"
+            [nzFrontPagination]="true"
+            nzTableLayout="fixed"
+            class="transport-table">
+            <thead>
+              <tr>
+                <th>Object Name</th>
+                <th nzWidth="120px">Object Type</th>
+                <th>Transport Number</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let obj of transportTable.data">
+                <td nzEllipsis>{{ obj.objName }}</td>
+                <td><nz-tag>{{ obj.objType || obj.objectType }}</nz-tag></td>
+                <td>{{ obj.trkorr || obj.transportNumber }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </ng-container>
+      </nz-card>
+
+      <!-- Audit Info (edit mode) -->
+      <nz-card nzSize="small" class="section-card" *ngIf="formType === 'edit' && scanData && (scanData.createdByName || scanData.modifiedByName)">
+        <nz-descriptions nzBordered nzSize="small" [nzColumn]="2">
+          <nz-descriptions-item nzTitle="Created By" *ngIf="scanData.createdByName">
+            {{ scanData.createdByName }}
+            <span *ngIf="scanData.createdDate"> ({{ scanData.createdDate | date:'medium' }})</span>
+          </nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Modified By" *ngIf="scanData.modifiedByName">
+            {{ scanData.modifiedByName }}
+            <span *ngIf="scanData.modifiedDate"> ({{ scanData.modifiedDate | date:'medium' }})</span>
+          </nz-descriptions-item>
+        </nz-descriptions>
+      </nz-card>
+
+      <!-- Navigation -->
+      <div class="step-actions">
+        <button nz-button nzType="default" (click)="navigateBack()">Cancel</button>
+        <button nz-button nzType="primary" (click)="currentStep = 1">
+          Next <span nz-icon nzType="right"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== STEP 1: Rules ==================== -->
+    <div *ngIf="currentStep === 1">
+      <nz-card nzTitle="Rules Selection" nzSize="small">
+        <app-view-rules-list
+          [selectedRules]="selectedRules"
+          (abapRuleChanged)="onAbapRuleChanges($event)">
+        </app-view-rules-list>
+      </nz-card>
+
+      <div class="step-actions">
+        <button nz-button nzType="default" (click)="currentStep = 0">
+          <span nz-icon nzType="left"></span> Previous
+        </button>
+        <button nz-button nzType="primary" (click)="onSave()">
+          <span nz-icon nzType="save"></span> Save
+        </button>
+      </div>
+    </div>
+
+  </form>
+</div>

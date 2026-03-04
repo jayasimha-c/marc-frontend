@@ -1,0 +1,51 @@
+<div class="scan-history-page">
+  <!-- Statistics Cards -->
+  <div nz-row [nzGutter]="16" class="stats-row">
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <nz-card nzSize="small">
+        <nz-statistic nzTitle="Completed Scans" [nzValue]="scanStats.completed || 0"
+                      [nzPrefix]="completedIcon" [nzValueStyle]="{ color: '#1890ff' }"></nz-statistic>
+        <ng-template #completedIcon><span nz-icon nzType="check-circle" nzTheme="outline"></span></ng-template>
+      </nz-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <nz-card nzSize="small">
+        <nz-statistic nzTitle="Running Scans" [nzValue]="scanStats.running || 0"
+                      [nzPrefix]="runningIcon" [nzValueStyle]="{ color: '#52c41a' }"></nz-statistic>
+        <ng-template #runningIcon><span nz-icon nzType="caret-right" nzTheme="outline"></span></ng-template>
+      </nz-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <nz-card nzSize="small">
+        <nz-statistic nzTitle="Critical Issues" [nzValue]="scanStats.criticalFindings || 0"
+                      [nzPrefix]="criticalIcon" [nzValueStyle]="{ color: '#ff4d4f' }"></nz-statistic>
+        <ng-template #criticalIcon><span nz-icon nzType="exclamation-circle" nzTheme="outline"></span></ng-template>
+      </nz-card>
+    </div>
+    <div nz-col nzXs="24" nzSm="12" nzMd="6">
+      <nz-card nzSize="small">
+        <nz-statistic nzTitle="Total Findings" [nzValue]="scanStats.totalFindings || 0"
+                      [nzPrefix]="findingsIcon"></nz-statistic>
+        <ng-template #findingsIcon><span nz-icon nzType="ordered-list" nzTheme="outline"></span></ng-template>
+      </nz-card>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <app-advanced-table
+    title="Scan History"
+    [columns]="columns"
+    [data]="data"
+    [loading]="loading"
+    [serverSide]="true"
+    [totalRecords]="totalRecords"
+    [actions]="actions"
+    [showSearch]="true"
+    [showRefresh]="true"
+    [maxVisibleActions]="2"
+    [defaultPageSize]="20"
+    tableLayout="fixed"
+    (queryParamsChange)="onQueryParamsChange($event)"
+    (rowClick)="onRowClick($event)">
+  </app-advanced-table>
+</div>

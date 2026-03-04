@@ -1,0 +1,63 @@
+<div class="source-modal">
+  <!-- Header -->
+  <div class="source-header">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span nz-icon nzType="code" nzTheme="outline" style="font-size: 22px; color: #1890ff;"></span>
+      <div>
+        <h3 style="margin: 0; font-size: 16px; font-weight: 600;">ABAP Program Source</h3>
+        <span style="color: #888; font-size: 13px;">{{ data.programName }}</span>
+      </div>
+    </div>
+    <button nz-button nzType="text" nzShape="circle" (click)="close()">
+      <span nz-icon nzType="close" nzTheme="outline"></span>
+    </button>
+  </div>
+
+  <!-- Metadata Bar -->
+  <div class="source-metadata">
+    <nz-space [nzSize]="24">
+      <span *nzSpaceItem>
+        <span nz-icon nzType="align-left" nzTheme="outline" style="margin-right: 4px; color: #888;"></span>
+        Lines: <strong>{{ data.lineCount | number }}</strong>
+      </span>
+      <span *nzSpaceItem>
+        <span nz-icon nzType="database" nzTheme="outline" style="margin-right: 4px; color: #888;"></span>
+        Size: <strong>{{ formatFileSize(data.fileSize) }}</strong>
+      </span>
+      <span *nzSpaceItem>
+        <span nz-icon nzType="clock-circle" nzTheme="outline" style="margin-right: 4px; color: #888;"></span>
+        Retrieved: <strong>{{ formatDate(data.timestamp) }}</strong>
+      </span>
+      <span *nzSpaceItem>
+        <span nz-icon nzType="check-circle" nzTheme="outline" style="margin-right: 4px; color: #52c41a;"></span>
+        Status: <strong style="color: #52c41a;">Success</strong>
+      </span>
+    </nz-space>
+  </div>
+
+  <!-- Source Code -->
+  <div class="source-content">
+    <div *ngIf="data.rawAbapSource" class="code-container">
+      <pre class="code-block"><code><ng-container *ngFor="let line of getSourceLines(); let i = index"><span class="line-number">{{ i + 1 }}</span>{{ line }}
+</ng-container></code></pre>
+    </div>
+
+    <!-- No Source Available -->
+    <div *ngIf="!data.rawAbapSource" style="text-align: center; padding: 48px 0; color: #888;">
+      <span nz-icon nzType="code" nzTheme="outline" style="font-size: 48px; color: #d9d9d9;"></span>
+      <h4 style="margin-top: 12px;">No Source Code Available</h4>
+      <p style="font-size: 13px;">The ABAP program source code could not be retrieved.</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="source-footer">
+    <button nz-button nzType="default" (click)="copyToClipboard()" [disabled]="!data.rawAbapSource">
+      <span nz-icon nzType="copy" nzTheme="outline"></span> Copy Code
+    </button>
+    <button nz-button nzType="default" (click)="downloadSource()" [disabled]="!data.rawAbapSource">
+      <span nz-icon nzType="download" nzTheme="outline"></span> Download
+    </button>
+    <button nz-button nzType="primary" (click)="close()">Close</button>
+  </div>
+</div>
