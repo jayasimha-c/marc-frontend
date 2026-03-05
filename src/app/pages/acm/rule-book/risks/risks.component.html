@@ -47,6 +47,8 @@
   <!-- Risks Table -->
   <nz-card nzSize="small" class="risks__table-card">
     <app-advanced-table
+      [showColumnSettings]="true"
+      storageKey="acm-risks"
       title="Risks"
       [data]="data"
       [columns]="columns"
@@ -58,7 +60,9 @@
       [showPagination]="true"
       [maxVisibleActions]="3"
       size="middle"
+      [defaultPageSize]="10"
       (rowClick)="onRowClick($event)"
+      (rowContextMenu)="onRowContextMenu($event)"
       (selectionChange)="selectedRisks = $event">
       <ng-container *ngIf="objectFilterActive">
         <nz-tag nzColor="blue" class="risks__filter-tag">
@@ -70,43 +74,16 @@
     </app-advanced-table>
   </nz-card>
 
-  <!-- Risk Rules -->
-  <nz-card [nzTitle]="rulesTitle" nzSize="small" class="risks__rules-card">
-    <ng-template #rulesTitle>
-      <span>Risk Rules</span>
-      <span *ngIf="selectedRisk" class="risks__rules-name">— {{selectedRisk.name}}</span>
-    </ng-template>
-
-    <nz-spin [nzSpinning]="riskRulesLoading">
-      <nz-table #rulesTable
-        [nzData]="riskRulesData"
-        [nzShowPagination]="riskRulesData.length > 10"
-        [nzPageSize]="10"
-        nzSize="small"
-        nzTableLayout="fixed"
-        [nzFrontPagination]="true"
-        [nzScroll]="{ y: '300px' }">
-        <thead>
-          <tr>
-            <th *ngFor="let col of rulesColumns" [nzWidth]="col.width || null">{{col.header}}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let row of rulesTable.data">
-            <td *ngFor="let col of rulesColumns">{{row[col.field]}}</td>
-          </tr>
-        </tbody>
-      </nz-table>
-    </nz-spin>
-
-    <div *ngIf="!riskRulesData.length && !riskRulesLoading && selectedRisk" style="padding: 12px 0">
-      <nz-empty nzNotFoundContent="No rules mapped to this risk" [nzNotFoundImage]="'simple'"></nz-empty>
-    </div>
-    <div *ngIf="!selectedRisk && !riskRulesLoading" style="padding: 12px 0">
-      <nz-empty nzNotFoundContent="Select a risk to view its rules" [nzNotFoundImage]="'simple'"></nz-empty>
-    </div>
-  </nz-card>
 </div>
+
+<!-- Context Menu -->
+<nz-dropdown-menu #rowMenu="nzDropdownMenu">
+  <ul nz-menu>
+    <li nz-menu-item (click)="openDetail(contextMenuRow)">
+      <span nz-icon nzType="eye" nzTheme="outline"></span> View Details
+    </li>
+  </ul>
+</nz-dropdown-menu>
 
 <!-- History Side Panel -->
 <app-side-panel

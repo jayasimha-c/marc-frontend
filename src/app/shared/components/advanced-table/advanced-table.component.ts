@@ -12,6 +12,8 @@ import {
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { TableColumn, TableAction, TableQueryParams } from './advanced-table.models';
 import { NzTableLayout, NzTablePaginationPosition, NzTablePaginationType } from 'ng-zorro-antd/table';
+import { UserPreferenceService } from '../../../core/services/user-preference.service';
+import { GridPreferences } from '../../../core/models/user-preference.model';
 
 @Component({
   standalone: false,
@@ -38,6 +40,9 @@ export class AdvancedTableComponent implements OnChanges, AfterViewInit {
   // Selection
   @Input() showSelection = false;
   @Input() rowKey = 'id';
+
+  // Persistence
+  @Input() storageKey?: string;
 
   // Table config
   @Input() size: 'small' | 'middle' | 'default' = 'middle';
@@ -86,6 +91,7 @@ export class AdvancedTableComponent implements OnChanges, AfterViewInit {
   @Output() refresh = new EventEmitter<void>();
   @Output() selectionChange = new EventEmitter<any[]>();
   @Output() rowClick = new EventEmitter<any>();
+  @Output() rowContextMenu = new EventEmitter<{ row: any; event: MouseEvent }>();
 
   @ContentChild('extraToolbar', { static: false }) extraToolbarRef?: TemplateRef<any>;
 
@@ -133,6 +139,9 @@ export class AdvancedTableComponent implements OnChanges, AfterViewInit {
   settingsColumns: { field: string; header: string; visible: boolean; required: boolean }[] = [];
 
   private _initialEmitDone = false;
+  private _prefsLoaded = false;
+
+  constructor(private userPreferenceService: UserPreferenceService) {}
 
   ngAfterViewInit(): void {
     if (this.serverSide && !this._initialEmitDone) {
@@ -154,6 +163,10 @@ export class AdvancedTableComponent implements OnChanges, AfterViewInit {
     if (changes['columns']) {
       this._internalColumns = this.columns.map(c => ({ ...c }));
       this.showFilterRow = this.filterMode === 'row' && this.columns.some((c) => c.filterable);
+      if (this.storageKey && !this._prefsLoaded) {
+        this._prefsLoaded = true;
+        this.loadColumnPreferences();
+      }
     }
     if (changes['data']) {
       this.applyClientSideOperations();
@@ -428,6 +441,10 @@ export class AdvancedTableComponent implements OnChanges, AfterViewInit {
     this.rowClick.emit(row);
   }
 
+  onRowContextMenu(row: any, event: MouseEvent): void {
+    this.rowContextMenu.emit({ row, event });
+  }
+
   // --- Getters ---
   get totalItems(): number {
     return this.totalRecords ?? this.total ?? this.displayData.length;
@@ -467,6 +484,7 @@ export class AdvancedTableComponent implements OnChanges, AfterViewInit {
     });
     this.columnSettingsVisible = false;
     this.applyClientSideOperations();
+    this.saveColumnPreferences();
   }
 
   resetColumnSettings(): void {
@@ -476,9 +494,67 @@ export class AdvancedTableComponent implements OnChanges, AfterViewInit {
       visible: c.visible !== false,
       required: !!c.required,
     }));
+    if (this.storageKey) {
+      this.userPreferenceService.resetGridPreferences(this.storageKey).subscribe();
+    }
   }
 
   onSettingsDrop(event: CdkDragDrop<any>): void {
     moveItemInArray(this.settingsColumns, event.previousIndex, event.currentIndex);
+  }
+
+  // --- Column Preference Persistence ---
+
+  private loadColumnPreferences(): void {
+    if (!this.storageKey) return;
+    this.userPreferenceService.getGridPreferences(this.storageKey).subscribe(prefs => {
+      if (prefs?.columns?.order?.length) {
+        this.applyStoredPreferences(prefs);
+      }
+    });
+  }
+
+  private applyStoredPreferences(prefs: GridPreferences): void {
+    const colMap = new Map(this._internalColumns.map(c => [c.field, c]));
+    const visibleSet = prefs.columns?.visible?.length
+      ? new Set(prefs.columns.visible)
+      : null;
+    const order = prefs.columns?.order || [];
+
+    // Reorder: put stored-order columns first, then any remaining
+    const ordered: TableColumn[] = [];
+    for (const field of order) {
+      const col = colMap.get(field);
+      if (col) {
+        ordered.push(col);
+        colMap.delete(field);
+      }
+    }
+    // Append columns not in the stored order (e.g. newly added columns)
+    colMap.forEach(col => ordered.push(col));
+
+    // Apply visibility
+    if (visibleSet) {
+      for (const col of ordered) {
+        if (visibleSet.has(col.field)) {
+          delete col.visible;
+        } else {
+          col.visible = false;
+        }
+      }
+    }
+
+    this._internalColumns = ordered;
+  }
+
+  private saveColumnPreferences(): void {
+    if (!this.storageKey) return;
+    const visible = this._internalColumns
+      .filter(c => c.visible !== false)
+      .map(c => c.field);
+    const order = this._internalColumns.map(c => c.field);
+    this.userPreferenceService.mergeGridPreferences(this.storageKey, {
+      columns: { visible, order }
+    });
   }
 }

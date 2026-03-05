@@ -46,6 +46,7 @@
   <nz-card nzSize="small" class="rules__table-card">
     <app-advanced-table
       title="Rules"
+      storageKey="rules"
       [data]="data"
       [columns]="columns"
       [actions]="actions"
@@ -56,6 +57,7 @@
       [showSelection]="true"
       [showColumnSettings]="true"
       [showPagination]="true"
+      [defaultPageSize]="10"
       size="middle"
       (queryParamsChange)="onQueryChange($event)"
       (rowClick)="onRowClick($event)"
@@ -73,13 +75,14 @@
   <nz-card nzSize="small" class="rules__objects-card">
     <app-inline-table
       #objectsInlineTable
+      storageKey="rule-objects"
       [title]="'Rule Objects'"
       [subtitle]="selectedRule ? '— ' + selectedRule.ruleName : ''"
       [data]="ruleObjectsData"
       [columns]="objectInlineColumns"
       [actions]="objectActions"
       [loading]="ruleObjectsLoading"
-      [editMode]="'always'"
+      [editMode]="'toggle'"
       [showRowNumbers]="true"
       [showRowActions]="true"
       [showColumnSettings]="true"

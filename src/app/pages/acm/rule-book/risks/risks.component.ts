@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzContextMenuService, NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
 import { RisksService } from './risks.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ConfirmDialogService } from '../../../../shared/components/confirm-dialog/confirm-dialog.service';
@@ -21,6 +22,7 @@ import { ObjectFilterComponent, ObjectFilterData } from '../rules/object-filter/
 })
 export class RisksComponent implements OnInit, OnDestroy {
   @ViewChild('historyPanel') historyPanel!: SidePanelComponent;
+  @ViewChild('rowMenu') contextMenu!: NzDropdownMenuComponent;
   private destroy$ = new Subject<void>();
 
   // ── Data ───────────────────────────────────────────────────
@@ -29,10 +31,7 @@ export class RisksComponent implements OnInit, OnDestroy {
   loading = true;
   selectedRisk: any = null;
   selectedRisks: any[] = [];
-
-  // ── Rules sub-table ────────────────────────────────────────
-  riskRulesData: any[] = [];
-  riskRulesLoading = false;
+  contextMenuRow: any = null;
 
   // ── Object Filter ──────────────────────────────────────────
   objectFilterActive = false;
@@ -67,15 +66,6 @@ export class RisksComponent implements OnInit, OnDestroy {
       tagColors: { Active: 'success', Inactive: 'default' } },
   ];
 
-  rulesColumns: TableColumn[] = [
-    { field: 'ruleName', header: 'Rule ID', sortable: true, width: '140px' },
-    { field: 'ruleDescription', header: 'Description' },
-    { field: 'businessProcessName', header: 'Business Process', width: '150px' },
-    { field: 'subProcName', header: 'Sub Process', width: '130px' },
-    { field: 'ruleTypeName', header: 'Type', width: '100px' },
-    { field: 'targetSystem', header: 'Target System', width: '120px' },
-  ];
-
   actions: TableAction[] = [
     { label: 'Add', icon: 'plus-circle', type: 'primary', command: () => this.addRisk(), pinned: true },
     { label: 'Edit', icon: 'edit', command: () => this.editRisk() },
@@ -94,6 +84,7 @@ export class RisksComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private confirmDialogService: ConfirmDialogService,
     private modal: NzModalService,
+    private nzContextMenuService: NzContextMenuService,
   ) {}
 
   ngOnInit(): void {
@@ -141,36 +132,22 @@ export class RisksComponent implements OnInit, OnDestroy {
       }));
       this.totalRecords = res.data.records || this.data.length;
     }
-    this.riskRulesData = [];
     this.selectedRisk = null;
     this.calculateMetrics();
     this.loading = false;
   }
 
-  // ── Row click → load rules ─────────────────────────────────
+  // ── Row click ──────────────────────────────────────────────
 
   onRowClick(row: any): void {
     this.selectedRisk = row;
     this.selectedRisks = [row];
-    this.loadRiskRules();
   }
 
-  private loadRiskRules(): void {
-    if (!this.selectedRisk) { this.riskRulesData = []; return; }
-    this.riskRulesLoading = true;
-    this.risksService.getRiskRules(this.selectedRisk.id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (res: any) => {
-        this.riskRulesData = (res?.data?.rows || []).map((r: any) => ({
-          ...r,
-          businessProcessName: r.businessProcess?.name || '',
-          subProcName: r.subProc?.name || '',
-          ruleTypeName: r.ruleType?.name || '',
-          targetSystem: r.sapSystemName || (r.secondary ? 'Secondary' : 'Primary'),
-        }));
-        this.riskRulesLoading = false;
-      },
-      error: () => { this.riskRulesData = []; this.riskRulesLoading = false; },
-    });
+  onRowContextMenu(event: { row: any; event: MouseEvent }): void {
+    event.event.preventDefault();
+    this.contextMenuRow = event.row;
+    this.nzContextMenuService.create(event.event, this.contextMenu);
   }
 
   // ── CRUD ───────────────────────────────────────────────────
@@ -231,9 +208,9 @@ export class RisksComponent implements OnInit, OnDestroy {
       nzContent: AddRulesToRiskComponent,
       nzWidth: '75vw',
       nzFooter: null,
-      nzData: { selectedRiskData: this.selectedRisk, selectedRuleData: this.riskRulesData },
+      nzData: { selectedRiskData: this.selectedRisk, selectedRuleData: [] },
     });
-    ref.afterClose.subscribe(result => { if (result) this.loadRiskRules(); });
+    ref.afterClose.subscribe(result => { if (result) this.loadRisks(); });
   }
 
   // ── Consistency Check ──────────────────────────────────────
@@ -370,9 +347,9 @@ export class RisksComponent implements OnInit, OnDestroy {
 
   // ── Private helpers ────────────────────────────────────────
 
-  private openDetail(row: any): void {
+  openDetail(row: any): void {
     this.modal.create({
-      nzTitle: 'Risk Details',
+      nzTitle: 'Risk Details \u2014 ' + (row.name || ''),
       nzContent: RiskDetailComponent,
       nzWidth: '70vw',
       nzFooter: null,

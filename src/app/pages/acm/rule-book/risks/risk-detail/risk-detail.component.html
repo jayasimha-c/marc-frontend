@@ -1,94 +1,64 @@
-<nz-spin [nzSpinning]="loading">
-  <div style="padding: 16px;">
-    <form [formGroup]="form">
-      <div nz-row [nzGutter]="16">
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-control>
-              <div class="nz-float-label has-value">
-                <input nz-input placeholder=" " formControlName="riskName" />
-                <label>Risk Name</label>
-              </div>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-control>
-              <div class="nz-float-label has-value">
-                <textarea nz-input placeholder=" " formControlName="description" [nzAutosize]="{minRows: 1, maxRows: 3}"></textarea>
-                <label>Description</label>
-              </div>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-      </div>
-      <div nz-row [nzGutter]="16">
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-control>
-              <div class="nz-float-label has-value">
-                <textarea nz-input placeholder=" " formControlName="riskCondition" [nzAutosize]="{minRows: 1, maxRows: 3}"></textarea>
-                <label>Risk Condition</label>
-              </div>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-control>
-              <div class="nz-float-label has-value">
-                <textarea nz-input placeholder=" " formControlName="detailDescription" [nzAutosize]="{minRows: 1, maxRows: 3}"></textarea>
-                <label>Detail Description</label>
-              </div>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-      </div>
-    </form>
-
-    <!-- Rules table -->
-    <nz-table #rulesTable [nzData]="rulesData" nzSize="small" [nzShowPagination]="rulesData.length > 10"
-      [nzPageSize]="10" nzTableLayout="fixed" [nzFrontPagination]="true">
-      <thead>
+<nz-spin [nzSpinning]="rulesLoading">
+  <!-- Rules table with native expand -->
+  <nz-table #rulesTable [nzData]="rulesData" nzSize="small" [nzShowPagination]="rulesData.length > 10"
+    [nzPageSize]="10" nzTableLayout="fixed" [nzFrontPagination]="true"
+    [nzScroll]="{ y: '280px' }">
+    <thead>
+      <tr>
+        <th nzWidth="40px"></th>
+        <th nzWidth="130px">Rule ID</th>
+        <th>Description</th>
+        <th nzWidth="140px">Business Process</th>
+        <th nzWidth="120px">Sub Process</th>
+        <th nzWidth="90px">Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let row of rulesTable.data">
         <tr>
-          <th nzWidth="120px">Rule Name</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let row of rulesTable.data" (click)="onRuleClick(row)" class="rd__row"
-          [class.rd__row--selected]="selectedRule?.id === row.id">
+          <td [nzExpand]="selectedRule?.id === row.id" (nzExpandChange)="toggleRule(row)"></td>
           <td>{{row.ruleName}}</td>
           <td>{{row.ruleDescription}}</td>
+          <td>{{row.businessProcessName}}</td>
+          <td>{{row.subProcName}}</td>
+          <td>{{row.ruleTypeName}}</td>
         </tr>
-      </tbody>
-    </nz-table>
+        <tr [nzExpand]="selectedRule?.id === row.id">
+          <nz-spin [nzSpinning]="objectsLoading" nzSize="small">
+            <nz-table #objectsTable [nzData]="ruleObjects" nzSize="small" [nzShowPagination]="false"
+              nzTableLayout="fixed" [nzFrontPagination]="false"
+              [nzScroll]="{ y: '200px' }">
+              <thead>
+                <tr>
+                  <th nzWidth="160px">Object</th>
+                  <th nzWidth="160px">Field Name</th>
+                  <th>Value</th>
+                  <th nzWidth="100px">Join By AND</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let obj of objectsTable.data">
+                  <td>{{obj.name}}</td>
+                  <td>{{obj.fieldName}}</td>
+                  <td>{{obj.fieldValue}}</td>
+                  <td>
+                    <nz-tag [nzColor]="obj.joinByAnd ? 'success' : 'error'">
+                      {{obj.joinByAnd ? 'Yes' : 'No'}}
+                    </nz-tag>
+                  </td>
+                </tr>
+              </tbody>
+            </nz-table>
+            <nz-empty *ngIf="!objectsLoading && !ruleObjects.length"
+              nzNotFoundContent="No objects found for this rule" [nzNotFoundImage]="'simple'">
+            </nz-empty>
+          </nz-spin>
+        </tr>
+      </ng-container>
+    </tbody>
+  </nz-table>
 
-    <!-- Rule objects detail -->
-    <div *ngIf="selectedRule" style="margin-top: 12px;">
-      <h5 style="margin-bottom: 8px; font-size: 13px; color: rgba(0,0,0,0.65);">
-        Objects for {{selectedRule.ruleName}}
-      </h5>
-      <nz-table #objectsTable [nzData]="ruleObjects" nzSize="small" [nzShowPagination]="false"
-        nzTableLayout="fixed" [nzFrontPagination]="false">
-        <thead>
-          <tr>
-            <th>Object</th>
-            <th>Field</th>
-            <th>Value</th>
-            <th nzWidth="80px">Join AND</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let obj of objectsTable.data">
-            <td>{{obj.name}}</td>
-            <td>{{obj.fieldName}}</td>
-            <td>{{obj.fieldValue}}</td>
-            <td>{{obj.joinByAnd}}</td>
-          </tr>
-        </tbody>
-      </nz-table>
-    </div>
-  </div>
+  <nz-empty *ngIf="!rulesLoading && !rulesData.length"
+    nzNotFoundContent="No rules mapped to this risk" [nzNotFoundImage]="'simple'">
+  </nz-empty>
 </nz-spin>

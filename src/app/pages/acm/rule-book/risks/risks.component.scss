@@ -88,12 +88,9 @@
   &__dist-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
   &__table-card { margin-bottom: 16px; }
-  &__rules-card { margin-bottom: 16px; }
 
   &__filter-tag { cursor: default; }
   &__filter-close { cursor: pointer; margin-left: 4px; &:hover { color: #ff4d4f; } }
-
-  &__rules-name { font-weight: 400; color: rgba(0, 0, 0, 0.45); margin-left: 8px; font-size: 13px; }
 
   // History panel
   &__history { padding: 16px; }

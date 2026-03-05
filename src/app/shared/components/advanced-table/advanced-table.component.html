@@ -277,6 +277,7 @@
     <ng-container *ngFor="let row of advTable.data">
       <tr
         (click)="onRowClick(row)"
+        (contextmenu)="onRowContextMenu(row, $event)"
         [class.adv-table__row-clickable]="rowClick.observers.length > 0"
       >
         <!-- Expand toggle -->

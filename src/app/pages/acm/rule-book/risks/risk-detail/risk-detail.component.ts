@@ -1,7 +1,9 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { NZ_MODAL_DATA } from 'ng-zorro-antd/modal';
 import { RisksService } from '../risks.service';
+import { RulesService } from '../../rules/rules.service';
 
 @Component({
   standalone: false,
@@ -9,60 +11,63 @@ import { RisksService } from '../risks.service';
   templateUrl: './risk-detail.component.html',
   styleUrls: ['./risk-detail.component.scss'],
 })
-export class RiskDetailComponent implements OnInit {
-  loading = true;
+export class RiskDetailComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
 
-  form!: FormGroup;
-
+  rulesLoading = true;
   rulesData: any[] = [];
+
   selectedRule: any = null;
+  objectsLoading = false;
   ruleObjects: any[] = [];
 
   constructor(
     @Inject(NZ_MODAL_DATA) public dialogData: any,
     private risksService: RisksService,
-    private fb: FormBuilder,
-  ) {
-    this.form = this.fb.group({
-      riskName: [''],
-      description: [''],
-      riskCondition: [''],
-      detailDescription: [''],
-    });
-  }
+    private rulesService: RulesService,
+  ) {}
 
   ngOnInit(): void {
-    this.risksService.riskDetail(this.dialogData.riskId).subscribe({
-      next: (res: any) => {
-        if (res.success && res.data) {
-          this.form.patchValue({
-            riskName: res.data.risk?.name,
-            description: res.data.risk?.riskDescription,
-            riskCondition: res.data.risk?.riskCondition,
-            detailDescription: res.data.risk?.detailDesc,
-          });
-          this.form.disable();
+    this.loadRules();
+  }
 
-          // Flatten ruleMap into table rows
-          const ruleMap = res.data.ruleMap || {};
-          Object.values(ruleMap).forEach((items: any) => {
-            if (items?.length > 0) {
-              const rule = items[0].rule;
-              this.rulesData.push({
-                ...rule,
-                _objects: items,
-              });
-            }
-          });
-        }
-        this.loading = false;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadRules(): void {
+    this.rulesLoading = true;
+    this.risksService.getRiskRules(this.dialogData.riskId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res: any) => {
+        this.rulesData = (res?.data?.rows || []).map((r: any) => ({
+          ...r,
+          businessProcessName: r.businessProcess?.name || '',
+          subProcName: r.subProc?.name || '',
+          ruleTypeName: r.ruleType?.name || '',
+        }));
+        this.rulesLoading = false;
       },
-      error: () => { this.loading = false; },
+      error: () => { this.rulesData = []; this.rulesLoading = false; },
     });
   }
 
-  onRuleClick(row: any): void {
+  toggleRule(row: any): void {
+    if (this.selectedRule?.id === row.id) {
+      this.selectedRule = null;
+      this.ruleObjects = [];
+      return;
+    }
     this.selectedRule = row;
-    this.ruleObjects = row._objects || [];
+    this.objectsLoading = true;
+    this.ruleObjects = [];
+    const systemType = row.systemType || 'SAP';
+    this.rulesService.getRuleObjects(row.id, systemType).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res: any) => {
+        this.ruleObjects = res?.data?.rows || [];
+        this.objectsLoading = false;
+      },
+      error: () => { this.ruleObjects = []; this.objectsLoading = false; },
+    });
   }
 }

@@ -12,6 +12,8 @@ import {
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { InlineColumn, TableAction, TableQueryParams } from './inline-table.models';
 import { NzTableLayout } from 'ng-zorro-antd/table';
+import { UserPreferenceService } from '../../../core/services/user-preference.service';
+import { GridPreferences } from '../../../core/models/user-preference.model';
 
 @Component({
   standalone: false,
@@ -53,6 +55,9 @@ export class InlineTableComponent implements OnChanges, AfterViewInit {
   @Input() showRowNumbers = false;
   @Input() showRowActions = false;
   @Input() showColumnSettings = false;
+
+  // Persistence
+  @Input() storageKey?: string;
 
   // Server-side
   @Input() serverSide = false;
@@ -118,6 +123,10 @@ export class InlineTableComponent implements OnChanges, AfterViewInit {
   columnSettingsVisible = false;
   settingsColumns: { field: string; header: string; visible: boolean; required: boolean }[] = [];
 
+  private _prefsLoaded = false;
+
+  constructor(private userPreferenceService: UserPreferenceService) {}
+
   // ─── TrackBy functions ───
 
   trackByLabel(_: number, action: TableAction): string {
@@ -155,13 +164,13 @@ export class InlineTableComponent implements OnChanges, AfterViewInit {
       this._initialEmitDone = true;
       setTimeout(() => this.emitQueryParams());
     }
-    if (this.editMode === 'always') {
-      this.isEditing = true;
-    }
-    this.recomputeActions();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['editMode']) {
+      this.isEditing = this.editMode === 'always';
+      this.recomputeActions();
+    }
     if (changes['defaultPageSize'] && !changes['defaultPageSize'].previousValue) {
       this.pageSize = this.defaultPageSize;
     }
@@ -178,6 +187,10 @@ export class InlineTableComponent implements OnChanges, AfterViewInit {
     if (changes['columns']) {
       this._internalColumns = this.columns.map(c => ({ ...c }));
       this.initAutocompleteFilters();
+      if (this.storageKey && !this._prefsLoaded) {
+        this._prefsLoaded = true;
+        this.loadColumnPreferences();
+      }
     }
     if (changes['actions'] || changes['maxVisibleActions']) {
       this.recomputeActions();
@@ -591,6 +604,7 @@ export class InlineTableComponent implements OnChanges, AfterViewInit {
       return col;
     });
     this.columnSettingsVisible = false;
+    this.saveColumnPreferences();
   }
 
   resetColumnSettings(): void {
@@ -600,9 +614,64 @@ export class InlineTableComponent implements OnChanges, AfterViewInit {
       visible: c.visible !== false,
       required: !!c.required,
     }));
+    if (this.storageKey) {
+      this.userPreferenceService.resetGridPreferences(this.storageKey).subscribe();
+    }
   }
 
   onSettingsDrop(event: CdkDragDrop<any>): void {
     moveItemInArray(this.settingsColumns, event.previousIndex, event.currentIndex);
+  }
+
+  // ─── Column Preference Persistence ───
+
+  private loadColumnPreferences(): void {
+    if (!this.storageKey) return;
+    this.userPreferenceService.getGridPreferences(this.storageKey).subscribe(prefs => {
+      if (prefs?.columns?.order?.length) {
+        this.applyStoredPreferences(prefs);
+      }
+    });
+  }
+
+  private applyStoredPreferences(prefs: GridPreferences): void {
+    const colMap = new Map(this._internalColumns.map(c => [c.field, c]));
+    const visibleSet = prefs.columns?.visible?.length
+      ? new Set(prefs.columns.visible)
+      : null;
+    const order = prefs.columns?.order || [];
+
+    const ordered: InlineColumn[] = [];
+    for (const field of order) {
+      const col = colMap.get(field);
+      if (col) {
+        ordered.push(col);
+        colMap.delete(field);
+      }
+    }
+    colMap.forEach(col => ordered.push(col));
+
+    if (visibleSet) {
+      for (const col of ordered) {
+        if (visibleSet.has(col.field)) {
+          delete col.visible;
+        } else {
+          col.visible = false;
+        }
+      }
+    }
+
+    this._internalColumns = ordered;
+  }
+
+  private saveColumnPreferences(): void {
+    if (!this.storageKey) return;
+    const visible = this._internalColumns
+      .filter(c => c.visible !== false)
+      .map(c => c.field);
+    const order = this._internalColumns.map(c => c.field);
+    this.userPreferenceService.mergeGridPreferences(this.storageKey, {
+      columns: { visible, order }
+    });
   }
 }
