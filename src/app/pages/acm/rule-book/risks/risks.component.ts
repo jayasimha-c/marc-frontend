@@ -229,7 +229,7 @@ export class RisksComponent implements OnInit, OnDestroy {
     const ref = this.modal.create({
       nzTitle: 'Add Rules To Risk — ' + (this.selectedRisk.name || ''),
       nzContent: AddRulesToRiskComponent,
-      nzWidth: '90vw',
+      nzWidth: '75vw',
       nzFooter: null,
       nzData: { selectedRiskData: this.selectedRisk, selectedRuleData: this.riskRulesData },
     });

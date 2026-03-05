@@ -66,8 +66,9 @@ import { StatusBadgeComponent } from './components/status-badge/status-badge.com
 import { TitlePanelComponent } from './components/title-panel/title-panel.component';
 import { StatisticsCardComponent } from './components/statistics-card/statistics-card.component';
 import { RequestMessageModalComponent } from './components/request-message-modal/request-message-modal.component';
-import { CommonApxChartComponent } from './components/common-apx-chart/common-apx-chart.component';
+import { CommonApxChartModule } from './components/common-apx-chart/common-apx-chart.module';
 import { InlineTableComponent } from './components/inline-table/inline-table.component';
+import { PivotTableModule } from './components/pivot-table/pivot-table.module';
 
 const NZ_MODULES = [
   NzLayoutModule,
@@ -133,7 +134,6 @@ const NZ_MODULES = [
     TitlePanelComponent,
     StatisticsCardComponent,
     RequestMessageModalComponent,
-    CommonApxChartComponent,
     InlineTableComponent,
   ],
   imports: [
@@ -142,6 +142,8 @@ const NZ_MODULES = [
     ReactiveFormsModule,
     RouterModule,
     DragDropModule,
+    CommonApxChartModule,
+    PivotTableModule,
     ...NZ_MODULES,
   ],
   exports: [
@@ -150,6 +152,7 @@ const NZ_MODULES = [
     ReactiveFormsModule,
     RouterModule,
     DragDropModule,
+    PivotTableModule,
     ModulePlaceholderComponent,
     AdvancedTableComponent,
     ConfirmDialogComponent,
@@ -159,7 +162,7 @@ const NZ_MODULES = [
     TitlePanelComponent,
     StatisticsCardComponent,
     RequestMessageModalComponent,
-    CommonApxChartComponent,
+    CommonApxChartModule,
     InlineTableComponent,
     ...NZ_MODULES,
   ],

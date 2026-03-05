@@ -410,73 +410,29 @@
   <nz-empty [nzNotFoundContent]="emptyText"></nz-empty>
 </ng-template>
 
-<!-- Column Settings Modal -->
-<nz-modal
-  [(nzVisible)]="columnSettingsVisible"
-  nzTitle="Column Settings"
-  (nzOnCancel)="handleColumnSettingsCancel()"
-  (nzOnOk)="handleColumnSettingsOk()"
+<!-- Column Settings Drawer -->
+<nz-drawer
+  [nzVisible]="columnSettingsVisible"
+  nzTitle="Columns"
+  nzPlacement="right"
+  [nzWidth]="280"
+  [nzClosable]="true"
+  (nzOnClose)="columnSettingsVisible = false"
 >
-  <ng-container *nzModalContent>
-    <div nz-row [nzGutter]="24">
-      <!-- Displayed columns -->
-      <div nz-col [nzSpan]="12">
-        <div class="adv-table__col-settings">
-          <p class="adv-table__col-settings-title">Displayed (drag to sort)</p>
-          <div
-            cdkDropList
-            #displayedList="cdkDropList"
-            [cdkDropListData]="settingsDisplayed"
-            [cdkDropListConnectedTo]="[hiddenList]"
-            class="adv-table__col-settings-list"
-            (cdkDropListDropped)="onColumnDrop($event)"
-          >
-            <div
-              class="adv-table__col-settings-item"
-              *ngFor="let col of settingsDisplayed; let i = index"
-              cdkDrag
-            >
-              {{ col.header }}
-              <span
-                nz-icon
-                nzType="minus-circle"
-                nzTheme="outline"
-                class="adv-table__col-settings-action"
-                (click)="removeFromDisplayed(col, i)"
-              ></span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Hidden columns -->
-      <div nz-col [nzSpan]="12">
-        <div class="adv-table__col-settings">
-          <p class="adv-table__col-settings-title">Not Shown</p>
-          <div
-            cdkDropList
-            #hiddenList="cdkDropList"
-            [cdkDropListData]="settingsHidden"
-            [cdkDropListConnectedTo]="[displayedList]"
-            class="adv-table__col-settings-list"
-            (cdkDropListDropped)="onColumnDrop($event)"
-          >
-            <div
-              class="adv-table__col-settings-item"
-              *ngFor="let col of settingsHidden; let i = index"
-              cdkDrag
-            >
-              {{ col.header }}
-              <span
-                nz-icon
-                nzType="plus-circle"
-                nzTheme="outline"
-                class="adv-table__col-settings-action"
-                (click)="addToDisplayed(col, i)"
-              ></span>
-            </div>
-          </div>
-        </div>
+  <ng-container *nzDrawerContent>
+    <div cdkDropList (cdkDropListDropped)="onSettingsDrop($event)">
+      <div *ngFor="let col of settingsColumns" cdkDrag
+        style="display: flex; align-items: center; padding: 6px 4px; border-bottom: 1px solid #f0f0f0; cursor: move;">
+        <span nz-icon nzType="holder" nzTheme="outline" cdkDragHandle
+          style="color: rgba(0,0,0,0.25); margin-right: 8px; font-size: 12px;"></span>
+        <label nz-checkbox [(ngModel)]="col.visible" [nzDisabled]="col.required">
+          {{col.header}}
+        </label>
       </div>
     </div>
+    <div style="margin-top: 12px; display: flex; gap: 8px;">
+      <button nz-button nzType="primary" nzSize="small" (click)="applyColumnSettings()">Apply</button>
+      <button nz-button nzSize="small" (click)="resetColumnSettings()">Reset</button>
+    </div>
   </ng-container>
-</nz-modal>
+</nz-drawer>

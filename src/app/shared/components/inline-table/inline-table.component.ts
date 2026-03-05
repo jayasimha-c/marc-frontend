@@ -9,6 +9,7 @@ import {
   TemplateRef,
   AfterViewInit,
 } from '@angular/core';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { InlineColumn, TableAction, TableQueryParams } from './inline-table.models';
 import { NzTableLayout } from 'ng-zorro-antd/table';
 
@@ -51,6 +52,7 @@ export class InlineTableComponent implements OnChanges, AfterViewInit {
   @Input() tableLayout: NzTableLayout = 'fixed';
   @Input() showRowNumbers = false;
   @Input() showRowActions = false;
+  @Input() showColumnSettings = false;
 
   // Server-side
   @Input() serverSide = false;
@@ -111,6 +113,11 @@ export class InlineTableComponent implements OnChanges, AfterViewInit {
 
   private _initialEmitDone = false;
 
+  // Column settings state
+  _internalColumns: InlineColumn[] = [];
+  columnSettingsVisible = false;
+  settingsColumns: { field: string; header: string; visible: boolean; required: boolean }[] = [];
+
   // ─── TrackBy functions ───
 
   trackByLabel(_: number, action: TableAction): string {
@@ -169,6 +176,7 @@ export class InlineTableComponent implements OnChanges, AfterViewInit {
       this.refreshCheckedStatus();
     }
     if (changes['columns']) {
+      this._internalColumns = this.columns.map(c => ({ ...c }));
       this.initAutocompleteFilters();
     }
     if (changes['actions'] || changes['maxVisibleActions']) {
@@ -557,5 +565,44 @@ export class InlineTableComponent implements OnChanges, AfterViewInit {
 
   get editableColumns(): InlineColumn[] {
     return this.columns.filter(c => c.type !== 'readonly' && c.type !== 'template');
+  }
+
+  get visibleColumns(): InlineColumn[] {
+    return this._internalColumns.filter(c => c.visible !== false);
+  }
+
+  // ─── Column Settings ───
+
+  openColumnSettings(): void {
+    this.settingsColumns = this._internalColumns.map(c => ({
+      field: c.field,
+      header: c.header,
+      visible: c.visible !== false,
+      required: !!c.required,
+    }));
+    this.columnSettingsVisible = true;
+  }
+
+  applyColumnSettings(): void {
+    const map = new Map(this._internalColumns.map(c => [c.field, c]));
+    this._internalColumns = this.settingsColumns.map(s => {
+      const col = map.get(s.field)!;
+      if (s.visible) { delete col.visible; } else { col.visible = false; }
+      return col;
+    });
+    this.columnSettingsVisible = false;
+  }
+
+  resetColumnSettings(): void {
+    this.settingsColumns = this.columns.map(c => ({
+      field: c.field,
+      header: c.header,
+      visible: c.visible !== false,
+      required: !!c.required,
+    }));
+  }
+
+  onSettingsDrop(event: CdkDragDrop<any>): void {
+    moveItemInArray(this.settingsColumns, event.previousIndex, event.currentIndex);
   }
 }

@@ -1,0 +1,153 @@
+.pivot-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.field-builder {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  padding: 12px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+}
+
+.field-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 140px;
+}
+
+.zone-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.drop-zone {
+  min-height: 36px;
+  min-width: 120px;
+  padding: 4px;
+  border: 1px dashed #d9d9d9;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+
+  &.cdk-drop-list-dragging {
+    border-color: #1890ff;
+  }
+}
+
+.drag-chip {
+  cursor: grab;
+  user-select: none;
+
+  &.cdk-drag-dragging {
+    cursor: grabbing;
+    opacity: 0.6;
+  }
+
+  .remove-btn {
+    margin-left: 4px;
+    cursor: pointer;
+    opacity: 0.6;
+    &:hover { opacity: 1; }
+  }
+}
+
+.empty-hint {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.25);
+  padding: 2px 6px;
+  font-style: italic;
+}
+
+.renderer-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.renderer-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.pivot-scroll {
+  overflow: auto;
+  max-height: 600px;
+}
+
+table.pivot-table {
+  border-collapse: collapse;
+  width: 100%;
+
+  th, td {
+    border: 1px solid #f0f0f0;
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
+
+  thead th {
+    background: #fafafa;
+    color: rgba(0, 0, 0, 0.85);
+    font-weight: 500;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    text-align: left;
+
+    &.col-header-cell { text-align: right; }
+    &.total-cell { text-align: right; color: rgba(0, 0, 0, 0.45); }
+  }
+
+  .row-label {
+    background: #fafafa;
+    color: rgba(0, 0, 0, 0.85);
+    font-weight: 500;
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+
+  .value-cell {
+    text-align: right;
+    color: rgba(0, 0, 0, 0.85);
+
+    &:hover { background: #e6f7ff !important; }
+  }
+
+  .null-cell {
+    color: rgba(0, 0, 0, 0.25);
+    text-align: center;
+  }
+
+  .total-cell {
+    background: #f5f5f5;
+    font-weight: 600;
+    text-align: right;
+    color: rgba(0, 0, 0, 0.85);
+  }
+
+  .grand-total {
+    background: #e6f7ff;
+    font-weight: 700;
+    text-align: right;
+    color: #1890ff;
+  }
+
+  tfoot td {
+    background: #f5f5f5;
+    font-weight: 600;
+    position: sticky;
+    bottom: 0;
+  }
+}

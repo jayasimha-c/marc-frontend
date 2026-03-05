@@ -65,7 +65,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
                 <span nz-icon nzType="safety-certificate" nzTheme="outline"></span> Evidence Required
               </span>
               <span *ngIf="step.usageCount && step.usageCount > 0" style="margin-left: 12px;">
-                <span nz-icon nzType="rise" nzTheme="outline"></span> Used {{ step.usageCount }}x
+                Used {{ step.usageCount }}x
               </span>
             </small>
             <div *ngIf="step.tags" style="margin-top: 4px;">
@@ -96,10 +96,8 @@ import { NotificationService } from '../../../../core/services/notification.serv
       border: 1px solid #d9d9d9;
       border-radius: 2px;
       cursor: pointer;
-      transition: border-color 0.2s;
     }
-    .picker-step:hover { border-color: #40a9ff; }
-    .picker-step.selected { background: #e6f7ff; border-color: #1890ff; }
+    .picker-step.selected { background: #e6f7ff; }
   `],
 })
 export class StepLibraryPickerDialogComponent implements OnInit {

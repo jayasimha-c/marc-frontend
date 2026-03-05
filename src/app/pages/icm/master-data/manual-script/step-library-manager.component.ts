@@ -12,8 +12,9 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
+import { NzListModule } from 'ng-zorro-antd/list';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 import { QuillEditorComponent } from 'ngx-quill';
 import { StepLibraryService, StepLibraryItem } from './step-library.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -27,7 +28,8 @@ import { IcmControlService } from '../../icm-control.service';
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule,
     NzCardModule, NzButtonModule, NzIconModule, NzFormModule, NzInputModule,
-    NzSelectModule, NzCheckboxModule, NzSpinModule, NzToolTipModule, NzGridModule, NzDividerModule, NzEmptyModule,
+    NzSelectModule, NzCheckboxModule, NzSpinModule, NzToolTipModule, NzGridModule, NzEmptyModule,
+    NzListModule, NzTagModule,
     QuillEditorComponent,
   ],
   templateUrl: './step-library-manager.component.html',

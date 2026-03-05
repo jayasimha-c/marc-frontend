@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npx ng build:*)",
       "Bash(dir:*)",
-      "Bash(ls -la \"D:\\\\marcacm-marc_angular_ant\\\\marcacm-marc_angular_ant\\\\frontend\\\\src\\\\app\\\\modules\\\\sap-abap-scanner\\\\components\"\" 2>&1 || echo \"Path not found, checking alternative... \")"
+      "Bash(ls -la \"D:\\\\marcacm-marc_angular_ant\\\\marcacm-marc_angular_ant\\\\frontend\\\\src\\\\app\\\\modules\\\\sap-abap-scanner\\\\components\"\" 2>&1 || echo \"Path not found, checking alternative... \")",
+      "Bash(findstr:*)"
     ]
   }
 }

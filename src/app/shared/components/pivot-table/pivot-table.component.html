@@ -1,0 +1,151 @@
+<div class="pivot-wrapper">
+  <!-- Field Builder Bar -->
+  <div class="field-builder">
+    <div class="field-zone">
+      <span class="zone-label">Fields</span>
+      <div cdkDropList #unusedList="cdkDropList" id="unused"
+           [cdkDropListData]="unusedFields"
+           [cdkDropListConnectedTo]="[rowList, colList]"
+           (cdkDropListDropped)="drop($event)" class="drop-zone">
+        <nz-tag *ngFor="let f of unusedFields" cdkDrag class="drag-chip">
+          {{f}}
+        </nz-tag>
+        <span *ngIf="!unusedFields.length" class="empty-hint">empty</span>
+      </div>
+    </div>
+
+    <div class="field-zone">
+      <span class="zone-label">Rows</span>
+      <div cdkDropList #rowList="cdkDropList" id="rows"
+           [cdkDropListData]="activeRows"
+           [cdkDropListConnectedTo]="[unusedList, colList]"
+           (cdkDropListDropped)="drop($event)" class="drop-zone">
+        <nz-tag *ngFor="let f of activeRows" cdkDrag nzColor="blue" class="drag-chip">
+          {{f}} <span class="remove-btn" (click)="removeField(f,'rows')">&times;</span>
+        </nz-tag>
+        <span *ngIf="!activeRows.length" class="empty-hint">drag here</span>
+      </div>
+    </div>
+
+    <div class="field-zone">
+      <span class="zone-label">Columns</span>
+      <div cdkDropList #colList="cdkDropList" id="cols"
+           [cdkDropListData]="activeCols"
+           [cdkDropListConnectedTo]="[unusedList, rowList]"
+           (cdkDropListDropped)="drop($event)" class="drop-zone">
+        <nz-tag *ngFor="let f of activeCols" cdkDrag nzColor="purple" class="drag-chip">
+          {{f}} <span class="remove-btn" (click)="removeField(f,'cols')">&times;</span>
+        </nz-tag>
+        <span *ngIf="!activeCols.length" class="empty-hint">drag here</span>
+      </div>
+    </div>
+
+    <div class="field-zone">
+      <span class="zone-label">Aggregator</span>
+      <nz-select [(ngModel)]="selectedAggregator" (ngModelChange)="onAggregatorChange()" style="width: 140px;">
+        <nz-option nzValue="count" nzLabel="Count"></nz-option>
+        <nz-option nzValue="countDistinct" nzLabel="Count Unique"></nz-option>
+        <nz-option nzValue="sum" nzLabel="Sum"></nz-option>
+        <nz-option nzValue="avg" nzLabel="Average"></nz-option>
+        <nz-option nzValue="min" nzLabel="Min"></nz-option>
+        <nz-option nzValue="max" nzLabel="Max"></nz-option>
+      </nz-select>
+    </div>
+
+    <div class="field-zone" *ngIf="selectedAggregator !== 'count'">
+      <span class="zone-label">Value Field</span>
+      <nz-select [(ngModel)]="selectedValue" (ngModelChange)="recompute()" style="width: 140px;"
+                 nzPlaceHolder="Select field">
+        <nz-option *ngFor="let f of allFields" [nzValue]="f" [nzLabel]="f"></nz-option>
+      </nz-select>
+    </div>
+  </div>
+
+  <!-- Renderer Toolbar -->
+  <div class="renderer-toolbar" *ngIf="result">
+    <div class="renderer-buttons">
+      <button *ngFor="let r of rendererOptions"
+              nz-button nzSize="small"
+              [nzType]="activeRenderer === r.value ? 'primary' : 'default'"
+              (click)="setRenderer(r.value)">
+        <span nz-icon [nzType]="r.icon" nzTheme="outline"></span>
+        {{r.label}}
+      </button>
+    </div>
+    <button nz-button nzSize="small" (click)="exportCSV()">
+      <span nz-icon nzType="download"></span> CSV
+    </button>
+  </div>
+
+  <!-- Output Area -->
+  <ng-container *ngIf="result; else emptyState">
+
+    <!-- TABLE -->
+    <div class="pivot-scroll" *ngIf="activeRenderer === 'table'">
+      <table class="pivot-table">
+        <thead>
+          <tr>
+            <th *ngFor="let r of activeRows" class="row-header-cell">{{r}}</th>
+            <th *ngFor="let ch of result.colHeaders" class="col-header-cell">
+              {{ch.join(' / ')}}
+            </th>
+            <th *ngIf="showTotals" class="total-cell">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let rh of result.rowHeaders; let ri = index">
+            <td *ngFor="let label of rh" class="row-label">{{label}}</td>
+            <td *ngFor="let cell of result.cells[ri]; let ci = index"
+                class="value-cell"
+                [class.null-cell]="cell === null"
+                [style.background]="getHeatColor(cell, result.colTotals[ci])">
+              {{fmt(cell)}}
+            </td>
+            <td *ngIf="showTotals" class="total-cell">{{fmt(result.rowTotals[ri])}}</td>
+          </tr>
+        </tbody>
+        <tfoot *ngIf="showTotals">
+          <tr>
+            <td [attr.colspan]="activeRows.length" class="row-label">Total</td>
+            <td *ngFor="let t of result.colTotals" class="total-cell">{{fmt(t)}}</td>
+            <td class="grand-total">{{fmt(result.grandTotal)}}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- BAR -->
+    <app-pivot-chart-bar *ngIf="activeRenderer === 'bar' && chartData"
+      [chartData]="chartData" [stacked]="false">
+    </app-pivot-chart-bar>
+
+    <!-- STACKED BAR -->
+    <app-pivot-chart-bar *ngIf="activeRenderer === 'stacked-bar' && chartData"
+      [chartData]="chartData" [stacked]="true">
+    </app-pivot-chart-bar>
+
+    <!-- LINE -->
+    <app-pivot-chart-line *ngIf="activeRenderer === 'line' && chartData"
+      [chartData]="chartData" [area]="false">
+    </app-pivot-chart-line>
+
+    <!-- AREA -->
+    <app-pivot-chart-line *ngIf="activeRenderer === 'area' && chartData"
+      [chartData]="chartData" [area]="true">
+    </app-pivot-chart-line>
+
+    <!-- SCATTER -->
+    <app-pivot-chart-scatter *ngIf="activeRenderer === 'scatter' && chartData"
+      [chartData]="chartData">
+    </app-pivot-chart-scatter>
+
+    <!-- HEATMAP -->
+    <app-pivot-chart-heatmap *ngIf="activeRenderer === 'heatmap' && chartData"
+      [chartData]="chartData" [maxValue]="result.grandTotal">
+    </app-pivot-chart-heatmap>
+
+  </ng-container>
+  <ng-template #emptyState>
+    <nz-empty nzNotFoundContent="Drag fields into Rows or Columns to build your pivot"></nz-empty>
+  </ng-template>
+</div>

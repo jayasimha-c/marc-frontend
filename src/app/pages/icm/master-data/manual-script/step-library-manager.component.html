@@ -9,208 +9,194 @@
   </div>
 
   <!-- Two-Panel Layout -->
-  <div class="step-library-layout">
+  <div nz-row [nzGutter]="16">
     <!-- Left Panel: Step List -->
-    <nz-card class="steps-panel">
-      <h4 style="margin: 0 0 16px;">Library Steps</h4>
+    <div nz-col [nzSpan]="8">
+      <nz-card nzSize="small" nzTitle="Library Steps">
 
-      <nz-form-item style="margin-bottom: 16px;">
-        <nz-form-control>
-          <nz-input-group nzSuffixIcon="search">
-            <input nz-input [(ngModel)]="searchTerm" (input)="filterSteps()" placeholder="Search steps..." />
-          </nz-input-group>
-        </nz-form-control>
-      </nz-form-item>
+        <nz-input-group nzSuffixIcon="search" style="margin-bottom: 12px;">
+          <input nz-input [(ngModel)]="searchTerm" (input)="filterSteps()" placeholder="Search steps..." />
+        </nz-input-group>
 
-      <button nz-button nzType="primary" style="width: 100%; margin-bottom: 16px;" (click)="openEditor()">
-        <span nz-icon nzType="plus" nzTheme="outline"></span> New Library Step
-      </button>
+        <button nz-button nzType="primary" style="width: 100%; margin-bottom: 12px;" (click)="openEditor()">
+          <span nz-icon nzType="plus" nzTheme="outline"></span> New Library Step
+        </button>
 
-      <div *ngIf="loading" style="text-align: center; padding: 32px 0;">
-        <nz-spin nzSimple></nz-spin>
-      </div>
-
-      <nz-empty *ngIf="!loading && filteredSteps.length === 0" nzNotFoundContent="No library steps found"></nz-empty>
-
-      <div *ngIf="!loading && filteredSteps.length > 0" class="steps-list">
-        <div *ngFor="let step of filteredSteps" class="step-item"
-          [class.selected]="selectedStep?.id === step.id" (click)="selectStep(step)">
-          <span class="step-name">{{ step.stepName }}</span>
-          <nz-tag *ngIf="step.category">{{ step.category }}</nz-tag>
-          <span *ngIf="step.usageCount" class="usage-count">
-            <span nz-icon nzType="rise" nzTheme="outline"></span> {{ step.usageCount }}
-          </span>
+        <div *ngIf="loading" style="text-align: center; padding: 32px 0;">
+          <nz-spin nzSimple></nz-spin>
         </div>
-      </div>
-    </nz-card>
+
+        <nz-empty *ngIf="!loading && filteredSteps.length === 0" nzNotFoundContent="No library steps found"></nz-empty>
+
+        <nz-list *ngIf="!loading && filteredSteps.length > 0" nzSize="small" style="max-height: 500px; overflow-y: auto;">
+          <nz-list-item *ngFor="let step of filteredSteps"
+            [class.ant-list-item-active]="selectedStep?.id === step.id"
+            style="cursor: pointer; padding: 8px 12px;"
+            (click)="selectStep(step)">
+            <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ step.stepName }}</span>
+            <nz-tag *ngIf="step.category" style="margin-left: 8px;">{{ step.category }}</nz-tag>
+            <span *ngIf="step.usageCount" style="font-size: 12px; color: rgba(0,0,0,0.45); margin-left: 8px;">
+              {{ step.usageCount }} uses
+            </span>
+          </nz-list-item>
+        </nz-list>
+      </nz-card>
+    </div>
 
     <!-- Right Panel: Editor -->
-    <nz-card class="editor-panel" style="flex: 1;">
-      <h4 style="margin: 0 0 16px;">
-        <ng-container *ngIf="isCreating">New Step</ng-container>
-        <ng-container *ngIf="!isCreating && selectedStep">Edit Step</ng-container>
-        <ng-container *ngIf="!isCreating && !selectedStep">Step Details</ng-container>
-      </h4>
+    <div nz-col [nzSpan]="16">
+      <nz-card nzSize="small" [nzTitle]="isCreating ? 'New Step' : (selectedStep ? 'Edit Step' : 'Step Details')">
 
-      <!-- Empty state -->
-      <div *ngIf="!selectedStep && !isCreating" style="text-align: center; padding: 64px 0;">
-        <nz-empty nzNotFoundContent="Select a step to edit, or create a new one"></nz-empty>
-      </div>
+        <!-- Empty state -->
+        <div *ngIf="!selectedStep && !isCreating" style="text-align: center; padding: 64px 0;">
+          <nz-empty nzNotFoundContent="Select a step to edit, or create a new one"></nz-empty>
+        </div>
 
-      <!-- Form -->
-      <form *ngIf="selectedStep || isCreating" [formGroup]="stepForm">
-        <nz-divider nzText="Basic Information" nzOrientation="left"></nz-divider>
+        <!-- Form -->
+        <form *ngIf="selectedStep || isCreating" [formGroup]="stepForm" nz-form nzLayout="vertical">
 
-        <nz-form-item style="margin-bottom: 16px;">
-          <nz-form-control nzErrorTip="Step name is required">
-            <div class="nz-float-label" [class.has-value]="stepForm.get('stepName')!.value">
-              <input nz-input placeholder=" " formControlName="stepName" />
-              <label>Step Name *</label>
+          <nz-card nzSize="small" nzTitle="Basic Information" style="margin-bottom: 16px;">
+            <nz-form-item>
+              <nz-form-label nzRequired>Step Name</nz-form-label>
+              <nz-form-control nzErrorTip="Step name is required">
+                <input nz-input formControlName="stepName" />
+              </nz-form-control>
+            </nz-form-item>
+
+            <div nz-row [nzGutter]="16">
+              <div nz-col [nzSpan]="12">
+                <nz-form-item>
+                  <nz-form-label>Category</nz-form-label>
+                  <nz-form-control>
+                    <nz-select formControlName="category" nzPlaceHolder="Select category" nzShowSearch nzAllowClear>
+                      <nz-option *ngFor="let cat of categories" [nzValue]="cat.name" [nzLabel]="cat.name"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzSpan]="12">
+                <nz-form-item>
+                  <nz-form-label>Tags</nz-form-label>
+                  <nz-form-control>
+                    <input nz-input formControlName="tags" />
+                  </nz-form-control>
+                </nz-form-item>
+                <span style="font-size: 12px; color: rgba(0,0,0,0.45);">Comma-separated</span>
+              </div>
             </div>
-          </nz-form-control>
-        </nz-form-item>
+          </nz-card>
 
-        <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
-          <div nz-col [nzSpan]="12">
-            <nz-form-item>
-              <nz-form-control>
-                <div class="nz-float-label" [class.has-value]="stepForm.get('category')!.value">
-                  <nz-select formControlName="category" nzPlaceHolder=" " nzShowSearch nzAllowClear>
-                    <nz-option *ngFor="let cat of categories" [nzValue]="cat.name" [nzLabel]="cat.name"></nz-option>
-                  </nz-select>
-                  <label>Category</label>
-                </div>
-              </nz-form-control>
-            </nz-form-item>
-          </div>
-          <div nz-col [nzSpan]="12">
-            <nz-form-item>
-              <nz-form-control>
-                <div class="nz-float-label" [class.has-value]="stepForm.get('tags')!.value">
-                  <input nz-input placeholder=" " formControlName="tags" />
-                  <label>Tags</label>
-                </div>
-              </nz-form-control>
-            </nz-form-item>
-            <small>Comma-separated</small>
-          </div>
-        </div>
-
-        <nz-divider nzText="Guidance" nzOrientation="left"></nz-divider>
-
-        <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
-          <div nz-col [nzSpan]="8">
-            <nz-form-item>
-              <nz-form-control>
-                <div class="nz-float-label" [class.has-value]="stepForm.get('expectedResult')!.value">
-                  <nz-select formControlName="expectedResult" nzPlaceHolder=" ">
-                    <nz-option *ngFor="let r of expectedResults" [nzValue]="r.value" [nzLabel]="r.label"></nz-option>
-                  </nz-select>
-                  <label>Expected Result</label>
-                </div>
-              </nz-form-control>
-            </nz-form-item>
-          </div>
-          <div nz-col [nzSpan]="8">
-            <nz-form-item>
-              <nz-form-control>
-                <div class="nz-float-label" [class.has-value]="stepForm.get('estimatedDurationMinutes')!.value">
-                  <input nz-input type="number" placeholder=" " formControlName="estimatedDurationMinutes" min="1" />
-                  <label>Duration (minutes)</label>
-                </div>
-              </nz-form-control>
-            </nz-form-item>
-          </div>
-          <div nz-col [nzSpan]="8">
-            <nz-form-item>
-              <nz-form-control>
-                <div class="nz-float-label" [class.has-value]="stepForm.get('referenceUrl')!.value">
-                  <input nz-input placeholder=" " formControlName="referenceUrl" />
-                  <label>Reference URL</label>
-                </div>
-              </nz-form-control>
-            </nz-form-item>
-          </div>
-        </div>
-
-        <nz-form-item style="margin-bottom: 16px;">
-          <nz-form-control>
-            <div class="nz-float-label" [class.has-value]="stepForm.get('expectedOutcome')!.value">
-              <input nz-input placeholder=" " formControlName="expectedOutcome" />
-              <label>Expected Outcome</label>
+          <nz-card nzSize="small" nzTitle="Guidance" style="margin-bottom: 16px;">
+            <div nz-row [nzGutter]="16">
+              <div nz-col [nzSpan]="8">
+                <nz-form-item>
+                  <nz-form-label>Expected Result</nz-form-label>
+                  <nz-form-control>
+                    <nz-select formControlName="expectedResult">
+                      <nz-option *ngFor="let r of expectedResults" [nzValue]="r.value" [nzLabel]="r.label"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzSpan]="8">
+                <nz-form-item>
+                  <nz-form-label>Duration (minutes)</nz-form-label>
+                  <nz-form-control>
+                    <input nz-input type="number" formControlName="estimatedDurationMinutes" min="1" />
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzSpan]="8">
+                <nz-form-item>
+                  <nz-form-label>Reference URL</nz-form-label>
+                  <nz-form-control>
+                    <input nz-input formControlName="referenceUrl" />
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
             </div>
-          </nz-form-control>
-        </nz-form-item>
 
-        <div class="quill-field" style="margin-bottom: 16px;">
-          <label class="quill-label">Step Description</label>
-          <quill-editor formControlName="stepDescription" [modules]="quillModules"
-            placeholder="Describe what this step involves" [styles]="{ height: '80px' }"></quill-editor>
-        </div>
-        <div class="quill-field" style="margin-bottom: 16px;">
-          <label class="quill-label">Detailed Instructions</label>
-          <quill-editor formControlName="stepInstructions" [modules]="quillModules"
-            placeholder="Step-by-step instructions" [styles]="{ height: '120px' }"></quill-editor>
-        </div>
-
-        <nz-divider nzText="Evidence Requirements" nzOrientation="left"></nz-divider>
-
-        <div nz-row [nzGutter]="16" style="margin-bottom: 16px;">
-          <div nz-col [nzSpan]="8">
-            <label nz-checkbox formControlName="evidenceRequired">Evidence Required</label>
-          </div>
-          <div nz-col [nzSpan]="8">
             <nz-form-item>
+              <nz-form-label>Expected Outcome</nz-form-label>
               <nz-form-control>
-                <div class="nz-float-label" [class.has-value]="stepForm.get('evidenceType')!.value">
-                  <nz-select formControlName="evidenceType" nzPlaceHolder=" ">
-                    <nz-option *ngFor="let t of evidenceTypes" [nzValue]="t.value" [nzLabel]="t.label"></nz-option>
-                  </nz-select>
-                  <label>Evidence Type</label>
-                </div>
+                <input nz-input formControlName="expectedOutcome" />
               </nz-form-control>
             </nz-form-item>
-          </div>
-          <div nz-col [nzSpan]="8">
+
             <nz-form-item>
+              <nz-form-label>Step Description</nz-form-label>
               <nz-form-control>
-                <div class="nz-float-label" [class.has-value]="stepForm.get('maxFileSizeMb')!.value">
-                  <input nz-input type="number" placeholder=" " formControlName="maxFileSizeMb" min="1" max="100" />
-                  <label>Max File Size (MB)</label>
-                </div>
+                <quill-editor formControlName="stepDescription" [modules]="quillModules"
+                  placeholder="Describe what this step involves" [styles]="{ height: '80px' }"></quill-editor>
               </nz-form-control>
             </nz-form-item>
-          </div>
-        </div>
 
-        <div nz-row [nzGutter]="16">
-          <div nz-col [nzSpan]="12">
             <nz-form-item>
+              <nz-form-label>Detailed Instructions</nz-form-label>
               <nz-form-control>
-                <div class="nz-float-label" [class.has-value]="stepForm.get('allowedFileTypes')!.value">
-                  <input nz-input placeholder=" " formControlName="allowedFileTypes" />
-                  <label>Allowed File Types</label>
-                </div>
+                <quill-editor formControlName="stepInstructions" [modules]="quillModules"
+                  placeholder="Step-by-step instructions" [styles]="{ height: '120px' }"></quill-editor>
               </nz-form-control>
             </nz-form-item>
-            <small>Comma-separated extensions</small>
-          </div>
-        </div>
+          </nz-card>
 
-        <!-- Footer Buttons -->
-        <nz-divider></nz-divider>
-        <div style="display: flex; justify-content: flex-end; gap: 12px;">
-          <button *ngIf="!isCreating && selectedStep?.id" nz-button nzDanger type="button"
-            (click)="deleteStep()" style="margin-right: auto;">
-            <span nz-icon nzType="delete" nzTheme="outline"></span> Delete
-          </button>
-          <button nz-button type="button" (click)="cancelEdit()">Cancel</button>
-          <button nz-button nzType="primary" type="button"
-            [disabled]="stepForm.invalid || saving" [nzLoading]="saving" (click)="saveStep()">
-            <span nz-icon nzType="save" nzTheme="outline"></span> Save
-          </button>
-        </div>
-      </form>
-    </nz-card>
+          <nz-card nzSize="small" nzTitle="Evidence Requirements" style="margin-bottom: 16px;">
+            <div nz-row [nzGutter]="16">
+              <div nz-col [nzSpan]="8">
+                <nz-form-item>
+                  <nz-form-label>&nbsp;</nz-form-label>
+                  <nz-form-control>
+                    <label nz-checkbox formControlName="evidenceRequired">Evidence Required</label>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzSpan]="8">
+                <nz-form-item>
+                  <nz-form-label>Evidence Type</nz-form-label>
+                  <nz-form-control>
+                    <nz-select formControlName="evidenceType">
+                      <nz-option *ngFor="let t of evidenceTypes" [nzValue]="t.value" [nzLabel]="t.label"></nz-option>
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzSpan]="8">
+                <nz-form-item>
+                  <nz-form-label>Max File Size (MB)</nz-form-label>
+                  <nz-form-control>
+                    <input nz-input type="number" formControlName="maxFileSizeMb" min="1" max="100" />
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            </div>
+
+            <div nz-row [nzGutter]="16">
+              <div nz-col [nzSpan]="12">
+                <nz-form-item>
+                  <nz-form-label>Allowed File Types</nz-form-label>
+                  <nz-form-control>
+                    <input nz-input formControlName="allowedFileTypes" />
+                  </nz-form-control>
+                </nz-form-item>
+                <span style="font-size: 12px; color: rgba(0,0,0,0.45);">Comma-separated extensions</span>
+              </div>
+            </div>
+          </nz-card>
+
+          <!-- Footer Buttons -->
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button *ngIf="!isCreating && selectedStep?.id" nz-button nzDanger type="button"
+              (click)="deleteStep()" style="margin-right: auto;">
+              <span nz-icon nzType="delete" nzTheme="outline"></span> Delete
+            </button>
+            <button nz-button type="button" (click)="cancelEdit()">Cancel</button>
+            <button nz-button nzType="primary" type="button"
+              [disabled]="stepForm.invalid || saving" [nzLoading]="saving" (click)="saveStep()">
+              Save
+            </button>
+          </div>
+        </form>
+      </nz-card>
+    </div>
   </div>
 </div>

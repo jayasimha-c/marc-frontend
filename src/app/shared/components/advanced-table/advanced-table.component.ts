@@ -9,7 +9,7 @@ import {
   TemplateRef,
   AfterViewInit,
 } from '@angular/core';
-import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { TableColumn, TableAction, TableQueryParams } from './advanced-table.models';
 import { NzTableLayout, NzTablePaginationPosition, NzTablePaginationType } from 'ng-zorro-antd/table';
 
@@ -130,8 +130,7 @@ export class AdvancedTableComponent implements OnChanges, AfterViewInit {
   // Column settings state
   _internalColumns: TableColumn[] = [];
   columnSettingsVisible = false;
-  settingsDisplayed: TableColumn[] = [];
-  settingsHidden: TableColumn[] = [];
+  settingsColumns: { field: string; header: string; visible: boolean; required: boolean }[] = [];
 
   private _initialEmitDone = false;
 
@@ -450,48 +449,36 @@ export class AdvancedTableComponent implements OnChanges, AfterViewInit {
 
   // --- Column Settings ---
   openColumnSettings(): void {
-    this.settingsDisplayed = this._internalColumns
-      .filter(c => c.visible !== false && !c.required)
-      .map(c => ({ ...c }));
-    this.settingsHidden = this._internalColumns
-      .filter(c => c.visible === false && !c.required)
-      .map(c => ({ ...c }));
+    this.settingsColumns = this._internalColumns.map(c => ({
+      field: c.field,
+      header: c.header,
+      visible: c.visible !== false,
+      required: !!c.required,
+    }));
     this.columnSettingsVisible = true;
   }
 
-  handleColumnSettingsOk(): void {
-    const requiredCols = this._internalColumns.filter(c => c.required);
-    this.settingsDisplayed.forEach(c => { delete c.visible; });
-    this.settingsHidden.forEach(c => { c.visible = false; });
-    this._internalColumns = [
-      ...requiredCols.filter(c => c.fixed === 'left'),
-      ...this.settingsDisplayed,
-      ...this.settingsHidden,
-      ...requiredCols.filter(c => c.fixed !== 'left'),
-    ];
+  applyColumnSettings(): void {
+    const map = new Map(this._internalColumns.map(c => [c.field, c]));
+    this._internalColumns = this.settingsColumns.map(s => {
+      const col = map.get(s.field)!;
+      if (s.visible) { delete col.visible; } else { col.visible = false; }
+      return col;
+    });
     this.columnSettingsVisible = false;
     this.applyClientSideOperations();
   }
 
-  handleColumnSettingsCancel(): void {
-    this.columnSettingsVisible = false;
+  resetColumnSettings(): void {
+    this.settingsColumns = this.columns.map(c => ({
+      field: c.field,
+      header: c.header,
+      visible: c.visible !== false,
+      required: !!c.required,
+    }));
   }
 
-  onColumnDrop(event: CdkDragDrop<TableColumn[]>): void {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-    } else {
-      transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
-    }
-  }
-
-  removeFromDisplayed(col: TableColumn, index: number): void {
-    this.settingsDisplayed.splice(index, 1);
-    this.settingsHidden = [...this.settingsHidden, col];
-  }
-
-  addToDisplayed(col: TableColumn, index: number): void {
-    this.settingsHidden.splice(index, 1);
-    this.settingsDisplayed = [...this.settingsDisplayed, col];
+  onSettingsDrop(event: CdkDragDrop<any>): void {
+    moveItemInArray(this.settingsColumns, event.previousIndex, event.currentIndex);
   }
 }

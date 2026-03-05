@@ -1,5 +1,5 @@
 <!-- Toolbar -->
-<div class="ilt__toolbar" *ngIf="title || _visibleActions.length || _overflowActions.length || showSearch || showRefresh || extraToolbarRef">
+<div class="ilt__toolbar" *ngIf="title || _visibleActions.length || _overflowActions.length || showSearch || showRefresh || showColumnSettings || extraToolbarRef">
   <!-- Left: Title + Unsaved tag -->
   <div class="ilt__toolbar-left">
     <div class="ilt__title-block" *ngIf="title">
@@ -66,6 +66,18 @@
       </ng-container>
     </nz-space>
 
+    <!-- Column settings -->
+    <button
+      *ngIf="showColumnSettings"
+      nz-button
+      nzType="text"
+      nzSize="small"
+      nz-tooltip="Column Settings"
+      (click)="openColumnSettings()"
+    >
+      <span nz-icon nzType="setting"></span>
+    </button>
+
     <!-- Refresh -->
     <button
       *ngIf="showRefresh"
@@ -123,7 +135,7 @@
 
       <!-- Column headers -->
       <th
-        *ngFor="let col of columns; trackBy: trackByField"
+        *ngFor="let col of visibleColumns; trackBy: trackByField"
         [nzWidth]="col.width || null"
         [nzAlign]="col.align || 'left'"
         [nzLeft]="col.fixed === 'left'"
@@ -166,7 +178,7 @@
       <td *ngIf="showRowNumbers" nzAlign="center" class="ilt__cell-num">{{ ri + 1 }}</td>
 
       <!-- Cell rendering -->
-      <td *ngFor="let col of columns; let ci = index; trackBy: trackByField"
+      <td *ngFor="let col of visibleColumns; let ci = index; trackBy: trackByField"
         [nzAlign]="col.align || 'left'"
         [nzLeft]="col.fixed === 'left'"
         [nzRight]="col.fixed === 'right'"
@@ -336,3 +348,30 @@
   <span nz-icon nzType="info-circle" nzTheme="outline"></span>
   Paste from Excel: copy rows and Ctrl+V into editable cells
 </div>
+
+<!-- Column Settings Drawer -->
+<nz-drawer
+  [nzVisible]="columnSettingsVisible"
+  nzTitle="Columns"
+  nzPlacement="right"
+  [nzWidth]="280"
+  [nzClosable]="true"
+  (nzOnClose)="columnSettingsVisible = false"
+>
+  <ng-container *nzDrawerContent>
+    <div cdkDropList (cdkDropListDropped)="onSettingsDrop($event)">
+      <div *ngFor="let col of settingsColumns" cdkDrag
+        style="display: flex; align-items: center; padding: 6px 4px; border-bottom: 1px solid #f0f0f0; cursor: move;">
+        <span nz-icon nzType="holder" nzTheme="outline" cdkDragHandle
+          style="color: rgba(0,0,0,0.25); margin-right: 8px; font-size: 12px;"></span>
+        <label nz-checkbox [(ngModel)]="col.visible" [nzDisabled]="col.required">
+          {{col.header}}
+        </label>
+      </div>
+    </div>
+    <div style="margin-top: 12px; display: flex; gap: 8px;">
+      <button nz-button nzType="primary" nzSize="small" (click)="applyColumnSettings()">Apply</button>
+      <button nz-button nzSize="small" (click)="resetColumnSettings()">Reset</button>
+    </div>
+  </ng-container>
+</nz-drawer>

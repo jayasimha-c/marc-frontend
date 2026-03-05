@@ -28,6 +28,7 @@ export interface InlineColumn<T = any> {
   /** Explicit column order for paste operations */
   pasteIndex?: number;
   required?: boolean;
+  visible?: boolean;
   /** Labels for boolean select: [trueLabel, falseLabel] */
   booleanLabels?: [string, string];
   /** Allow clear in select */
