@@ -55,7 +55,7 @@
   </nz-card>
 
   <!-- Control Books Table -->
-  <app-advanced-table *ngIf="!loading && scheduler"
+  <app-advanced-table [showColumnSettings]="true" storageKey="icm-control-scheduler-control-scheduler-detail-1" *ngIf="!loading && scheduler"
     title="Control Books"
     [columns]="bookColumns"
     [data]="books"
@@ -69,7 +69,7 @@
   <div style="margin-top: 16px;"></div>
 
   <!-- Direct Controls Table -->
-  <app-advanced-table *ngIf="!loading && scheduler"
+  <app-advanced-table [showColumnSettings]="true" storageKey="icm-control-scheduler-control-scheduler-detail-2" *ngIf="!loading && scheduler"
     title="Direct Controls"
     [columns]="controlColumns"
     [data]="controls"

@@ -96,7 +96,7 @@
     <nz-divider class="my-4"></nz-divider>
 
     <div class="w-full mt-5">
-        <app-advanced-table [columns]="tableColumns" [data]="tableData" [totalRecords]="totalRecords"
+        <app-advanced-table [showColumnSettings]="true" storageKey="pam-requests-my-reviews" [columns]="tableColumns" [data]="tableData" [totalRecords]="totalRecords"
             [serverSide]="true" (pageChange)="getTableData($event)" [loading]="loading">
 
             <ng-template #statusTemplate let-row="row">

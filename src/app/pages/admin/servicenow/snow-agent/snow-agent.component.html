@@ -1,6 +1,8 @@
 <nz-card [nzBordered]="false">
   <!-- Configurations Table -->
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="admin-servicenow-snow-agent-1"
     title="Agent Configurations"
     [data]="configsData"
     [columns]="configsColumns"
@@ -69,6 +71,8 @@
 
   <!-- Logs Table -->
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="admin-servicenow-snow-agent-2"
     title="Processing Logs"
     [data]="logsData"
     [columns]="logsColumns"

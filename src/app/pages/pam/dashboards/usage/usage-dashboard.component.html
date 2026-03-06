@@ -26,6 +26,8 @@
     <!-- Changes Table -->
     <nz-card class="mt-4">
         <app-advanced-table
+            [showColumnSettings]="true"
+            storageKey="pam-dashboards-usage-usage-dashboard"
             title="Changes Made by Privileged Users"
             [data]="tableData"
             [columns]="tableColumns"

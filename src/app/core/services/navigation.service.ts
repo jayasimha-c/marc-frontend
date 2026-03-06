@@ -144,6 +144,7 @@ export class NavigationService {
               { id: 'tcode-execution', title: 'Tcode Execution', icon: 'code', link: '/acm/reports/tcode-execution', type: 'item', authorities: ['OP_REPORTS_TRANSACTION_EXECUTION'] },
               { id: 'rem-dashboard', title: 'REM Dashboard', icon: 'fund', link: '/acm/reports/rem-dashboard', type: 'item', authorities: ['OP_REM_DASHBOARD'] },
               { id: 'risk-analysis-dashboard', title: 'Risk Analysis Dashboard', icon: 'stock', link: '/acm/risk-analysis-dashboard', type: 'item' },
+              { id: 'risk-view-bpmn', title: 'Risk View BPMN', icon: 'apartment', link: '/acm/risk-view-bpmn', type: 'item' },
             ],
           },
         ],

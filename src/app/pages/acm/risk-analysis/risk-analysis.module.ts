@@ -29,10 +29,17 @@ import { RiskSelectModalComponent } from './online/risk-list/risk-select-modal.c
 import { SimulationAnalysisComponent } from './simulation/simulation-analysis.component';
 import { SimulationPreSelectionComponent } from './simulation/simulation-preselection-modal.component';
 
+// Impact Analysis
+import { ImpactAnalysisComponent } from './impact-analysis/impact-analysis.component';
+import { CreateImpactAnalysisComponent } from './impact-analysis/create-impact-analysis.component';
+import { AddRolesToProfileComponent } from './impact-analysis/add-roles-to-profile.component';
+import { ReviewProfileDetailsComponent } from './impact-analysis/review-profile-details.component';
+
 const routes: Routes = [
   { path: '', redirectTo: 'online', pathMatch: 'full' },
   { path: 'online', component: OnlineAnalysisComponent },
   { path: 'simulation', component: SimulationAnalysisComponent },
+  { path: 'impact-analysis', component: ImpactAnalysisComponent },
 ];
 
 @NgModule({
@@ -55,6 +62,10 @@ const routes: Routes = [
     RiskSelectModalComponent,
     SimulationAnalysisComponent,
     SimulationPreSelectionComponent,
+    ImpactAnalysisComponent,
+    CreateImpactAnalysisComponent,
+    AddRolesToProfileComponent,
+    ReviewProfileDetailsComponent,
   ],
   imports: [SharedModule, RouterModule.forChild(routes)],
 })

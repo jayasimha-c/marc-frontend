@@ -1,0 +1,153 @@
+<div style="padding: 16px;">
+  <!-- Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+    <h4 style="margin: 0; font-weight: 600;">RFC Monitoring</h4>
+    <nz-space>
+      <nz-select *nzSpaceItem style="width: 200px" nzPlaceHolder="All Systems"
+        [formControl]="selectedSystem" nzAllowClear nzSize="small"
+        (ngModelChange)="onSystemFilterChange()">
+        <nz-option *ngFor="let sys of systems" [nzValue]="sys.sapSystemId"
+          [nzLabel]="sys.destinationName"></nz-option>
+      </nz-select>
+      <button *nzSpaceItem nz-button nzSize="small" (click)="navigateToConnections()">
+        <span nz-icon nzType="unordered-list"></span> Connections
+      </button>
+      <button *nzSpaceItem nz-button nzSize="small" (click)="navigateToRules()">
+        <span nz-icon nzType="setting"></span> Risk Rules
+      </button>
+    </nz-space>
+  </div>
+
+  <nz-spin [nzSpinning]="loading && !initialLoadComplete">
+    <!-- Stats Cards -->
+    <nz-row [nzGutter]="16">
+      <nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4" style="margin-bottom: 8px;">
+        <nz-card nzSize="small">
+          <nz-statistic nzTitle="Total Connections" [nzValue]="stats.totalConnections || 0"
+            [nzPrefix]="totalIcon"></nz-statistic>
+          <ng-template #totalIcon><span nz-icon nzType="link"></span></ng-template>
+        </nz-card>
+      </nz-col>
+      <nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4" style="margin-bottom: 8px;">
+        <nz-card nzSize="small">
+          <nz-statistic nzTitle="Active" [nzValue]="stats.activeConnections || 0"
+            [nzPrefix]="activeIcon" [nzValueStyle]="{ color: '#1890ff' }"></nz-statistic>
+          <ng-template #activeIcon><span nz-icon nzType="thunderbolt"></span></ng-template>
+        </nz-card>
+      </nz-col>
+      <nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4" style="margin-bottom: 8px;">
+        <nz-card nzSize="small">
+          <nz-statistic nzTitle="Systems" [nzValue]="stats.systemsWithConnections || 0"
+            [nzPrefix]="sysIcon" [nzValueStyle]="{ color: '#52c41a' }"></nz-statistic>
+          <ng-template #sysIcon><span nz-icon nzType="cluster"></span></ng-template>
+        </nz-card>
+      </nz-col>
+      <nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4" style="margin-bottom: 8px;">
+        <nz-card nzSize="small">
+          <nz-statistic nzTitle="With Password" [nzValue]="stats.connectionsWithPassword || 0"
+            [nzPrefix]="pwdIcon" [nzValueStyle]="{ color: '#faad14' }"></nz-statistic>
+          <ng-template #pwdIcon><span nz-icon nzType="key"></span></ng-template>
+        </nz-card>
+      </nz-col>
+      <nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4" style="margin-bottom: 8px;">
+        <nz-card nzSize="small">
+          <nz-statistic nzTitle="Trusted RFC" [nzValue]="stats.trustedRfcCount || 0"
+            [nzPrefix]="trustIcon" [nzValueStyle]="{ color: '#722ed1' }"></nz-statistic>
+          <ng-template #trustIcon><span nz-icon nzType="safety-certificate"></span></ng-template>
+        </nz-card>
+      </nz-col>
+      <nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" [nzLg]="4" style="margin-bottom: 8px;">
+        <nz-card nzSize="small">
+          <nz-statistic nzTitle="No SNC" [nzValue]="stats.noSncCount || 0"
+            [nzPrefix]="sncIcon" [nzValueStyle]="{ color: '#ff4d4f' }"></nz-statistic>
+          <ng-template #sncIcon><span nz-icon nzType="unlock"></span></ng-template>
+        </nz-card>
+      </nz-col>
+    </nz-row>
+
+    <!-- Connections by Type & System -->
+    <nz-row [nzGutter]="16" style="margin-top: 16px;">
+      <nz-col [nzSpan]="12">
+        <nz-card nzTitle="Connections by Type" nzSize="small">
+          <div *ngIf="connectionsByTypeList.length > 0">
+            <div *ngFor="let item of connectionsByTypeList" class="type-row"
+              (click)="navigateToConnections({ connectionType: item.type })">
+              <nz-tag [nzColor]="item.color">{{ item.label }}</nz-tag>
+              <nz-progress [nzPercent]="stats.totalConnections ? (item.count / stats.totalConnections * 100) : 0"
+                [nzShowInfo]="false" nzSize="small" [nzStrokeColor]="item.color"
+                style="flex: 1; margin: 0 12px"></nz-progress>
+              <span class="type-count">{{ item.count }}</span>
+            </div>
+          </div>
+          <nz-empty *ngIf="connectionsByTypeList.length === 0" nzNotFoundContent="No type data"></nz-empty>
+        </nz-card>
+      </nz-col>
+      <nz-col [nzSpan]="12">
+        <nz-card nzTitle="Connections by System" nzSize="small">
+          <div *ngIf="connectionsBySystemList.length > 0">
+            <div *ngFor="let item of connectionsBySystemList" class="system-row"
+              (click)="navigateToConnections({ sapSystemId: item.system })">
+              <span class="system-name">{{ item.system }}</span>
+              <nz-progress [nzPercent]="stats.totalConnections ? (item.count / stats.totalConnections * 100) : 0"
+                [nzShowInfo]="false" nzSize="small" nzStrokeColor="#1890ff"
+                style="flex: 1; margin: 0 12px"></nz-progress>
+              <span class="type-count">{{ item.count }}</span>
+            </div>
+          </div>
+          <nz-empty *ngIf="connectionsBySystemList.length === 0" nzNotFoundContent="No system data"></nz-empty>
+        </nz-card>
+      </nz-col>
+    </nz-row>
+
+    <!-- Recent Changes & Scan Status -->
+    <nz-row [nzGutter]="16" style="margin-top: 16px;">
+      <nz-col [nzSpan]="12">
+        <nz-card nzSize="small">
+          <div class="card-header-row">
+            <span class="card-title"><span nz-icon nzType="history"></span> Recent Changes</span>
+            <nz-tag>Last 7 days</nz-tag>
+          </div>
+          <nz-list *ngIf="recentChanges?.length > 0" nzSize="small">
+            <nz-list-item *ngFor="let change of recentChanges">
+              <nz-list-item-meta>
+                <nz-list-item-meta-title>
+                  <nz-tag [nzColor]="getChangeTagColor(change.changeType)">{{ getChangeTypeLabel(change.changeType) }}</nz-tag>
+                  {{ change.connectionName }}
+                  <span class="text-secondary"> - {{ change.sapSystemName }}</span>
+                </nz-list-item-meta-title>
+                <nz-list-item-meta-description>
+                  {{ getTypeLabel(change.connectionType) }} &middot; {{ formatRelativeTime(change.modifiedDate) }}
+                </nz-list-item-meta-description>
+              </nz-list-item-meta>
+            </nz-list-item>
+          </nz-list>
+          <nz-empty *ngIf="recentChanges?.length === 0" nzNotFoundContent="No changes in last 7 days"></nz-empty>
+        </nz-card>
+      </nz-col>
+      <nz-col [nzSpan]="12">
+        <nz-card nzSize="small">
+          <div class="card-header-row">
+            <span class="card-title"><span nz-icon nzType="radar-chart"></span> Scan Status</span>
+          </div>
+          <nz-list *ngIf="scanStatus?.length > 0" nzSize="small">
+            <nz-list-item *ngFor="let status of scanStatus">
+              <nz-list-item-meta>
+                <nz-list-item-meta-avatar>
+                  <nz-badge [nzStatus]="getScanStatusColor(status)"></nz-badge>
+                </nz-list-item-meta-avatar>
+                <nz-list-item-meta-title>
+                  {{ status.systemName }}
+                </nz-list-item-meta-title>
+                <nz-list-item-meta-description>
+                  {{ status.totalScans }} scans
+                  <span *ngIf="status.lastSuccessAt"> &middot; Last: {{ formatDate(status.lastSuccessAt) }}</span>
+                </nz-list-item-meta-description>
+              </nz-list-item-meta>
+            </nz-list-item>
+          </nz-list>
+          <nz-empty *ngIf="scanStatus?.length === 0" nzNotFoundContent="No scan data available"></nz-empty>
+        </nz-card>
+      </nz-col>
+    </nz-row>
+  </nz-spin>
+</div>

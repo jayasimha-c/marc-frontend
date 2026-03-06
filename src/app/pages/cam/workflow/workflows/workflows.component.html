@@ -1,6 +1,8 @@
 <app-page-panel header="Workflows">
 
     <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="cam-workflow-workflows"
         title=""
         [data]="data"
         [columns]="columns"

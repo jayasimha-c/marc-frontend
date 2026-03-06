@@ -1,6 +1,8 @@
 <app-page-panel header="Requests to Approve">
 
     <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="cam-workflow-to-approve"
         title=""
         [data]="data"
         [columns]="columns"

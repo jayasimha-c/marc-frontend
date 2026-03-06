@@ -97,6 +97,8 @@
                 <span nz-icon nzType="ordered-list" nzTheme="outline"></span> Manual Script Steps
               </div>
               <app-advanced-table
+                [showColumnSettings]="true"
+                storageKey="icm-control-deficiency-view-control-def-1"
                 [columns]="scriptStepColumns"
                 [data]="manualScriptSteps"
                 [totalRecords]="manualScriptSteps.length"
@@ -170,6 +172,8 @@
               <span nz-icon nzType="file-done" nzTheme="outline"></span> Manual Script Results
             </div>
             <app-advanced-table
+              [showColumnSettings]="true"
+              storageKey="icm-control-deficiency-view-control-def-2"
               [columns]="manualResultColumns"
               [data]="manualResults"
               [totalRecords]="manualResults.length"
@@ -187,6 +191,8 @@
               <span nz-icon nzType="bar-chart" nzTheme="outline"></span> Automated Rule Results
             </div>
             <app-advanced-table
+              [showColumnSettings]="true"
+              storageKey="icm-control-deficiency-view-control-def-3"
               [columns]="automatedResultColumns"
               [data]="automatedResults"
               [totalRecords]="automatedResults.length"

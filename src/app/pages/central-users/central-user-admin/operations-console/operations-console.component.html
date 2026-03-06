@@ -37,7 +37,7 @@
                     <div style="font-size: 12px;">Enter at least 2 characters</div>
                 </div>
 
-                <app-advanced-table *ngIf="userSearchInitiated" [data]="searchedUsers" [columns]="userTableColumns"
+                <app-advanced-table [showColumnSettings]="true" storageKey="central-users-central-user-admin-operations-console-1" *ngIf="userSearchInitiated" [data]="searchedUsers" [columns]="userTableColumns"
                     [loading]="userSearchLoading" [serverSide]="true" [totalRecords]="totalUserRecords"
                     [pageIndex]="pageIndex" [pageSize]="pageSize" (queryParamsChange)="onUserQueryParamsChange($event)"
                     [showSelection]="true" rowKey="sapBname" (selectionChange)="onUserSelectionChange($event)"
@@ -64,7 +64,7 @@
                     </nz-row>
                 </div>
 
-                <app-advanced-table [data]="systemsWithStatus" [columns]="systemTableColumns" [loading]="systemsLoading"
+                <app-advanced-table [showColumnSettings]="true" storageKey="central-users-central-user-admin-operations-console-2" [data]="systemsWithStatus" [columns]="systemTableColumns" [loading]="systemsLoading"
                     [showPagination]="false" [showSelection]="true" rowKey="id"
                     (selectionChange)="onSystemSelectionChange($event)" [actions]="systemTableActions" size="small"
                     scrollY="365px" [showSearch]="false" [showRefresh]="false">
@@ -85,7 +85,7 @@
                     </nz-row>
                 </div>
 
-                <app-advanced-table *ngIf="operationLogs.length > 0" [data]="operationLogs" [columns]="logTableColumns"
+                <app-advanced-table [showColumnSettings]="true" storageKey="central-users-central-user-admin-operations-console-3" *ngIf="operationLogs.length > 0" [data]="operationLogs" [columns]="logTableColumns"
                     [showPagination]="false" [actions]="logTableActions" size="small" scrollY="300px"
                     [showSearch]="false" [showRefresh]="false" [customStatusTemplate]="logStatusTemplate">
                     <ng-template #logStatusTemplate let-row>

@@ -10,6 +10,8 @@
 
   <ng-container *ngIf="formType === 'addRisk'; else rulesGrid">
     <app-advanced-table
+      [showColumnSettings]="true"
+      storageKey="acm-rem-add-risks-config-1"
       [columns]="riskColumns"
       [data]="riskData"
       [loading]="riskLoading"
@@ -22,6 +24,8 @@
 
   <ng-template #rulesGrid>
     <app-advanced-table
+      [showColumnSettings]="true"
+      storageKey="acm-rem-add-risks-config-2"
       [columns]="ruleColumns"
       [data]="ruleData"
       [loading]="ruleLoading"

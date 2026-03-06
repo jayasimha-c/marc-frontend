@@ -81,7 +81,7 @@
                     </span>
                 </div>
 
-                <app-advanced-table [data]="rows" [columns]="tableColumns" [total]="totalRecords" [loading]="loading"
+                <app-advanced-table [showColumnSettings]="true" storageKey="security-reports-role-analysis-1" [data]="rows" [columns]="tableColumns" [total]="totalRecords" [loading]="loading"
                     [showPagination]="true" [pageSizeOptions]="[20, 50, 100]" (queryParams)="onTableChange($event)"
                     (rowClick)="onRowClick($event)">
                 </app-advanced-table>
@@ -94,7 +94,7 @@
 <!-- Side Panels (Replaced nz-side-panel) -->
 <app-side-panel #childRolesPanel [title]="'Child Roles Container'" [subtitle]="selectedRole?.roleName" width="500px">
     <div panel-content class="p-4" *ngIf="selectedRole">
-        <app-advanced-table [data]="childRolesTableData" [columns]="childRolesColumns" [showPagination]="true"
+        <app-advanced-table [showColumnSettings]="true" storageKey="security-reports-role-analysis-2" [data]="childRolesTableData" [columns]="childRolesColumns" [showPagination]="true"
             [loading]="false" [total]="childRolesTableData.length">
         </app-advanced-table>
     </div>
@@ -120,7 +120,7 @@
             </button>
         </div>
 
-        <app-advanced-table [data]="violationsTableData" [columns]="violationsColumns" [showPagination]="false"
+        <app-advanced-table [showColumnSettings]="true" storageKey="security-reports-role-analysis-3" [data]="violationsTableData" [columns]="violationsColumns" [showPagination]="false"
             [loading]="false" [total]="violationsTableData.length">
         </app-advanced-table>
     </div>

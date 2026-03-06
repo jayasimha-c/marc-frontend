@@ -39,7 +39,7 @@
     </nz-row>
 
     <!-- Requests Table -->
-    <app-advanced-table title="Requests" [columns]="columns" [data]="tableData" [loading]="loading"
+    <app-advanced-table [showColumnSettings]="true" storageKey="pam-requests-my-request" title="Requests" [columns]="columns" [data]="tableData" [loading]="loading"
         [showPagination]="true" [serverSide]="true" [totalRecords]="totalRecords"
         [pageSize]="pageSize" [pageIndex]="pageIndex" [actions]="tableActions"
         (queryParamsChange)="onPageChange($event)">

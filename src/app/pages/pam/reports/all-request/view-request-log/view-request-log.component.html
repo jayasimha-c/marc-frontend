@@ -1,5 +1,5 @@
 <div class="w-full">
-    <app-advanced-table [columns]="tableColumns" [data]="tableData" [totalRecords]="totalRecords" [loading]="loading"
+    <app-advanced-table [showColumnSettings]="true" storageKey="pam-reports-all-request-view-request-log" [columns]="tableColumns" [data]="tableData" [totalRecords]="totalRecords" [loading]="loading"
         [serverSide]="false" [scrollY]="'400px'">
 
         <ng-template #statusTemplate let-row="row">

@@ -1,5 +1,7 @@
 <div class="w-full p-4">
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="css-sap-audit-log-audit-rules"
     [data]="rules"
     [columns]="columns"
     [loading]="loading"

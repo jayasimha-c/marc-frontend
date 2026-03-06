@@ -149,6 +149,8 @@
         </form>
 
         <app-advanced-table
+          [showColumnSettings]="true"
+          storageKey="icm-add-control-1"
           title="Manual Scripts"
           [columns]="scriptColumns"
           [data]="manualScripts"
@@ -206,6 +208,8 @@
       </nz-alert>
 
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="icm-add-control-2"
         title="User Notification Settings"
         [columns]="notifyColumns"
         [data]="notifySettings"

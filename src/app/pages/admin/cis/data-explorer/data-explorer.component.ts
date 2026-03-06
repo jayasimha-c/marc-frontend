@@ -3,7 +3,8 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ApiResponse } from '../../../../core/models/api-response';
 import { NotificationService } from '../../../../core/services/notification.service';
-import { TableColumn } from '../../../../shared/components/advanced-table/advanced-table.models';
+import { TableColumn, TableQueryParams } from '../../../../shared/components/advanced-table/advanced-table.models';
+import { GridRequestBuilder } from '../../../../core/utils/grid-request.builder';
 import { CISService, CISUser, CISGroup } from '../cis.service';
 
 @Component({
@@ -109,17 +110,18 @@ export class CISDataExplorerComponent implements OnInit, OnDestroy {
   }
 
   private loadCurrentTab(): void {
+    const defaultParams: TableQueryParams = { pageIndex: 1, pageSize: 20, filters: {}, globalSearch: '' };
     if (this.activeTab === 0) {
-      this.loadUsers({ pageIndex: 1, pageSize: 20, filters: {}, globalSearch: '' });
+      this.loadUsers(defaultParams);
     } else {
-      this.loadGroups({ pageIndex: 1, pageSize: 20, filters: {}, globalSearch: '' });
+      this.loadGroups(defaultParams);
     }
   }
 
-  loadUsers(params: any): void {
+  loadUsers(params: TableQueryParams): void {
     if (!this.selectedSystemId) return;
 
-    const request = this.buildRequest(params);
+    const request = GridRequestBuilder.toGridFilter(params);
     this.cisService.getFilteredUsers(this.selectedSystemId, request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -137,10 +139,10 @@ export class CISDataExplorerComponent implements OnInit, OnDestroy {
       });
   }
 
-  loadGroups(params: any): void {
+  loadGroups(params: TableQueryParams): void {
     if (!this.selectedSystemId) return;
 
-    const request = this.buildRequest(params);
+    const request = GridRequestBuilder.toGridFilter(params);
     this.cisService.getFilteredGroups(this.selectedSystemId, request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -184,27 +186,4 @@ export class CISDataExplorerComponent implements OnInit, OnDestroy {
     this.selectedGroup = null;
   }
 
-  private buildRequest(params: any): any {
-    const sortField = params.sort?.field || '';
-    const sortDirection = params.sort?.direction === 'ascend' ? 'ASC'
-      : params.sort?.direction === 'descend' ? 'DESC' : '';
-
-    const filters: any[] = [];
-    if (params.filters) {
-      Object.keys(params.filters).forEach(key => {
-        if (params.filters[key]) {
-          filters.push({ field: key, value: params.filters[key] });
-        }
-      });
-    }
-
-    return {
-      page: (params.pageIndex || 1) - 1,
-      size: params.pageSize || 20,
-      sortField,
-      sortDirection,
-      filters,
-      globalFilter: params.globalSearch || ''
-    };
-  }
 }

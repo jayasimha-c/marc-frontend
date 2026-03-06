@@ -37,6 +37,8 @@
       <!-- Users Tab -->
       <nz-tab nzTitle="Users">
         <app-advanced-table
+          [showColumnSettings]="true"
+          storageKey="admin-servicenow-data-explorer-1"
           title="Users"
           [data]="usersData"
           [columns]="usersColumns"
@@ -53,6 +55,8 @@
       <!-- Roles Tab -->
       <nz-tab nzTitle="Roles">
         <app-advanced-table
+          [showColumnSettings]="true"
+          storageKey="admin-servicenow-data-explorer-2"
           title="Roles"
           [data]="rolesData"
           [columns]="rolesColumns"
@@ -68,6 +72,8 @@
       <!-- Groups Tab -->
       <nz-tab nzTitle="Groups">
         <app-advanced-table
+          [showColumnSettings]="true"
+          storageKey="admin-servicenow-data-explorer-3"
           title="Groups"
           [data]="groupsData"
           [columns]="groupsColumns"

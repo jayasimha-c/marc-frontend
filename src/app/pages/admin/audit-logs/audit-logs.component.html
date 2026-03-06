@@ -1,5 +1,7 @@
 <div class="audit-logs">
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="admin-audit-logs-1"
     title="Change Log"
     [data]="data"
     [columns]="columns"
@@ -27,6 +29,8 @@
 
   <div class="audit-logs__details">
     <app-advanced-table
+      [showColumnSettings]="true"
+      storageKey="admin-audit-logs-2"
       title="Change Details"
       [data]="detailData"
       [columns]="detailColumns"

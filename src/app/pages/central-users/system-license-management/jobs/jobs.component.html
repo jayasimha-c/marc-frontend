@@ -1,5 +1,7 @@
 <app-page-panel header="License Jobs">
     <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="central-users-system-license-management-jobs"
         [columns]="columns"
         [data]="data"
         [loading]="loading"

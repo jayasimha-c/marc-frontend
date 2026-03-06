@@ -45,6 +45,8 @@
 <!-- Reviews by Department -->
 <nz-card class="mt-4 mb-4">
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="cam-uar-dashboards-review-progress-1"
     title="Reviews by Department"
     [data]="departmentData"
     [columns]="departmentColumns"
@@ -59,6 +61,8 @@
 <!-- Recent Reviews -->
 <nz-card class="mt-4">
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="cam-uar-dashboards-review-progress-2"
     title="Recent Reviews"
     [data]="recentData"
     [columns]="recentColumns"

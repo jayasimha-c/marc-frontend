@@ -29,6 +29,8 @@
 
   <div style="margin-top: 16px">
     <app-advanced-table
+      [showColumnSettings]="true"
+      storageKey="acm-risk-analysis-dashboard-sensitive-access-overview"
       title="Recent Sensitive Access Activity"
       [columns]="gridColumns"
       [data]="gridData"

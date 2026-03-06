@@ -9,7 +9,7 @@
 
     <!-- Grid -->
     <div class="role-concept__content">
-        <app-advanced-table #agTable [columns]="columns" [actions]="tableActions" [total]="totalRecords"
+        <app-advanced-table [showColumnSettings]="true" storageKey="admin-role-concept-role-concept-template" #agTable [columns]="columns" [actions]="tableActions" [total]="totalRecords"
             [loading]="loading" [data]="templates" [serverSide]="true" (queryParamsChange)="loadTemplates($event)"
             (rowClick)="onRowClick($event)">
         </app-advanced-table>

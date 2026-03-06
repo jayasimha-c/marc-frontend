@@ -70,7 +70,7 @@
     <!-- Changes Table -->
     <div class="mt-6">
         <nz-card [nzBordered]="false" class="shadow-sm rounded-lg" nzTitle="Top Identified Risks">
-            <app-advanced-table [data]="tableData" [columns]="tableColumns" [total]="totalRecord" [loading]="loading"
+            <app-advanced-table [showColumnSettings]="true" storageKey="pam-dashboards-risk-risk-dashboard" [data]="tableData" [columns]="tableColumns" [total]="totalRecord" [loading]="loading"
                 [showPagination]="false">
             </app-advanced-table>
         </nz-card>

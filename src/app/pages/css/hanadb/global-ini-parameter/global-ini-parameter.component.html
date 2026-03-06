@@ -1,0 +1,17 @@
+<app-page-panel header="HANA Global Parameters">
+  <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="css-hana-global-ini-parameters"
+    title="Global INI Parameters"
+    [data]="data"
+    [columns]="columns"
+    [actions]="actions"
+    [loading]="loading"
+    [showPagination]="true"
+    [defaultPageSize]="20"
+    [showSearch]="true"
+    (rowClick)="selectedRow = $event"
+    emptyText="No HANA parameters found"
+    size="small">
+  </app-advanced-table>
+</app-page-panel>

@@ -1,0 +1,17 @@
+<app-page-panel header="Impact Analysis">
+  <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="acm-impact-analysis-profiles"
+    title="Impact Analysis Profiles"
+    [data]="data"
+    [columns]="columns"
+    [actions]="actions"
+    [loading]="loading"
+    [showPagination]="true"
+    [defaultPageSize]="20"
+    [showSearch]="true"
+    (rowClick)="onRowClicked($event)"
+    emptyText="No impact analysis profiles found"
+    size="small">
+  </app-advanced-table>
+</app-page-panel>

@@ -47,6 +47,8 @@
 <!-- System Statistics -->
 <nz-card class="mt-4 mb-4">
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="cam-uar-dashboards-system-wise-review-1"
     title="System Statistics"
     [data]="systemData"
     [columns]="systemColumns"
@@ -61,6 +63,8 @@
 <!-- Critical Systems Status -->
 <nz-card class="mt-4">
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="cam-uar-dashboards-system-wise-review-2"
     title="Critical Systems Status"
     [data]="criticalData"
     [columns]="criticalColumns"

@@ -92,6 +92,10 @@ const routes: Routes = [
         path: 'acm/risk-analysis-dashboard',
         loadChildren: () => import('./pages/acm/risk-analysis-dashboard/risk-analysis-dashboard.module').then(m => m.RiskAnalysisDashboardModule),
       },
+      {
+        path: 'acm/risk-view-bpmn',
+        loadChildren: () => import('./pages/acm/risk-view-bpmn/risk-view-bpmn.module').then(m => m.RiskViewBpmnModule),
+      },
 
       // ─── PAM ─────────────────────────────────────────
       {

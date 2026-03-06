@@ -1,6 +1,8 @@
 <app-page-panel header="Self-Service Requests">
 
     <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="cam-self-service-requests"
         title=""
         [data]="data"
         [columns]="columns"

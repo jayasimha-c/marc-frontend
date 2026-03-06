@@ -1,6 +1,8 @@
 <app-page-panel [header]="pageTitle">
 
     <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="cam-workflow-audit-logs-node-audit-logs"
         title=""
         [data]="data"
         [columns]="columns"

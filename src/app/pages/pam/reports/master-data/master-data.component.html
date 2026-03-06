@@ -4,7 +4,7 @@
     <nz-tabset [nzAnimated]="false" style="margin-top: 16px;">
 
         <nz-tab nzTitle="Table View">
-            <app-advanced-table [data]="tableData" [columns]="tableColumns" [total]="totalRecord" [loading]="loading"
+            <app-advanced-table [showColumnSettings]="true" storageKey="pam-reports-master-data" [data]="tableData" [columns]="tableColumns" [total]="totalRecord" [loading]="loading"
                 [showPagination]="true" [pageSizeOptions]="[10, 25, 50, 100]" (queryParamsChange)="onTableChange($event)">
             </app-advanced-table>
         </nz-tab>

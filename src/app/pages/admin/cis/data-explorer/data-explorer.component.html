@@ -50,6 +50,8 @@
       <!-- Users Tab -->
       <nz-tab nzTitle="Users">
         <app-advanced-table
+          [showColumnSettings]="true"
+          storageKey="admin-cis-data-explorer-1"
           [data]="usersData"
           [columns]="usersColumns"
           [loading]="false"
@@ -64,6 +66,8 @@
       <!-- Groups Tab -->
       <nz-tab nzTitle="Groups">
         <app-advanced-table
+          [showColumnSettings]="true"
+          storageKey="admin-cis-data-explorer-2"
           [data]="groupsData"
           [columns]="groupsColumns"
           [loading]="false"

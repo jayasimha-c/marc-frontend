@@ -1,6 +1,8 @@
 <!-- Master: SAP User Field Catalogue -->
 <nz-card nzSize="small" style="margin-bottom: 16px;">
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="cam-settings-user-provision-field"
     title="SAP User Field Catalogue"
     [data]="fieldsData"
     [columns]="fieldsColumns"

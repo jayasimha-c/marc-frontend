@@ -230,6 +230,8 @@
       <nz-divider nzText="Sync History" nzOrientation="left"></nz-divider>
 
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="admin-servicenow-sync-settings"
         [data]="logsData"
         [columns]="logsColumns"
         [total]="logsTotal"

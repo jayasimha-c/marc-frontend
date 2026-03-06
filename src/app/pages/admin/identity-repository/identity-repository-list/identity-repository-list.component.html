@@ -63,6 +63,8 @@
   <nz-content class="id-hub__content">
     <ng-container *ngIf="currentView !== 'orphaned' && currentView !== 'exceptions'">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="admin-identity-repository-identity-repository-list-1"
         [title]="getPageTitle()"
         [columns]="identityColumns"
         [data]="identityData"
@@ -80,6 +82,8 @@
 
     <ng-container *ngIf="currentView === 'orphaned'">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="admin-identity-repository-identity-repository-list-2"
         title="Orphaned Accounts"
         [columns]="orphanedColumns"
         [data]="orphanedData"
@@ -94,6 +98,8 @@
 
     <ng-container *ngIf="currentView === 'exceptions'">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="admin-identity-repository-identity-repository-list-3"
         title="Identity Exceptions"
         [columns]="exceptionColumns"
         [data]="exceptionData"

@@ -42,6 +42,8 @@
   <!-- Mapped Rules Table -->
   <div class="bpmn-rules-section">
     <app-advanced-table
+      [showColumnSettings]="true"
+      storageKey="general-bpmn-diagram"
       title="Mapped Rules"
       [columns]="columns"
       [data]="rulesData"

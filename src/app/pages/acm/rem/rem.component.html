@@ -2,6 +2,8 @@
   <nz-tabset>
     <nz-tab nzTitle="Risks in Scope">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="acm-rem-1"
         [columns]="riskColumns"
         [data]="riskData"
         [loading]="riskLoading"
@@ -16,6 +18,8 @@
 
     <nz-tab nzTitle="Rules in Scope">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="acm-rem-2"
         [columns]="ruleColumns"
         [data]="ruleData"
         [loading]="ruleLoading"
@@ -30,6 +34,8 @@
 
     <nz-tab nzTitle="Duration Configuration">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="acm-rem-3"
         [columns]="durationColumns"
         [data]="durationData"
         [loading]="durationLoading"

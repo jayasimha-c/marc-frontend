@@ -42,6 +42,8 @@
 <!-- Reviewer Performance -->
 <nz-card class="mt-4 mb-4">
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="cam-uar-dashboards-reviewer-performance-1"
     title="Reviewer Performance"
     [data]="performanceData"
     [columns]="performanceColumns"
@@ -56,6 +58,8 @@
 <!-- Pending Reviews by Reviewer -->
 <nz-card class="mt-4">
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="cam-uar-dashboards-reviewer-performance-2"
     title="Pending Reviews by Reviewer"
     [data]="pendingData"
     [columns]="pendingColumns"

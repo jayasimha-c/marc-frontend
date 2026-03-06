@@ -97,7 +97,7 @@
     <nz-divider class="my-4"></nz-divider>
 
     <!-- Advanced Table -->
-    <app-advanced-table [columns]="tableColumns" [data]="tableData" [loading]="loading" [totalRecords]="totalRecords"
+    <app-advanced-table [showColumnSettings]="true" storageKey="pam-requests-my-approval" [columns]="tableColumns" [data]="tableData" [loading]="loading" [totalRecords]="totalRecords"
         (paginationChange)="getTableData($event)" [customStatusTemplate]="statusTemplate"
         [customOperationsTemplate]="opsTemplate"></app-advanced-table>
 

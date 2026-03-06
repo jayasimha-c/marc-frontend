@@ -50,6 +50,8 @@
 
       <!-- Results Table -->
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="admin-readiness-check"
         [title]="selectedModule ? 'Readiness Checks - ' + selectedModule.name : 'Readiness Checks'"
         [data]="tableData"
         [columns]="columns"

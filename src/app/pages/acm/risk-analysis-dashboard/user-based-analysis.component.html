@@ -32,6 +32,8 @@
 
   <div style="margin-top: 16px">
     <app-advanced-table
+      [showColumnSettings]="true"
+      storageKey="acm-risk-analysis-dashboard-user-based-analysis-1"
       title="User Risk Details"
       [columns]="gridColumns"
       [data]="gridData"
@@ -49,6 +51,8 @@
 
 <ng-template #detailModalTpl>
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="acm-risk-analysis-dashboard-user-based-analysis-2"
     [columns]="detailColumns"
     [data]="detailData"
     [loading]="detailLoading"

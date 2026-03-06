@@ -8,7 +8,7 @@
 </nz-row>
 
 <!-- Privileges Table -->
-<app-advanced-table title="Privileges" [columns]="columns" [data]="data" [loading]="loading"
+<app-advanced-table [showColumnSettings]="true" storageKey="pam-setup-privileges" title="Privileges" [columns]="columns" [data]="data" [loading]="loading"
     [showPagination]="true" [serverSide]="true" [totalRecords]="totalRecords"
     [pageSize]="pageSize" [pageIndex]="pageIndex" [actions]="tableActions"
     (queryParamsChange)="onPageIndexChange($event.pageIndex)">

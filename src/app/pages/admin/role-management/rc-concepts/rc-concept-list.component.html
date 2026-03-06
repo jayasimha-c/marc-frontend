@@ -1,6 +1,8 @@
 <div class="rcl">
   <nz-card nzSize="small" nzTitle="Role Concepts">
     <app-advanced-table
+      [showColumnSettings]="true"
+      storageKey="admin-role-management-rc-concepts-rc-concept-list"
       [data]="data"
       [columns]="columns"
       [actions]="tableActions"

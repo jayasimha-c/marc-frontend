@@ -1,0 +1,74 @@
+<form nz-form [formGroup]="form" nzLayout="vertical">
+  <nz-form-item>
+    <nz-form-label nzRequired>Scheduler Name</nz-form-label>
+    <nz-form-control nzErrorTip="Name is required">
+      <input nz-input formControlName="name" placeholder="Enter scheduler name" />
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-label nzRequired>SAP System</nz-form-label>
+    <nz-form-control nzErrorTip="SAP System is required">
+      <nz-select formControlName="sapSystemId" nzPlaceHolder="Select SAP System" nzShowSearch>
+        <nz-option *ngFor="let sys of sapSystems" [nzValue]="sys.sapSystemId"
+          [nzLabel]="sys.destinationName"></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-label>Description</nz-form-label>
+    <nz-form-control>
+      <textarea nz-input formControlName="description" placeholder="Optional description"
+        [nzAutosize]="{ minRows: 2 }"></textarea>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-row [nzGutter]="16">
+    <nz-col [nzSpan]="12">
+      <nz-form-item>
+        <nz-form-label nzRequired>Start Date</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker formControlName="startDate" nzShowTime
+            nzFormat="yyyy-MM-dd HH:mm" style="width: 100%"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+    </nz-col>
+    <nz-col [nzSpan]="12">
+      <nz-form-item>
+        <nz-form-label>End Date (Optional)</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker formControlName="endDate" nzShowTime
+            nzFormat="yyyy-MM-dd HH:mm" style="width: 100%"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+    </nz-col>
+  </nz-row>
+
+  <nz-form-item>
+    <nz-form-control>
+      <label nz-checkbox formControlName="repeatPeriodically">Repeat Periodically</label>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item *ngIf="form.get('repeatPeriodically')?.value">
+    <nz-form-label>Repeat After (Days)</nz-form-label>
+    <nz-form-control>
+      <nz-select formControlName="repeatAfterDays" style="width: 200px">
+        <nz-option *ngFor="let d of days" [nzValue]="d"
+          [nzLabel]="d + (d === 1 ? ' day' : ' days')"></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+
+  <nz-form-item>
+    <nz-form-control>
+      <label nz-checkbox formControlName="isEnabled">Enabled</label>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div style="text-align: right; margin-top: 16px">
+    <button nz-button (click)="close()" class="mr-2">Cancel</button>
+    <button nz-button nzType="primary" (click)="save()" [nzLoading]="saving">Save</button>
+  </div>
+</form>

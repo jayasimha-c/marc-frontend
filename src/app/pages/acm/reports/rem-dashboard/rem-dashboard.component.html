@@ -74,6 +74,8 @@
     </div>
     <div nz-col nzXs="24" nzLg="12">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="acm-reports-rem-dashboard"
         title="Recent Executions"
         [columns]="gridColumns"
         [data]="gridData"

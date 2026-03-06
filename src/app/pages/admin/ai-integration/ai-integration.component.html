@@ -188,6 +188,8 @@
 
     <nz-tab nzTitle="Audit Log">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="admin-ai-integration"
         title="AI Prompt Audit Log"
         [data]="auditData"
         [columns]="auditColumns"

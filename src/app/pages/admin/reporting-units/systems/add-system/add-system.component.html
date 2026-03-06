@@ -1,0 +1,1055 @@
+<app-page-panel [header]="getWizardTitle()">
+  <div headerSection>
+    <button nz-button nzType="default" (click)="navigateBack()">
+      <span nz-icon nzType="arrow-left"></span> Back
+    </button>
+  </div>
+
+  <!-- Steps -->
+  <nz-steps [nzCurrent]="currentStep" nzSize="small" style="margin-bottom: 24px">
+    <nz-step nzTitle="Select Type"></nz-step>
+    <nz-step [nzTitle]="'Configure ' + (getSystemTypeDisplayName() || 'System')"></nz-step>
+    <nz-step nzTitle="Review & Submit"></nz-step>
+  </nz-steps>
+
+  <!-- Step 0: System Type Selection -->
+  <div *ngIf="currentStep === 0">
+    <div class="ci__section-title" style="margin-bottom: 8px">Choose the type of system you want to add</div>
+    <div class="ci__types">
+      <div *ngFor="let st of systemTypes"
+           class="ci__type-card"
+           [class.ci__type-card--selected]="selectedSystemType === st.value"
+           (click)="selectSystemType(st.value)">
+        <span nz-icon [nzType]="st.icon" nzTheme="outline" class="ci__type-icon"></span>
+        <div class="ci__type-info">
+          <div class="ci__type-name">{{ st.label }}</div>
+          <div class="ci__type-desc">{{ st.description }}</div>
+        </div>
+        <span nz-icon nzType="check-circle" nzTheme="fill" class="ci__type-check"
+              *ngIf="selectedSystemType === st.value"></span>
+      </div>
+    </div>
+
+    <div style="text-align: right; margin-top: 24px">
+      <button nz-button nzType="primary" [disabled]="!selectedSystemType" (click)="nextStep()">
+        Next <span nz-icon nzType="right"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 1: System Configuration -->
+  <div *ngIf="currentStep === 1">
+
+    <!-- API Errors -->
+    <nz-alert *ngIf="errorList.length > 0" nzType="error" nzShowIcon [nzMessage]="'Validation Errors'"
+              [nzDescription]="errorsTpl" nzCloseable (nzOnClose)="errorList = []" style="margin-bottom: 16px">
+    </nz-alert>
+    <ng-template #errorsTpl>
+      <ul style="margin: 0; padding-left: 20px">
+        <li *ngFor="let err of errorList">{{ err }}</li>
+      </ul>
+    </ng-template>
+
+    <form nz-form [formGroup]="systemForm" nzLayout="vertical">
+
+      <!-- ==================== SAP ==================== -->
+      <ng-container *ngIf="selectedSystemType === 'SAP'">
+        <nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>SAP System Type</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="offline" nzPlaceHolder="Select Type" (ngModelChange)="onOfflineChange($event)">
+                  <nz-option [nzValue]="true" nzLabel="Offline"></nz-option>
+                  <nz-option [nzValue]="false" nzLabel="Online"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Destination Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <input nz-input formControlName="destinationName" placeholder="Enter destination name" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <input nz-input formControlName="description" placeholder="Enter description" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label>SID</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <input nz-input formControlName="SID" placeholder="e.g., ERP" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+
+          <!-- Offline fields -->
+          <ng-container *ngIf="systemForm.get('offline')?.value === true">
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>Language</nz-form-label>
+                <nz-form-control nzErrorTip="Required">
+                  <nz-select formControlName="languageCode" nzPlaceHolder="Select Language" nzShowSearch>
+                    <nz-option *ngFor="let lang of languages" [nzValue]="lang[0]" [nzLabel]="lang[1]"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>Client</nz-form-label>
+                <nz-form-control nzErrorTip="Required">
+                  <input nz-input formControlName="clientNumber" placeholder="e.g., 800" />
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>System Role</nz-form-label>
+                <nz-form-control nzErrorTip="Required">
+                  <nz-select formControlName="systemRole" nzPlaceHolder="Select System Role" nzShowSearch>
+                    <nz-option *ngFor="let role of systemRoles" [nzValue]="role" [nzLabel]="role"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label>Time Zone</nz-form-label>
+                <nz-form-control>
+                  <nz-select formControlName="timeZone" nzPlaceHolder="Select Timezone" nzShowSearch>
+                    <nz-option *ngFor="let tz of timezones" [nzValue]="tz.id" [nzLabel]="tz.name"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="24">
+              <nz-space nzSize="large">
+                <nz-space-item><nz-switch formControlName="licenseCheck"></nz-switch> License Check</nz-space-item>
+                <nz-space-item><nz-switch formControlName="hideInUserAdmin"></nz-switch> Enable CAM</nz-space-item>
+                <nz-space-item><nz-switch formControlName="centralRepo"></nz-switch> Central User Repository</nz-space-item>
+              </nz-space>
+            </div>
+          </ng-container>
+
+          <!-- Online fields -->
+          <ng-container *ngIf="systemForm.get('offline')?.value === false">
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>Host Name</nz-form-label>
+                <nz-form-control nzErrorTip="Required">
+                  <input nz-input formControlName="hostName" placeholder="e.g., 192.168.1.1" />
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>Instance No</nz-form-label>
+                <nz-form-control nzErrorTip="Required">
+                  <input nz-input formControlName="sysNr" placeholder="e.g., 00" />
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>User Name</nz-form-label>
+                <nz-form-control nzErrorTip="Required">
+                  <input nz-input formControlName="userName" placeholder="Enter username" />
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>Password</nz-form-label>
+                <nz-form-control nzErrorTip="Required">
+                  <nz-input-group [nzSuffix]="lockIcon">
+                    <input nz-input type="password" formControlName="password" placeholder="Enter password" />
+                  </nz-input-group>
+                  <ng-template #lockIcon><span nz-icon nzType="lock"></span></ng-template>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>Language</nz-form-label>
+                <nz-form-control nzErrorTip="Required">
+                  <nz-select formControlName="languageCode" nzPlaceHolder="Select Language" nzShowSearch>
+                    <nz-option *ngFor="let lang of languages" [nzValue]="lang[0]" [nzLabel]="lang[1]"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>Client</nz-form-label>
+                <nz-form-control nzErrorTip="Required">
+                  <input nz-input formControlName="clientNumber" placeholder="e.g., 800" />
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>Time Zone</nz-form-label>
+                <nz-form-control nzErrorTip="Required">
+                  <nz-select formControlName="timeZone" nzPlaceHolder="Select Timezone" nzShowSearch>
+                    <nz-option *ngFor="let tz of timezones" [nzValue]="tz.id" [nzLabel]="tz.name"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>System Role</nz-form-label>
+                <nz-form-control nzErrorTip="Required">
+                  <nz-select formControlName="systemRole" nzPlaceHolder="Select System Role" nzShowSearch>
+                    <nz-option *ngFor="let role of systemRoles" [nzValue]="role" [nzLabel]="role"></nz-option>
+                  </nz-select>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>Pool Capacity</nz-form-label>
+                <nz-form-control nzErrorTip="Required">
+                  <nz-input-number formControlName="poolCapacity" style="width: 100%"></nz-input-number>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="8">
+              <nz-form-item>
+                <nz-form-label nzRequired>Peak Limit</nz-form-label>
+                <nz-form-control nzErrorTip="Required">
+                  <nz-input-number formControlName="peakLimit" style="width: 100%"></nz-input-number>
+                </nz-form-control>
+              </nz-form-item>
+            </div>
+            <div nz-col nzSpan="24">
+              <nz-space nzSize="large">
+                <nz-space-item><nz-switch formControlName="pooled"></nz-switch> Is Pooled</nz-space-item>
+                <nz-space-item><nz-switch formControlName="licenseCheck"></nz-switch> License Check</nz-space-item>
+                <nz-space-item><nz-switch formControlName="hideInUserAdmin"></nz-switch> Enable CAM</nz-space-item>
+                <nz-space-item><nz-switch formControlName="centralRepo"></nz-switch> Central User Repository</nz-space-item>
+                <nz-space-item><nz-switch formControlName="hanaSystem"></nz-switch> HANA System</nz-space-item>
+                <nz-space-item><nz-switch formControlName="customDbtablog"></nz-switch> Custom DBTABLOG</nz-space-item>
+              </nz-space>
+            </div>
+          </ng-container>
+        </nz-row>
+      </ng-container>
+
+      <!-- ==================== BTP ==================== -->
+      <ng-container *ngIf="selectedSystemType === 'BTP'">
+        <nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Destination Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <input nz-input formControlName="destinationName" placeholder="Enter destination name" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <input nz-input formControlName="description" placeholder="Enter description" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Host Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <input nz-input formControlName="hostName" placeholder="Enter host name" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>BTP Sub Domain</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <input nz-input formControlName="btpSubDomain" placeholder="Enter BTP sub domain" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>User Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <input nz-input formControlName="userName" placeholder="Enter username" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Password</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-input-group [nzSuffix]="lockIconBtp">
+                  <input nz-input type="password" formControlName="password" placeholder="Enter password" />
+                </nz-input-group>
+                <ng-template #lockIconBtp><span nz-icon nzType="lock"></span></ng-template>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-row>
+      </ng-container>
+
+      <!-- ==================== JIRA ==================== -->
+      <ng-container *ngIf="selectedSystemType === 'JIRA'">
+        <nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Repository Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <input nz-input formControlName="destinationName" placeholder="Enter repository name" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <input nz-input formControlName="description" placeholder="Enter description" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Host</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <input nz-input formControlName="hostName" placeholder="e.g., https://example.atlassian.net" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>User Name (Email)</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <input nz-input formControlName="userName" placeholder="e.g., user@company.com" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Project</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <input nz-input formControlName="project" placeholder="e.g., ACM" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label>Token Expiry Date</nz-form-label>
+              <nz-form-control>
+                <nz-date-picker formControlName="expiryDate" style="width: 100%"></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Token</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-input-group [nzSuffix]="lockIconJira">
+                  <input nz-input type="password" formControlName="token" placeholder="Enter token" />
+                </nz-input-group>
+                <ng-template #lockIconJira><span nz-icon nzType="lock"></span></ng-template>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-row>
+      </ng-container>
+
+      <!-- ==================== SAPJava ==================== -->
+      <ng-container *ngIf="selectedSystemType === 'SAPJava'">
+        <nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Destination Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="destinationName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="description" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Host Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="hostName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Client Number</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="clientNumber" placeholder="e.g., 800" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>User Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="userName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Password</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-input-group [nzSuffix]="lockSapJava"><input nz-input type="password" formControlName="password" /></nz-input-group>
+                <ng-template #lockSapJava><span nz-icon nzType="lock"></span></ng-template>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-row>
+      </ng-container>
+
+      <!-- ==================== BOBJ ==================== -->
+      <ng-container *ngIf="selectedSystemType === 'BOBJ'">
+        <nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Repository Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="destinationName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="description" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Host</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="hostName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Port No</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="sysNr" placeholder="e.g., 8080" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>User Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="userName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Password</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-input-group [nzSuffix]="lockBobj"><input nz-input type="password" formControlName="password" /></nz-input-group>
+                <ng-template #lockBobj><span nz-icon nzType="lock"></span></ng-template>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-row>
+      </ng-container>
+
+      <!-- ==================== SECURITY_NOTE ==================== -->
+      <ng-container *ngIf="selectedSystemType === 'SECURITY_NOTE'">
+        <nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Destination Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="destinationName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="description" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Host</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="hostName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Token</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-input-group [nzSuffix]="lockSecNote"><input nz-input type="password" formControlName="token" /></nz-input-group>
+                <ng-template #lockSecNote><span nz-icon nzType="lock"></span></ng-template>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Token Expiry Date</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-date-picker formControlName="tokenExpiryDate" style="width: 100%"></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        </nz-row>
+      </ng-container>
+
+      <!-- ==================== HANA_DATABASE ==================== -->
+      <ng-container *ngIf="selectedSystemType === 'HANA_DATABASE'">
+        <nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Destination Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="destinationName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="description" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Host</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="hostName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Port No</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="sysNr" placeholder="e.g., 30015" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>User Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="userName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Password</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-input-group [nzSuffix]="lockHana"><input nz-input type="password" formControlName="password" /></nz-input-group>
+                <ng-template #lockHana><span nz-icon nzType="lock"></span></ng-template>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Language</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="languageCode" nzPlaceHolder="Select Language" nzShowSearch>
+                  <nz-option *ngFor="let lang of languages" [nzValue]="lang[0]" [nzLabel]="lang[1]"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>System Role</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="systemRole" nzPlaceHolder="Select System Role" nzShowSearch>
+                  <nz-option *ngFor="let role of systemRoles" [nzValue]="role" [nzLabel]="role"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="24">
+            <nz-space nzSize="large">
+              <nz-space-item><nz-switch formControlName="centralRepo"></nz-switch> Central User Repository</nz-space-item>
+            </nz-space>
+          </div>
+        </nz-row>
+      </ng-container>
+
+      <!-- ==================== SUCCESS_FACTORS ==================== -->
+      <ng-container *ngIf="selectedSystemType === 'SUCCESS_FACTORS'">
+        <nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Destination Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="destinationName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="description" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Host</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="hostName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Password</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-input-group [nzSuffix]="lockSf"><input nz-input type="password" formControlName="password" /></nz-input-group>
+                <ng-template #lockSf><span nz-icon nzType="lock"></span></ng-template>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Language</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="languageCode" nzPlaceHolder="Select Language" nzShowSearch>
+                  <nz-option *ngFor="let lang of languages" [nzValue]="lang[0]" [nzLabel]="lang[1]"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Time Zone</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="timeZone" nzPlaceHolder="Select Timezone" nzShowSearch>
+                  <nz-option *ngFor="let tz of timezones" [nzValue]="tz.id" [nzLabel]="tz.name"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>System Role</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="systemRole" nzPlaceHolder="Select System Role" nzShowSearch>
+                  <nz-option *ngFor="let role of systemRoles" [nzValue]="role" [nzLabel]="role"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="24">
+            <nz-space nzSize="large">
+              <nz-space-item><nz-switch formControlName="hideInUserAdmin"></nz-switch> Enable CAM</nz-space-item>
+              <nz-space-item><nz-switch formControlName="centralRepo"></nz-switch> Central User Repository</nz-space-item>
+            </nz-space>
+          </div>
+        </nz-row>
+      </ng-container>
+
+      <!-- ==================== SPLUNK ==================== -->
+      <ng-container *ngIf="selectedSystemType === 'SPLUNK'">
+        <nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Destination Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="destinationName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="description" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Host</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="hostName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Password</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-input-group [nzSuffix]="lockSplunk"><input nz-input type="password" formControlName="password" /></nz-input-group>
+                <ng-template #lockSplunk><span nz-icon nzType="lock"></span></ng-template>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Language</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="languageCode" nzPlaceHolder="Select Language" nzShowSearch>
+                  <nz-option *ngFor="let lang of languages" [nzValue]="lang[0]" [nzLabel]="lang[1]"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Time Zone</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="timeZone" nzPlaceHolder="Select Timezone" nzShowSearch>
+                  <nz-option *ngFor="let tz of timezones" [nzValue]="tz.id" [nzLabel]="tz.name"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>System Role</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="systemRole" nzPlaceHolder="Select System Role" nzShowSearch>
+                  <nz-option *ngFor="let role of systemRoles" [nzValue]="role" [nzLabel]="role"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="24">
+            <nz-space nzSize="large">
+              <nz-space-item><nz-switch formControlName="centralRepo"></nz-switch> Central User Repository</nz-space-item>
+            </nz-space>
+          </div>
+        </nz-row>
+      </ng-container>
+
+      <!-- ==================== MICROSOFT_365 ==================== -->
+      <ng-container *ngIf="selectedSystemType === 'MICROSOFT_365'">
+        <nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Destination Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="destinationName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="description" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Tenant ID</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="hostName" placeholder="e.g., 4e745400-2498-..." /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Client ID</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="userName" placeholder="e.g., 2f9cb720-..." /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Client Secret</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-input-group [nzSuffix]="lockMs"><input nz-input type="password" formControlName="password" /></nz-input-group>
+                <ng-template #lockMs><span nz-icon nzType="lock"></span></ng-template>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Language</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="languageCode" nzPlaceHolder="Select Language" nzShowSearch>
+                  <nz-option *ngFor="let lang of languages" [nzValue]="lang[0]" [nzLabel]="lang[1]"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Time Zone</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="timeZone" nzPlaceHolder="Select Timezone" nzShowSearch>
+                  <nz-option *ngFor="let tz of timezones" [nzValue]="tz.id" [nzLabel]="tz.name"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>System Role</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-select formControlName="systemRole" nzPlaceHolder="Select System Role" nzShowSearch>
+                  <nz-option *ngFor="let role of systemRoles" [nzValue]="role" [nzLabel]="role"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="24">
+            <nz-space nzSize="large">
+              <nz-space-item><nz-switch formControlName="centralRepo"></nz-switch> Central User Repository</nz-space-item>
+            </nz-space>
+          </div>
+        </nz-row>
+      </ng-container>
+
+      <!-- ==================== SERVICENOW ==================== -->
+      <ng-container *ngIf="selectedSystemType === 'SERVICENOW'">
+        <nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Destination Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="destinationName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="description" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Instance URL</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="hostName" placeholder="e.g., https://your-instance.service-now.com" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>User Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="userName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Password</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-input-group [nzSuffix]="lockSnow"><input nz-input type="password" formControlName="password" /></nz-input-group>
+                <ng-template #lockSnow><span nz-icon nzType="lock"></span></ng-template>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="24">
+            <nz-space nzSize="large">
+              <nz-space-item><nz-switch formControlName="centralRepo"></nz-switch> Central User Repository</nz-space-item>
+            </nz-space>
+          </div>
+        </nz-row>
+      </ng-container>
+
+      <!-- ==================== SAP_CLOUD_IDENTITY ==================== -->
+      <ng-container *ngIf="selectedSystemType === 'SAP_CLOUD_IDENTITY'">
+        <nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Destination Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="destinationName" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="description" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Tenant ID</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="hostName" placeholder="e.g., abc123xyz" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Client ID</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="userName" placeholder="OAuth Client ID" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Client Secret</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-input-group [nzSuffix]="lockSci"><input nz-input type="password" formControlName="password" /></nz-input-group>
+                <ng-template #lockSci><span nz-icon nzType="lock"></span></ng-template>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="24">
+            <nz-space nzSize="large">
+              <nz-space-item><nz-switch formControlName="centralRepo"></nz-switch> Central User Repository</nz-space-item>
+              <nz-space-item><nz-switch formControlName="hideInUserAdmin"></nz-switch> Enable CAM</nz-space-item>
+            </nz-space>
+          </div>
+        </nz-row>
+      </ng-container>
+
+      <!-- ==================== LDAP ==================== -->
+      <ng-container *ngIf="selectedSystemType === 'LDAP'">
+        <nz-row [nzGutter]="16">
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Connection Name</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="destinationName" placeholder="e.g., Corporate AD" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Description</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="description" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>LDAP Host</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="hostName" placeholder="e.g., ldap.company.com" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Port</nz-form-label>
+              <nz-form-control nzErrorTip="Port required (1-65535)">
+                <nz-input-number formControlName="ldapPort" [nzMin]="1" [nzMax]="65535" style="width: 100%"></nz-input-number>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Bind User DN</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="userName" placeholder="e.g., cn=admin,dc=company,dc=com" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Bind Password</nz-form-label>
+              <nz-form-control nzErrorTip="Required">
+                <nz-input-group [nzSuffix]="lockLdap"><input nz-input type="password" formControlName="password" /></nz-input-group>
+                <ng-template #lockLdap><span nz-icon nzType="lock"></span></ng-template>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label nzRequired>Base DN</nz-form-label>
+              <nz-form-control nzErrorTip="Required"><input nz-input formControlName="ldapBaseDn" placeholder="e.g., dc=company,dc=com" /></nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label>Search Filter</nz-form-label>
+              <nz-form-control>
+                <input nz-input formControlName="ldapSearchFilter" placeholder="e.g., (sAMAccountName={0})" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label>Authentication Type</nz-form-label>
+              <nz-form-control>
+                <nz-select formControlName="ldapAuthType">
+                  <nz-option *ngFor="let at of ldapAuthTypes" [nzValue]="at.value" [nzLabel]="at.label"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="8">
+            <nz-form-item>
+              <nz-form-label>Priority</nz-form-label>
+              <nz-form-control>
+                <nz-input-number formControlName="ldapPriority" [nzMin]="0" style="width: 100%"></nz-input-number>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col nzSpan="24">
+            <nz-space nzSize="large">
+              <nz-space-item><nz-switch formControlName="ldapUseSsl"></nz-switch> Use SSL/TLS (LDAPS)</nz-space-item>
+              <nz-space-item><nz-switch formControlName="centralRepo"></nz-switch> Central User Repository</nz-space-item>
+            </nz-space>
+          </div>
+        </nz-row>
+      </ng-container>
+
+    </form>
+
+    <div style="text-align: right; margin-top: 24px">
+      <button nz-button (click)="prevStep()" [disabled]="isEditMode" style="margin-right: 8px">
+        <span nz-icon nzType="left"></span> Back
+      </button>
+      <button nz-button nzType="primary" (click)="nextStep()">
+        Next <span nz-icon nzType="right"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 2: Review & Submit -->
+  <div *ngIf="currentStep === 2">
+
+    <!-- API Errors -->
+    <nz-alert *ngIf="errorList.length > 0" nzType="error" nzShowIcon [nzMessage]="'Validation Errors'"
+              [nzDescription]="reviewErrorsTpl" nzCloseable (nzOnClose)="errorList = []" style="margin-bottom: 16px">
+    </nz-alert>
+    <ng-template #reviewErrorsTpl>
+      <ul style="margin: 0; padding-left: 20px">
+        <li *ngFor="let err of errorList">{{ err }}</li>
+      </ul>
+    </ng-template>
+
+    <h4 nz-typography style="margin-bottom: 16px">Review {{ getSystemTypeDisplayName() }} System Configuration</h4>
+
+    <nz-descriptions nzBordered nzSize="small" [nzColumn]="4">
+      <!-- Common fields -->
+      <nz-descriptions-item nzTitle="System Type">{{ getSystemTypeDisplayName() }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Destination Name">{{ systemForm.value.destinationName || '-' }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="Description">{{ systemForm.value.description || '-' }}</nz-descriptions-item>
+
+      <!-- SAP specific -->
+      <ng-container *ngIf="selectedSystemType === 'SAP'">
+        <nz-descriptions-item nzTitle="Mode">{{ systemForm.value.offline ? 'Offline' : 'Online' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="SID">{{ systemForm.value.SID || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item *ngIf="!systemForm.value.offline" nzTitle="Host">{{ systemForm.value.hostName || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item *ngIf="!systemForm.value.offline" nzTitle="Instance No">{{ systemForm.value.sysNr || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="User Name">{{ systemForm.value.userName || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Language">{{ systemForm.value.languageCode || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Client">{{ systemForm.value.clientNumber || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="System Role">{{ systemForm.value.systemRole || '-' }}</nz-descriptions-item>
+      </ng-container>
+
+      <!-- BTP -->
+      <ng-container *ngIf="selectedSystemType === 'BTP'">
+        <nz-descriptions-item nzTitle="Host">{{ systemForm.value.hostName || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="BTP Sub Domain">{{ systemForm.value.btpSubDomain || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="User Name">{{ systemForm.value.userName || '-' }}</nz-descriptions-item>
+      </ng-container>
+
+      <!-- JIRA -->
+      <ng-container *ngIf="selectedSystemType === 'JIRA'">
+        <nz-descriptions-item nzTitle="Host">{{ systemForm.value.hostName || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="User Name">{{ systemForm.value.userName || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Project">{{ systemForm.value.project || '-' }}</nz-descriptions-item>
+      </ng-container>
+
+      <!-- SAPJava -->
+      <ng-container *ngIf="selectedSystemType === 'SAPJava'">
+        <nz-descriptions-item nzTitle="Host">{{ systemForm.value.hostName || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Client">{{ systemForm.value.clientNumber || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="User Name">{{ systemForm.value.userName || '-' }}</nz-descriptions-item>
+      </ng-container>
+
+      <!-- BOBJ -->
+      <ng-container *ngIf="selectedSystemType === 'BOBJ'">
+        <nz-descriptions-item nzTitle="Host">{{ systemForm.value.hostName || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Port">{{ systemForm.value.sysNr || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="User Name">{{ systemForm.value.userName || '-' }}</nz-descriptions-item>
+      </ng-container>
+
+      <!-- Generic for remaining types -->
+      <ng-container *ngIf="['SECURITY_NOTE', 'HANA_DATABASE', 'SUCCESS_FACTORS', 'SPLUNK', 'MICROSOFT_365', 'SERVICENOW', 'SAP_CLOUD_IDENTITY', 'LDAP'].includes(selectedSystemType!)">
+        <nz-descriptions-item nzTitle="Host / Tenant">{{ systemForm.value.hostName || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="User / Client ID">{{ systemForm.value.userName || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item *ngIf="systemForm.value.languageCode" nzTitle="Language">{{ systemForm.value.languageCode }}</nz-descriptions-item>
+        <nz-descriptions-item *ngIf="systemForm.value.systemRole" nzTitle="System Role">{{ systemForm.value.systemRole }}</nz-descriptions-item>
+      </ng-container>
+
+      <!-- LDAP specific extras -->
+      <ng-container *ngIf="selectedSystemType === 'LDAP'">
+        <nz-descriptions-item nzTitle="Port">{{ systemForm.value.ldapPort }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Base DN">{{ systemForm.value.ldapBaseDn || '-' }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Auth Type">{{ systemForm.value.ldapAuthType }}</nz-descriptions-item>
+        <nz-descriptions-item nzTitle="SSL/TLS">{{ systemForm.value.ldapUseSsl ? 'Yes' : 'No' }}</nz-descriptions-item>
+      </ng-container>
+    </nz-descriptions>
+
+    <div style="text-align: right; margin-top: 24px">
+      <button nz-button (click)="prevStep()" style="margin-right: 8px">
+        <span nz-icon nzType="left"></span> Back
+      </button>
+      <button nz-button nzType="primary" [nzLoading]="saving" (click)="onSave()">
+        <span nz-icon nzType="save"></span> {{ isEditMode ? 'Update System' : 'Submit System' }}
+      </button>
+    </div>
+  </div>
+</app-page-panel>

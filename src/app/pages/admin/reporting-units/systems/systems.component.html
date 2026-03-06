@@ -1,0 +1,20 @@
+<app-page-panel header="System Management">
+  <div headerSection>
+    <button nz-button nzType="primary" (click)="addSystem()">
+      <span nz-icon nzType="plus"></span> Add System
+    </button>
+  </div>
+
+  <app-advanced-table
+    [data]="systems"
+    [columns]="columns"
+    [actions]="tableActions"
+    [totalRecords]="totalRecords"
+    [loading]="loading"
+    [showPagination]="true"
+    [serverSide]="true"
+    (queryParamsChange)="loadSystems($event)"
+    emptyText="No systems configured yet"
+    size="small">
+  </app-advanced-table>
+</app-page-panel>

@@ -1,0 +1,15 @@
+<div style="padding: 16px;">
+  <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="css-rfc-schedulers"
+    title="RFC Schedulers"
+    [columns]="columns"
+    [data]="schedulers"
+    [totalRecords]="totalRecords"
+    [loading]="loading"
+    [actions]="tableActions"
+    [showPagination]="false"
+    emptyText="No RFC schedulers configured"
+    size="small">
+  </app-advanced-table>
+</div>

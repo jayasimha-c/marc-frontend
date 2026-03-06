@@ -1,0 +1,58 @@
+.ci__section-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: #262626;
+}
+
+.ci__types {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ci__type-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #91caff;
+    background: #f0f7ff;
+  }
+
+  &--selected {
+    border-color: #1890ff;
+    background: #e6f4ff;
+  }
+}
+
+.ci__type-icon {
+  font-size: 20px;
+  color: #1890ff;
+}
+
+.ci__type-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ci__type-name {
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.ci__type-desc {
+  font-size: 11px;
+  color: #8c8c8c;
+}
+
+.ci__type-check {
+  color: #1890ff;
+  font-size: 16px;
+}

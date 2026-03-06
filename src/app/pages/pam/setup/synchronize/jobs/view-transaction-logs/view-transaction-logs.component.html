@@ -1,5 +1,5 @@
 <div class="mb-4">
-    <app-advanced-table title="Logs" [columns]="columns" [data]="data" [loading]="loading" [showSearch]="false"
+    <app-advanced-table [showColumnSettings]="true" storageKey="pam-setup-synchronize-jobs-view-transaction-logs" title="Logs" [columns]="columns" [data]="data" [loading]="loading" [showSearch]="false"
         [showPagination]="true" [totalRecords]="totalRecords" [pageSize]="pageSize" [pageIndex]="pageIndex"
         (pageIndexChange)="onPageIndexChange($event)" (pageSizeChange)="onPageSizeChange($event)">
     </app-advanced-table>

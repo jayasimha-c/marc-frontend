@@ -10,6 +10,8 @@ import { TableColumn, TableQueryParams } from '../../../../shared/components/adv
   template: `
     <div style="padding: 16px;">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="acm-reports-sod-results-assign-mitigation-modal"
         [title]="'Mitigations of Risk - ' + riskName"
         [columns]="columns"
         [data]="mitigations"

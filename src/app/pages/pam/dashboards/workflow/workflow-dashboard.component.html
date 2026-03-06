@@ -50,6 +50,8 @@
     <!-- Pending Approvals Table -->
     <nz-card class="mt-4">
         <app-advanced-table
+            [showColumnSettings]="true"
+            storageKey="pam-dashboards-workflow-workflow-dashboard"
             title="Pending Approvals"
             [data]="tableData"
             [columns]="tableColumns"

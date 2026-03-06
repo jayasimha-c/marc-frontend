@@ -1,6 +1,6 @@
 <app-page-panel [title]="'General Issues'">
     <div panel-content>
-        <app-advanced-table [data]="data" [columns]="tableColumns" [total]="totalRecords" [loading]="loading"
+        <app-advanced-table [showColumnSettings]="true" storageKey="general-issues" [data]="data" [columns]="tableColumns" [total]="totalRecords" [loading]="loading"
             [showSearch]="false" [showPagination]="true" (cellClick)="onCellClick($event)">
         </app-advanced-table>
     </div>

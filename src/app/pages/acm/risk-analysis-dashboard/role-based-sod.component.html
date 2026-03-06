@@ -29,6 +29,8 @@
 
   <div style="margin-top: 16px">
     <app-advanced-table
+      [showColumnSettings]="true"
+      storageKey="acm-risk-analysis-dashboard-role-based-sod-1"
       title="Role Details Analysis"
       [columns]="gridColumns"
       [data]="gridData"
@@ -46,6 +48,8 @@
 
 <ng-template #detailModalTpl>
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="acm-risk-analysis-dashboard-role-based-sod-2"
     [columns]="detailColumns"
     [data]="detailData"
     [loading]="detailLoading"

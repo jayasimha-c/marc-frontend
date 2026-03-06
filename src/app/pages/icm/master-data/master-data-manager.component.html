@@ -1,5 +1,7 @@
 <div class="master-data-page">
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="icm-master-data-master-data-manager"
     [title]="selectedType.label"
     [columns]="columns"
     [data]="data"

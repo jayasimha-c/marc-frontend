@@ -77,6 +77,8 @@
 
 <div style="margin-top: 16px">
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="acm-reports-tcode-execution-1"
     title="Transaction Executions"
     [columns]="gridColumns"
     [data]="gridData"
@@ -93,6 +95,8 @@
 
 <ng-template #detailModalTpl>
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="acm-reports-tcode-execution-2"
     [columns]="detailColumns"
     [data]="detailData"
     [loading]="detailLoading"

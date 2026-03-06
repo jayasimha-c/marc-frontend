@@ -105,7 +105,7 @@ export class RuleViolationsComponent implements OnInit {
       { title: 'Critical', value: this.violationStats.totalCriticalSeverity || 0, icon: 'exclamation-circle', color: '#fa541c' },
       { title: 'High', value: this.violationStats.totalHighSeverity || 0, icon: 'warning', color: '#fa8c16' },
       { title: 'Systems Affected', value: this.violationStats.totalSystems || 0, icon: 'cluster', color: '#1890ff' },
-      { title: 'Open Issues', value: this.violationStats.totalOpenIssues || 0, icon: 'file-exclamation', color: '#52c41a' },
+      { title: 'Open Issues', value: this.violationStats.totalOpenIssues || 0, icon: 'exception', color: '#52c41a' },
     ];
   }
 

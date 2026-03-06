@@ -13,6 +13,17 @@ import { RuleViolationsComponent } from './rule-violations/rule-violations.compo
 import { ViolationDetailPanelComponent } from './rule-violations/detail-panel/violation-detail-panel.component';
 import { IssueAnalyticsComponent } from './issue-analytics/issue-analytics.component';
 
+// RFC Monitoring
+import { RfcMonitoringDashboardComponent } from './rfc-monitoring/rfc-monitoring-dashboard.component';
+import { RfcConnectionListComponent } from './rfc-monitoring/rfc-connection-list.component';
+import { RfcConnectionDetailComponent } from './rfc-monitoring/rfc-connection-detail.component';
+import { RfcRulesConfigComponent } from './rfc-monitoring/rfc-rules-config.component';
+
+// RFC Schedulers
+import { RfcSchedulersComponent } from './rfc-schedulers/rfc-schedulers.component';
+import { AddRfcSchedulerModalComponent } from './rfc-schedulers/add-rfc-scheduler-modal.component';
+import { RfcSchedulerJobsModalComponent } from './rfc-schedulers/rfc-scheduler-jobs-modal.component';
+
 const routes: Routes = [
   { path: '', component: CssMonitoringComponent },
   { path: 'sap-rule-book', component: SapRuleBookComponent },
@@ -20,6 +31,12 @@ const routes: Routes = [
   { path: 'job-history', component: JobHistoryComponent },
   { path: 'parameter-violations', component: RuleViolationsComponent },
   { path: 'issue-analytics', component: IssueAnalyticsComponent },
+  // RFC Monitoring
+  { path: 'rfc-monitoring', component: RfcMonitoringDashboardComponent },
+  { path: 'rfc-monitoring/connections', component: RfcConnectionListComponent },
+  { path: 'rfc-monitoring/rules', component: RfcRulesConfigComponent },
+  // RFC Schedulers
+  { path: 'rfc-schedulers', component: RfcSchedulersComponent },
 ];
 
 @NgModule({
@@ -35,6 +52,15 @@ const routes: Routes = [
     RuleViolationsComponent,
     ViolationDetailPanelComponent,
     IssueAnalyticsComponent,
+    // RFC Monitoring
+    RfcMonitoringDashboardComponent,
+    RfcConnectionListComponent,
+    RfcConnectionDetailComponent,
+    RfcRulesConfigComponent,
+    // RFC Schedulers
+    RfcSchedulersComponent,
+    AddRfcSchedulerModalComponent,
+    RfcSchedulerJobsModalComponent,
   ],
   imports: [SharedModule, RouterModule.forChild(routes)],
 })

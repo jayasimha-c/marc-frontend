@@ -3,6 +3,8 @@
     <nz-tabset [nzAnimated]="false" [(nzSelectedIndex)]="activeTab">
       <nz-tab nzTitle="Commands">
         <app-advanced-table
+          [showColumnSettings]="true"
+          storageKey="css-btp-btp-command"
           title=""
           [columns]="columns"
           [data]="data"

@@ -1,6 +1,8 @@
 <section style="max-height: 80vh; overflow: auto;">
   <!-- Users Table -->
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="cam-user-access-review-review-jobs-user-list-1"
     title="Users"
     [data]="userData"
     [columns]="userColumns"
@@ -24,6 +26,8 @@
     <!-- Roles Tab -->
     <nz-tab nzTitle="Roles">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="cam-user-access-review-review-jobs-user-list-2"
         [data]="rolesData"
         [columns]="rolesColumns"
         [showPagination]="false"
@@ -37,6 +41,8 @@
     <!-- Transactions Tab -->
     <nz-tab nzTitle="Transactions">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="cam-user-access-review-review-jobs-user-list-3"
         [data]="transData"
         [columns]="transColumns"
         [showPagination]="false"
@@ -50,6 +56,8 @@
     <!-- Risk Violations Tab -->
     <nz-tab nzTitle="Risk Violations">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="cam-user-access-review-review-jobs-user-list-4"
         [data]="riskData"
         [columns]="riskColumns"
         [showPagination]="false"
@@ -79,6 +87,8 @@
     <!-- Attachments Tab -->
     <nz-tab nzTitle="Attachments">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="cam-user-access-review-review-jobs-user-list-5"
         [data]="attachData"
         [columns]="attachColumns"
         [actions]="attachActions"

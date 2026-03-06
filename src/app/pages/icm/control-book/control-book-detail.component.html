@@ -33,7 +33,7 @@
   </nz-card>
 
   <!-- Controls in Book -->
-  <app-advanced-table *ngIf="!loading && book"
+  <app-advanced-table [showColumnSettings]="true" storageKey="icm-control-book-control-book-detail" *ngIf="!loading && book"
     title="Controls in Book"
     [columns]="controlColumns"
     [data]="controls"

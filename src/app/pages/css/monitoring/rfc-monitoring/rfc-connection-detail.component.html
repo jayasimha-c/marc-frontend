@@ -1,0 +1,108 @@
+<div *ngIf="connection">
+  <!-- Type & Status Badges -->
+  <div style="margin-bottom: 12px">
+    <nz-tag nzColor="blue">{{ connection.connectionTypeLabel }}</nz-tag>
+    <nz-tag [nzColor]="connection.isActive ? 'green' : 'default'">
+      {{ connection.isActive ? 'Active' : 'Inactive' }}
+    </nz-tag>
+    <nz-tag *ngIf="connection.isStandard" nzColor="geekblue">Standard</nz-tag>
+  </div>
+
+  <!-- Risk Summary -->
+  <nz-alert
+    [nzType]="connection.riskLevel === 'CRITICAL' || connection.riskLevel === 'HIGH' ? 'error' :
+              connection.riskLevel === 'MEDIUM' ? 'warning' : 'info'"
+    [nzMessage]="(connection.riskLevel || 'LOW') + ' Risk'"
+    nzShowIcon
+    style="margin-bottom: 16px">
+  </nz-alert>
+  <div *ngIf="connection.riskIndicators?.length > 0" style="margin-bottom: 12px">
+    <nz-tag *ngFor="let indicator of connection.riskIndicators" [nzColor]="getIndicatorColor(indicator)">
+      {{ indicator }}
+    </nz-tag>
+  </div>
+
+  <!-- Basic Information -->
+  <nz-descriptions nzTitle="Basic Information" nzBordered nzSize="small" [nzColumn]="1" style="margin-bottom: 16px">
+    <nz-descriptions-item nzTitle="SAP System">{{ connection.sapSystemName }}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Connection Type">{{ connection.connectionTypeLabel }} ({{ connection.connectionType }})</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Target Host">
+      <code>{{ connection.targetHost || '-' }}</code>
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Resolved Hostname" *ngIf="connection.resolvedHostname">
+      <code>{{ connection.resolvedHostname }}</code>
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Source System ID" *ngIf="connection.sourceSystemId">
+      <code>{{ connection.sourceSystemId }}</code>
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Source Client" *ngIf="connection.sourceClient">
+      <code>{{ connection.sourceClient }}</code>
+    </nz-descriptions-item>
+  </nz-descriptions>
+
+  <!-- Security -->
+  <nz-descriptions nzTitle="Security" nzBordered nzSize="small" [nzColumn]="2" style="margin-bottom: 16px">
+    <nz-descriptions-item nzTitle="Password">
+      <nz-tag [nzColor]="connection.hasPassword ? 'orange' : 'default'">
+        {{ connection.hasPassword ? 'Yes' : 'No' }}
+      </nz-tag>
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Trusted RFC">
+      <nz-tag [nzColor]="connection.trustedRfc ? 'orange' : 'default'">
+        {{ connection.trustedRfc ? 'Yes' : 'No' }}
+      </nz-tag>
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="SNC">
+      <nz-tag [nzColor]="connection.sncEnabled ? 'green' : 'red'">
+        {{ connection.sncEnabled ? 'Enabled' : 'Disabled' }}
+      </nz-tag>
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Username" *ngIf="connection.username">
+      <code>{{ connection.username }}</code>
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="SNC Mode" *ngIf="connection.sncMode">
+      <code>{{ connection.sncMode }}</code>
+    </nz-descriptions-item>
+  </nz-descriptions>
+
+  <!-- Gateway -->
+  <nz-descriptions *ngIf="connection.gatewayHost || connection.gatewayService"
+    nzTitle="Gateway" nzBordered nzSize="small" [nzColumn]="1" style="margin-bottom: 16px">
+    <nz-descriptions-item nzTitle="Host" *ngIf="connection.gatewayHost">
+      <code>{{ connection.gatewayHost }}</code>
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Service" *ngIf="connection.gatewayService">
+      <code>{{ connection.gatewayService }}</code>
+    </nz-descriptions-item>
+  </nz-descriptions>
+
+  <!-- Timestamps -->
+  <nz-descriptions nzTitle="Timestamps" nzBordered nzSize="small" [nzColumn]="2" style="margin-bottom: 16px">
+    <nz-descriptions-item nzTitle="First Seen">{{ formatDate(connection.firstSeenAt) }}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Last Seen">{{ formatDate(connection.lastSeenAt) }}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Modified">{{ formatDate(connection.modifiedDate) }}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="Revision">{{ connection.revision }}</nz-descriptions-item>
+  </nz-descriptions>
+
+  <!-- Revision History -->
+  <nz-collapse style="margin-top: 8px">
+    <nz-collapse-panel nzHeader="Revision History" [nzActive]="showHistory" (nzActiveChange)="toggleHistory()">
+      <nz-spin [nzSpinning]="loadingHistory">
+        <nz-timeline *ngIf="revisionHistory.length > 0">
+          <nz-timeline-item *ngFor="let rev of revisionHistory"
+            [nzColor]="rev.revision === connection.revision ? 'blue' : 'gray'">
+            <b>Rev {{ rev.revision }}</b>
+            <nz-tag *ngIf="rev.revision === connection.revision" nzColor="blue" style="margin-left: 8px">Current</nz-tag>
+            <br>
+            <span style="font-size: 12px; color: #8c8c8c">{{ formatDate(rev.modifiedDate) }}</span>
+            <nz-tag [nzColor]="rev.isActive ? 'green' : 'default'" style="margin-left: 8px">
+              {{ rev.isActive ? 'Active' : 'Inactive' }}
+            </nz-tag>
+          </nz-timeline-item>
+        </nz-timeline>
+        <nz-empty *ngIf="!loadingHistory && revisionHistory.length === 0"
+          nzNotFoundContent="No revision history"></nz-empty>
+      </nz-spin>
+    </nz-collapse-panel>
+  </nz-collapse>
+</div>

@@ -40,7 +40,7 @@
                 </button>
             </ng-template>
 
-            <app-advanced-table [data]="tableData" [columns]="tableColumns" [total]="totalRecord" [loading]="loading"
+            <app-advanced-table [showColumnSettings]="true" storageKey="pam-dashboards-audit-audit-dashboard" [data]="tableData" [columns]="tableColumns" [total]="totalRecord" [loading]="loading"
                 [showPagination]="true" [pageSizeOptions]="[10, 25, 50, 100]" (queryParams)="getTableData($event)">
             </app-advanced-table>
 

@@ -1,0 +1,112 @@
+<app-page-panel header="Risk View BPMN">
+  <div headerSection>
+    <nz-select
+      style="width: 280px"
+      [(ngModel)]="selectedProcessId"
+      (ngModelChange)="loadBpmnDiagram($event)"
+      nzPlaceHolder="Select a process"
+      nzShowSearch>
+      <nz-option *ngFor="let p of bpmnList" [nzValue]="p.id" [nzLabel]="p.name"></nz-option>
+    </nz-select>
+  </div>
+
+  <!-- Metrics Row -->
+  <nz-row [nzGutter]="16" style="margin-bottom: 16px">
+    <div nz-col nzSpan="6">
+      <nz-statistic nzTitle="Steps" [nzValue]="processMetrics.totalSteps" [nzPrefix]="stepsIcon"></nz-statistic>
+      <ng-template #stepsIcon><span nz-icon nzType="ordered-list" nzTheme="outline"></span></ng-template>
+    </div>
+    <div nz-col nzSpan="6">
+      <nz-statistic nzTitle="SoD Risks" [nzValue]="processMetrics.sodRiskPoints" [nzValueStyle]="{ color: '#cf1322' }" [nzPrefix]="sodIcon"></nz-statistic>
+      <ng-template #sodIcon><span nz-icon nzType="warning" nzTheme="outline"></span></ng-template>
+    </div>
+    <div nz-col nzSpan="6">
+      <nz-statistic nzTitle="Sensitive" [nzValue]="processMetrics.sensitiveAccess" [nzValueStyle]="{ color: '#fa8c16' }" [nzPrefix]="sensitiveIcon"></nz-statistic>
+      <ng-template #sensitiveIcon><span nz-icon nzType="eye" nzTheme="outline"></span></ng-template>
+    </div>
+    <div nz-col nzSpan="6">
+      <nz-statistic nzTitle="Conflicts" [nzValue]="processMetrics.activeConflicts" [nzValueStyle]="{ color: '#faad14' }" [nzPrefix]="conflictsIcon"></nz-statistic>
+      <ng-template #conflictsIcon><span nz-icon nzType="disconnect" nzTheme="outline"></span></ng-template>
+    </div>
+  </nz-row>
+
+  <!-- BPMN Canvas -->
+  <nz-card nzSize="small" nzBorderless>
+    <div class="canvas-container">
+      <!-- Zoom Controls -->
+      <div class="zoom-controls">
+        <nz-button-group>
+          <button nz-button nzSize="small" (click)="zoomOut()" nz-tooltip="Zoom Out">
+            <span nz-icon nzType="zoom-out"></span>
+          </button>
+          <button nz-button nzSize="small" (click)="resetZoom()" nz-tooltip="Fit to View">
+            {{ zoomLevel }}%
+          </button>
+          <button nz-button nzSize="small" (click)="zoomIn()" nz-tooltip="Zoom In">
+            <span nz-icon nzType="zoom-in"></span>
+          </button>
+        </nz-button-group>
+        <button nz-button nzSize="small" (click)="resetZoom()" nz-tooltip="Fit to View" style="margin-left: 4px">
+          <span nz-icon nzType="fullscreen"></span>
+        </button>
+      </div>
+
+      <!-- BPMN Viewer -->
+      <div #bpmnViewerRef class="bpmn-canvas"></div>
+
+      <!-- Legend -->
+      <div class="canvas-legend">
+        <nz-tag nzColor="blue">Standard</nz-tag>
+        <nz-tag nzColor="red">SoD Risk</nz-tag>
+        <nz-tag nzColor="gold">Sensitive</nz-tag>
+      </div>
+    </div>
+  </nz-card>
+
+  <!-- Participants Table -->
+  <div style="margin-top: 16px">
+    <app-advanced-table
+      [showColumnSettings]="true"
+      storageKey="acm-bpmn-participants"
+      title="Participants"
+      [data]="participantsData"
+      [columns]="participantsColumns"
+      [showPagination]="true"
+      [defaultPageSize]="20"
+      [showSearch]="true"
+      [emptyText]="selectedStep ? 'No participants for this step' : 'Select a step to view participants'"
+      size="small">
+    </app-advanced-table>
+  </div>
+
+  <!-- Step Details Drawer -->
+  <nz-drawer
+    [nzVisible]="drawerVisible"
+    (nzOnClose)="drawerVisible = false"
+    nzTitle="Step Details"
+    nzPlacement="right"
+    [nzWidth]="400">
+    <ng-container *nzDrawerContent>
+      <ng-container *ngIf="selectedStep">
+        <h4 nz-typography style="margin: 0 0 8px">{{ selectedStep.title }}</h4>
+        <p *ngFor="let desc of selectedStep.description" nz-typography nzType="secondary" style="font-size: 13px; margin: 0 0 4px">
+          {{ desc }}
+        </p>
+
+        <nz-divider></nz-divider>
+
+        <nz-descriptions nzTitle="Risk Indicators" nzSize="small" [nzColumn]="1" nzBordered>
+          <nz-descriptions-item nzTitle="Active SoD Conflicts">
+            <nz-tag nzColor="red">{{ riskIndicators.activeSODConflicts }}</nz-tag>
+          </nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Sensitive Access Records">
+            <nz-tag nzColor="blue">{{ riskIndicators.sensitiveAccessRecords }}</nz-tag>
+          </nz-descriptions-item>
+          <nz-descriptions-item nzTitle="High Risk Users">
+            <nz-tag nzColor="orange">{{ riskIndicators.highRiskUsers }}</nz-tag>
+          </nz-descriptions-item>
+        </nz-descriptions>
+      </ng-container>
+    </ng-container>
+  </nz-drawer>
+</app-page-panel>

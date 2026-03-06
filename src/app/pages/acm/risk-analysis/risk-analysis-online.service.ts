@@ -309,6 +309,60 @@ export class RiskAnalysisOnlineService {
     });
   }
 
+  // -- Impact Analysis --
+
+  impactAnalysisGetProfiles(): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>('impactAnalysis/getProfiles');
+  }
+
+  impactAnalysisStep1Submit(payload: any): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>('impactAnalysis/addProfileStep1Submit', payload);
+  }
+
+  impactAnalysisDeleteProfile(profileId: number): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`impactAnalysis/deleteProfile?profileId=${profileId}`);
+  }
+
+  impactAnalysisStartAnalysis(profileId: number): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`impactAnalysis/startAnalysis?profileId=${profileId}`);
+  }
+
+  getImpactAnalysisFilteredRisks(profileId: number, selectedRisks: number[] = []): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>('impactAnalysis/getFilteredRisks', { profileId, selectedRisks });
+  }
+
+  getImpactAnalysisSelectedRisks(profileId: number, selectedRisks: number[] = []): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>('impactAnalysis/getSelectedRisks', { profileId, selectedRisks });
+  }
+
+  saveImpactAnalysisSelectedRisks(payload: any): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>('impactAnalysis/saveSelectedRisks', payload);
+  }
+
+  getImpactAnalysisFilteredRoles(payload: any): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>('impactAnalysis/getFilteredRoles', payload);
+  }
+
+  impactAnalysisGetRoleAuth(roleId: string, profileId: number): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`impactAnalysis/getRoleAuth?roleId=${roleId}&profileId=${profileId}`);
+  }
+
+  impactAnalysisGetRoleAuthEdit(profileId: number): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`impactAnalysis/getRoleEdituth?profileId=${profileId}`);
+  }
+
+  impactAnalysisEditRoleData(profileId: number): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`impactAnalysis/editRoleData?profileId=${profileId}`);
+  }
+
+  saveImpactAnalysisSelectedRoles(payload: any): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>('impactAnalysis/saveRoleData', payload);
+  }
+
+  offlineSystems(online = false): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`util/getSystemsOffline`);
+  }
+
   openRunBackgroundAlert(message?: string, redirect?: string): void {
     // Lazy import to avoid circular dependency
     import('./online/alert-background-modal.component').then((m) => {

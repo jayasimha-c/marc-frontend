@@ -360,4 +360,24 @@ export class ReportService {
   addDashboardUserReviewJob(payload: any): Observable<ApiResponse> {
     return this.http.post<ApiResponse>('arc/job/addFromSOD', payload);
   }
+
+  // ── BPMN Risk Visualization ─────────────────────────────
+
+  getPreviewBpmnList(): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>('previewbpmn/list');
+  }
+
+  getBpmnXml(url: string): Observable<string> {
+    return this.http.get(url, { responseType: 'text' });
+  }
+
+  getProcessMetrics(processId: number): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(`bpmnRiskVisualization/processMetrics?processId=${processId}`);
+  }
+
+  getProcessRiskIndicators(processId: number | string, identifier: string): Observable<ApiResponse> {
+    return this.http.get<ApiResponse>(
+      `bpmnRiskVisualization/riskIndicators?processId=${processId}&identifier=${identifier}`
+    );
+  }
 }

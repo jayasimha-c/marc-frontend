@@ -15,6 +15,8 @@ import { TableColumn, TableAction } from '../../../../shared/components/advanced
   template: `
     <div style="padding: 16px;">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="icm-master-data-manual-script-manual-script-list"
         title="Manual Scripts"
         [columns]="columns"
         [data]="data"

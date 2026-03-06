@@ -194,7 +194,7 @@
 
 <!-- ═══ Transactions Table ═══ -->
 <nz-card nzTitle="Requested Transactions" nzSize="small" style="margin-top:16px">
-    <app-advanced-table [columns]="txnColumns" [data]="txnData" [actions]="txnActions"
+    <app-advanced-table [showColumnSettings]="true" storageKey="pam-requests-my-request-create-request-modal" [columns]="txnColumns" [data]="txnData" [actions]="txnActions"
         [showSearch]="false" [showPagination]="false"
         [showSelection]="!isReadOnly()"
         (selectionChange)="onTxnSelectionChange($event)">

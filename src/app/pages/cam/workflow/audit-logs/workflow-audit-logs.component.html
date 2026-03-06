@@ -1,6 +1,8 @@
 <app-page-panel header="Workflow Audit Logs">
 
     <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="cam-workflow-audit-logs-workflow-audit-logs"
         title=""
         [data]="data"
         [columns]="columns"

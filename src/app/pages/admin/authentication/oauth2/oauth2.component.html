@@ -3,6 +3,8 @@
 
     <nz-tab nzTitle="Clients">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="admin-authentication-oauth2-1"
         [columns]="clientColumns"
         [data]="clientsData"
         [actions]="clientActions"
@@ -17,6 +19,8 @@
 
     <nz-tab nzTitle="Scopes">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="admin-authentication-oauth2-2"
         [columns]="scopeColumns"
         [data]="scopesData"
         [actions]="scopeActions"
@@ -31,6 +35,8 @@
 
     <nz-tab nzTitle="Tokens">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="admin-authentication-oauth2-3"
         [columns]="tokenColumns"
         [data]="tokensData"
         [actions]="tokenActions"
@@ -45,6 +51,8 @@
 
     <nz-tab nzTitle="Audit Logs">
       <app-advanced-table
+        [showColumnSettings]="true"
+        storageKey="admin-authentication-oauth2-4"
         [columns]="auditColumns"
         [data]="auditData"
         [loading]="auditLoading"

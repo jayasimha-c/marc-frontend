@@ -1,0 +1,52 @@
+<div style="padding: 16px;">
+  <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="css-rfc-connections"
+    title="RFC Connections"
+    [columns]="columns"
+    [data]="connections"
+    [totalRecords]="totalRecords"
+    [loading]="loading"
+    [showPagination]="true"
+    [serverSide]="true"
+    (queryParamsChange)="loadConnections($event)"
+    emptyText="No RFC connections found"
+    size="small">
+    <ng-template #extraToolbar>
+      <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()" nz-tooltip nzTooltipTitle="Back">
+        <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+      </button>
+      <nz-select style="width: 160px" nzPlaceHolder="SAP System" nzAllowClear nzSize="small"
+        [formControl]="selectedSystem" (ngModelChange)="onFilterChange()">
+        <nz-option *ngFor="let sys of systems" [nzValue]="sys.sapSystemId"
+          [nzLabel]="sys.destinationName"></nz-option>
+      </nz-select>
+      <nz-select style="width: 120px" nzPlaceHolder="Type" nzAllowClear nzSize="small"
+        [formControl]="selectedType" (ngModelChange)="onFilterChange()">
+        <nz-option *ngFor="let type of connectionTypes" [nzValue]="type"
+          [nzLabel]="getTypeLabel(type)"></nz-option>
+      </nz-select>
+      <label nz-checkbox [(ngModel)]="activeOnly" (ngModelChange)="onFilterChange()" style="margin-left: 4px">
+        Active Only
+      </label>
+      <button nz-button nzType="text" nzSize="small" (click)="clearFilters()" nz-tooltip nzTooltipTitle="Clear Filters">
+        <span nz-icon nzType="clear" nzTheme="outline"></span>
+      </button>
+    </ng-template>
+  </app-advanced-table>
+</div>
+
+<!-- Connection Detail Drawer -->
+<nz-drawer
+  [nzVisible]="drawerVisible"
+  nzTitle="Connection Details"
+  [nzWidth]="480"
+  nzPlacement="right"
+  (nzOnClose)="closeDrawer()">
+  <ng-container *nzDrawerContent>
+    <app-rfc-connection-detail
+      *ngIf="selectedConnection"
+      [connection]="selectedConnection">
+    </app-rfc-connection-detail>
+  </ng-container>
+</nz-drawer>

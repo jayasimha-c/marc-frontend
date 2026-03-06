@@ -42,6 +42,8 @@
 <!-- Compliance by Department -->
 <nz-card class="mt-4 mb-4">
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="cam-uar-dashboards-review-trends-1"
     title="Compliance by Department"
     [data]="complianceData"
     [columns]="complianceColumns"
@@ -56,6 +58,8 @@
 <!-- Overdue Reviews -->
 <nz-card class="mt-4">
   <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="cam-uar-dashboards-review-trends-2"
     title="Overdue Reviews"
     [data]="overdueData"
     [columns]="overdueColumns"

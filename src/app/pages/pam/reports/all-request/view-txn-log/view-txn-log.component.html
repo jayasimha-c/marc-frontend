@@ -7,18 +7,18 @@
     </nz-descriptions>
 </div>
 
-<app-advanced-table *ngIf="reviewTableData?.length > 1" [columns]="reviewTableColumns" [data]="reviewTableData"
+<app-advanced-table [showColumnSettings]="true" storageKey="pam-reports-all-request-view-txn-log-1" *ngIf="reviewTableData?.length > 1" [columns]="reviewTableColumns" [data]="reviewTableData"
     [actions]="actionBtnList" [serverSide]="false" [scrollY]="'200px'">
 </app-advanced-table>
 
 <nz-tabset class="mt-5">
     <nz-tab nzTitle="Transactions">
-        <app-advanced-table [columns]="transactionTableColumns" [data]="transactionTableData" [serverSide]="false"
+        <app-advanced-table [showColumnSettings]="true" storageKey="pam-reports-all-request-view-txn-log-2" [columns]="transactionTableColumns" [data]="transactionTableData" [serverSide]="false"
             [scrollY]="'350px'">
         </app-advanced-table>
     </nz-tab>
     <nz-tab nzTitle="Show Risks">
-        <app-advanced-table [columns]="riskTableColumns" [data]="riskTableData" [serverSide]="false" [scrollY]="'350px'">
+        <app-advanced-table [showColumnSettings]="true" storageKey="pam-reports-all-request-view-txn-log-3" [columns]="riskTableColumns" [data]="riskTableData" [serverSide]="false" [scrollY]="'350px'">
         </app-advanced-table>
     </nz-tab>
 </nz-tabset>

@@ -1,5 +1,5 @@
 <app-page-panel header="FUE User Types & Conversion Ratios">
-    <app-advanced-table title="FUE Types" [columns]="columns" [data]="data" [actions]="tableActions"
+    <app-advanced-table [showColumnSettings]="true" storageKey="central-users-system-license-management-fue-jobs-fue-types" title="FUE Types" [columns]="columns" [data]="data" [actions]="tableActions"
         [loading]="loading" [showPagination]="false" [showSearch]="false" [showSelection]="true"
         [maxVisibleActions]="3" (rowClick)="onRowClick($event)"
         (selectionChange)="onSelectionChange($event)">

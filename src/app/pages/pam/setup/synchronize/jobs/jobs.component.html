@@ -1,5 +1,5 @@
 <div class="w-full">
-    <app-advanced-table title="Jobs" [columns]="columns" [data]="data" [loading]="loading" [showSearch]="false"
+    <app-advanced-table [showColumnSettings]="true" storageKey="pam-setup-synchronize-jobs" title="Jobs" [columns]="columns" [data]="data" [loading]="loading" [showSearch]="false"
         [showPagination]="true" [totalRecords]="totalRecords" [pageSize]="pageSize" [pageIndex]="pageIndex"
         [actions]="tableActions" (pageIndexChange)="onPageIndexChange($event)"
         (pageSizeChange)="onPageSizeChange($event)">

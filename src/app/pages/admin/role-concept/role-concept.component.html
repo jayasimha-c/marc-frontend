@@ -10,6 +10,8 @@
     <!-- Grid -->
     <div class="role-concept__content">
         <app-advanced-table
+            [showColumnSettings]="true"
+            storageKey="admin-role-concept"
             #agTable
             [columns]="columns"
             [actions]="tableActions"

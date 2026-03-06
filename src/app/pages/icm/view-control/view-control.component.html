@@ -180,7 +180,7 @@
 
           <!-- Manual Scripts -->
           <ng-container *ngIf="selectedType === 2">
-            <app-advanced-table *ngIf="scripts.length > 0"
+            <app-advanced-table [showColumnSettings]="true" storageKey="icm-view-control-1" *ngIf="scripts.length > 0"
               title="Manual Scripts"
               [columns]="scriptColumns"
               [data]="scripts"
@@ -265,6 +265,8 @@
           <!-- Execution Results -->
           <div style="margin-top: 24px;" *ngIf="executionResults.length > 0 && (selectedType === 1 || selectedType === 3)">
             <app-advanced-table
+              [showColumnSettings]="true"
+              storageKey="icm-view-control-2"
               title="Execution Results"
               [columns]="resultColumns"
               [data]="executionResults"
@@ -281,6 +283,8 @@
       <nz-tab nzTitle="Notify">
         <div style="margin-top: 16px;">
           <app-advanced-table
+            [showColumnSettings]="true"
+            storageKey="icm-view-control-3"
             title="Notification Settings"
             [columns]="notifyColumns"
             [data]="notifySettings"

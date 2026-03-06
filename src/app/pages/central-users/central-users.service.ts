@@ -98,7 +98,14 @@ export class CentralUsersService {
 
     getCULockJobs(request: any): Observable<ApiResponse> {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        return this.http.post<ApiResponse>(`cuLock/getJobs?timeZone=${tz}`, request);
+        const first = ((request.page || 1) - 1) * (request.size || 20);
+        const rows = request.size || 20;
+        const sortOrder = request.sortDirection === 'ASC' ? 0 : 1;
+        const sortField = request.sortField || '';
+        const filters = encodeURI(JSON.stringify(request.filters || null));
+        return this.http.get<ApiResponse>(
+            `cuLock/getJobs?timeZone=${tz}&first=${first}&rows=${rows}&sortOrder=${sortOrder}&sortField=${sortField}&filters=${filters}`
+        );
     }
 
     checkOtherJobRunning(): Observable<ApiResponse> {
@@ -115,7 +122,14 @@ export class CentralUsersService {
 
     getInactiveUserData(request: any, jobId: number): Observable<ApiResponse> {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        return this.http.post<ApiResponse>(`cuLock/getInactiveUserData?timeZone=${tz}&jobId=${jobId}`, request);
+        const first = ((request.page || 1) - 1) * (request.size || 20);
+        const rows = request.size || 20;
+        const sortOrder = request.sortDirection === 'ASC' ? 0 : 1;
+        const sortField = request.sortField || '';
+        const filters = encodeURI(JSON.stringify(request.filters || null));
+        return this.http.get<ApiResponse>(
+            `cuLock/getInactiveUserData?timeZone=${tz}&first=${first}&rows=${rows}&sortOrder=${sortOrder}&sortField=${sortField}&filters=${filters}&jobId=${jobId}`
+        );
     }
 
     // ==================== System License Info ====================

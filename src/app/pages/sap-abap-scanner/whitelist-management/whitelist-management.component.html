@@ -73,6 +73,8 @@
   <!-- Tab 2: Violation Whitelists -->
   <nz-tab nzTitle="Violation Whitelists">
     <app-advanced-table
+      [showColumnSettings]="true"
+      storageKey="sap-abap-scanner-whitelist-management"
       [columns]="violationColumns"
       [data]="violationData"
       [loading]="violationLoading"
