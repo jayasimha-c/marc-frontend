@@ -18,6 +18,8 @@ import { RfcMonitoringDashboardComponent } from './rfc-monitoring/rfc-monitoring
 import { RfcConnectionListComponent } from './rfc-monitoring/rfc-connection-list.component';
 import { RfcConnectionDetailComponent } from './rfc-monitoring/rfc-connection-detail.component';
 import { RfcRulesConfigComponent } from './rfc-monitoring/rfc-rules-config.component';
+import { RfcNetworkGraphComponent } from './rfc-monitoring/rfc-network-graph.component';
+import { RfcNetworkGraphPageComponent } from './rfc-monitoring/rfc-network-graph-page.component';
 
 // RFC Schedulers
 import { RfcSchedulersComponent } from './rfc-schedulers/rfc-schedulers.component';
@@ -34,6 +36,7 @@ const routes: Routes = [
   // RFC Monitoring
   { path: 'rfc-monitoring', component: RfcMonitoringDashboardComponent },
   { path: 'rfc-monitoring/connections', component: RfcConnectionListComponent },
+  { path: 'rfc-monitoring/network-graph', component: RfcNetworkGraphPageComponent },
   { path: 'rfc-monitoring/rules', component: RfcRulesConfigComponent },
   // RFC Schedulers
   { path: 'rfc-schedulers', component: RfcSchedulersComponent },
@@ -57,6 +60,8 @@ const routes: Routes = [
     RfcConnectionListComponent,
     RfcConnectionDetailComponent,
     RfcRulesConfigComponent,
+    RfcNetworkGraphComponent,
+    RfcNetworkGraphPageComponent,
     // RFC Schedulers
     RfcSchedulersComponent,
     AddRfcSchedulerModalComponent,

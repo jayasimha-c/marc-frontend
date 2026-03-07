@@ -9,6 +9,9 @@
         <nz-option *ngFor="let sys of systems" [nzValue]="sys.sapSystemId"
           [nzLabel]="sys.destinationName"></nz-option>
       </nz-select>
+      <button *nzSpaceItem nz-button nzSize="small" (click)="navigateToNetworkGraph()">
+        <span nz-icon nzType="cluster"></span> Network Graph
+      </button>
       <button *nzSpaceItem nz-button nzSize="small" (click)="navigateToConnections()">
         <span nz-icon nzType="unordered-list"></span> Connections
       </button>

@@ -54,6 +54,7 @@ import { NzTimelineModule } from 'ng-zorro-antd/timeline';
 import { NzPipesModule } from 'ng-zorro-antd/pipes';
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
+import { NzGraphModule } from 'ng-zorro-antd/graph';
 
 import { DragDropModule } from '@angular/cdk/drag-drop';
 
@@ -121,6 +122,7 @@ const NZ_MODULES = [
   NzPipesModule,
   NzAutocompleteModule,
   NzInputNumberModule,
+  NzGraphModule,
 ];
 
 @NgModule({

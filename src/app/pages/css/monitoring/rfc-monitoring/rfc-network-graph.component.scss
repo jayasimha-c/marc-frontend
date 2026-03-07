@@ -1,0 +1,147 @@
+// --- Host & Container ---
+:host {
+  display: block;
+}
+
+.graph-container {
+  position: relative;
+  height: calc(100vh - 200px);
+  min-height: 500px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  background: #fafafa;
+  overflow: hidden;
+}
+
+// --- Node Styles ---
+.node-group {
+  cursor: pointer;
+
+  .node-body {
+    transition: filter 0.15s ease;
+  }
+
+  &:hover .node-body {
+    filter: brightness(0.96);
+  }
+}
+
+.node-label {
+  font-size: 10px;
+  font-weight: 500;
+  fill: #262626;
+}
+
+.node-badge {
+  font-size: 7px;
+  font-weight: 700;
+  fill: #ffffff;
+}
+
+// --- Edge Styles ---
+// Override default nz-graph edge rendering
+::ng-deep {
+  .nz-graph-edges .nz-graph-edge {
+    cursor: pointer;
+
+    path {
+      fill: none !important;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke-width 0.15s ease, opacity 0.15s ease;
+    }
+
+    &:hover path {
+      stroke-width: 2.5px !important;
+    }
+  }
+
+  // Hide default marker completely - we add our own in defs
+  .nz-graph-edge-marker {
+    display: none;
+  }
+
+  // Edge text styling
+  .nz-graph-edge-text {
+    font-size: 10px;
+    fill: #8c8c8c;
+    font-weight: 500;
+  }
+
+  // Risk-colored edge classes (set via DOM after render)
+  .edge-risk-clean path {
+    stroke: #bfbfbf !important;
+    stroke-width: 1px;
+  }
+  .edge-risk-low path {
+    stroke: #91caff !important;
+    stroke-width: 1.5px;
+  }
+  .edge-risk-medium path {
+    stroke: #ffd666 !important;
+    stroke-width: 1.5px;
+  }
+  .edge-risk-high path {
+    stroke: #ff9c6e !important;
+    stroke-width: 2px;
+  }
+  .edge-risk-critical path {
+    stroke: #ff7875 !important;
+    stroke-width: 2px;
+    stroke-dasharray: 6, 3;
+  }
+}
+
+// --- Legend ---
+.legend-box {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  border: 1.5px solid;
+  border-radius: 2px;
+  vertical-align: middle;
+  margin-right: 4px;
+
+  &.sap {
+    border-color: #1890ff;
+    background: #e6f7ff;
+  }
+  &.ext {
+    border-color: #d9d9d9;
+    background: #ffffff;
+  }
+}
+
+.legend-line {
+  display: inline-block;
+  width: 20px;
+  height: 0;
+  vertical-align: middle;
+  margin-right: 4px;
+  border-top-width: 2px;
+  border-top-style: solid;
+
+  &.dashed {
+    border-top-style: dashed;
+  }
+}
+
+// --- Zoom Controls ---
+.zoom-controls {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  padding: 2px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+// --- Stats ---
+.stat-tag {
+  cursor: default;
+  font-variant-numeric: tabular-nums;
+}

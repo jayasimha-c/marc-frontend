@@ -1,0 +1,29 @@
+<div style="padding: 16px;">
+  <!-- Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button nz-button nzType="text" nzSize="small" (click)="goBack()">
+        <span nz-icon nzType="arrow-left"></span>
+      </button>
+      <h4 style="margin: 0; font-weight: 600;">Network Graph</h4>
+    </div>
+    <nz-space>
+      <nz-select *nzSpaceItem style="width: 200px" nzPlaceHolder="All Systems"
+        [formControl]="selectedSystem" nzAllowClear nzSize="small"
+        (ngModelChange)="onSystemFilterChange()">
+        <nz-option *ngFor="let sys of systems" [nzValue]="sys.sapSystemId"
+          [nzLabel]="sys.destinationName"></nz-option>
+      </nz-select>
+    </nz-space>
+  </div>
+
+  <nz-spin [nzSpinning]="loading">
+    <app-rfc-network-graph
+      *ngIf="graphData"
+      [graphData]="graphData"
+      [connections]="graphConnections"
+      (nodeClick)="onNodeClick($event)">
+    </app-rfc-network-graph>
+    <nz-empty *ngIf="!loading && !graphData" nzNotFoundContent="No network data available"></nz-empty>
+  </nz-spin>
+</div>

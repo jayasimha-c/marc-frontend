@@ -3,20 +3,21 @@ import { Router } from '@angular/router';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { RfcMonitoringService, RfcRiskRule } from './rfc-monitoring.service';
+import { TableColumn, TableAction, RowAction } from '../../../../shared/components/advanced-table/advanced-table.models';
 
 @Component({
   standalone: false,
   selector: 'app-rfc-rules-config',
   templateUrl: './rfc-rules-config.component.html',
-  styleUrls: ['./rfc-rules-config.component.scss'],
 })
 export class RfcRulesConfigComponent implements OnInit {
-  rules: RfcRiskRule[] = [];
+  rules: any[] = [];
+  totalRecords = 0;
   loading = false;
-  previewRule: RfcRiskRule | null = null;
-  previewConditions: any[] = [];
+
+  drawerVisible = false;
   selectedRule: RfcRiskRule | null = null;
-  showEditor = false;
+  editMode = false;
 
   severityOptions = ['INFO', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
   outcomeOptions = [
@@ -30,6 +31,24 @@ export class RfcRulesConfigComponent implements OnInit {
     { value: 'SELECTED_LANDSCAPES', label: 'Selected Landscapes' },
   ];
 
+  columns: TableColumn[] = [
+    { field: 'ruleName', header: 'Rule Name', sortable: true },
+    { field: 'severity', header: 'Severity', type: 'tag', width: '100px',
+      tagColors: { CRITICAL: 'red', HIGH: 'volcano', MEDIUM: 'orange', LOW: 'green', INFO: 'default' } },
+    { field: 'outcomeLabel', header: 'Outcome', width: '160px' },
+    { field: 'scopeType', header: 'Scope', width: '140px' },
+    { field: 'statusText', header: 'Status', type: 'tag', width: '90px',
+      tagColors: { Enabled: 'green', Disabled: 'default' } },
+    { field: 'templateText', header: 'Template', type: 'tag', width: '90px',
+      tagColors: { Yes: 'purple', No: 'default' } },
+    { field: 'actions', header: 'Actions', type: 'actions', width: '180px',
+      actions: this.getRowActions() },
+  ];
+
+  tableActions: TableAction[] = [
+    { label: 'Create Rule', icon: 'plus', type: 'primary', command: () => this.createRule() },
+  ];
+
   constructor(
     private rfcMonitoringService: RfcMonitoringService,
     private notificationService: NotificationService,
@@ -41,87 +60,45 @@ export class RfcRulesConfigComponent implements OnInit {
     this.loadRules();
   }
 
+  private getRowActions(): RowAction[] {
+    return [
+      { icon: 'eye', tooltip: 'View', command: (row) => this.viewRule(row) },
+      { icon: 'edit', tooltip: 'Edit', command: (row) => this.editRule(row) },
+      { icon: 'poweroff', tooltip: 'Toggle', command: (row) => this.toggleRule(row) },
+      { icon: 'delete', tooltip: 'Delete', command: (row) => this.deleteRule(row), danger: true,
+        hidden: (row) => row.isTemplate },
+    ];
+  }
+
   loadRules(): void {
     this.loading = true;
     this.rfcMonitoringService.getAllRiskRules().subscribe({
       next: (resp) => {
         this.loading = false;
         if (resp.success) {
-          this.rules = resp.data || [];
-          if (this.rules.length > 0 && !this.previewRule) {
-            this.selectRule(this.rules[0]);
-          }
+          this.rules = (resp.data || []).map((r: RfcRiskRule) => ({
+            ...r,
+            outcomeLabel: this.getOutcomeLabel(r.outcome),
+            statusText: r.isEnabled ? 'Enabled' : 'Disabled',
+            templateText: r.isTemplate ? 'Yes' : 'No',
+          }));
+          this.totalRecords = this.rules.length;
         }
       },
       error: () => { this.loading = false; },
     });
   }
 
-  selectRule(rule: RfcRiskRule): void {
-    this.previewRule = rule;
-    this.previewConditions = this.getParsedConditions(rule);
-  }
-
-  getParsedConditions(rule: RfcRiskRule): any[] {
-    if (!rule?.ruleConditions) return [];
-    try {
-      const conditions = JSON.parse(rule.ruleConditions);
-      const list = conditions.and || conditions.or || [];
-      return list.map((c: any) => ({
-        field: c.field,
-        fieldLabel: this.getFieldLabel(c.field),
-        operator: c.operator,
-        operatorLabel: this.getOperatorLabel(c.operator),
-        value: c.value,
-        valueFormatted: this.formatValue(c.value),
-      }));
-    } catch {
-      return [];
-    }
-  }
-
-  private getFieldLabel(field: string): string {
-    const labels: { [key: string]: string } = {
-      trustedRfc: 'Trusted RFC', sncEnabled: 'SNC Enabled',
-      isExternal: 'External Host', hasPassword: 'Has Password',
-      connectionType: 'Connection Type', isStandard: 'Standard Pattern',
-    };
-    return labels[field] || field;
-  }
-
-  private getOperatorLabel(operator: string): string {
-    const labels: { [key: string]: string } = {
-      equals: '=', not_equals: '!=', in: 'IN', not_in: 'NOT IN',
-      EQUALS: '=', NOT_EQUALS: '!=', IN: 'IN', NOT_IN: 'NOT IN',
-    };
-    return labels[operator] || operator;
-  }
-
-  private formatValue(value: any): string {
-    if (typeof value === 'boolean') return value ? 'true' : 'false';
-    if (Array.isArray(value)) return value.join(', ');
-    return String(value);
-  }
-
-  toggleRule(rule: RfcRiskRule, event?: Event): void {
-    event?.stopPropagation();
-    this.rfcMonitoringService.toggleRiskRule(rule.id!).subscribe({
-      next: (resp) => {
-        if (resp.success) {
-          rule.isEnabled = resp.data.isEnabled;
-          if (this.previewRule?.id === rule.id) {
-            this.previewRule = { ...rule };
-            this.previewConditions = this.getParsedConditions(this.previewRule);
-          }
-        }
-      },
-    });
-  }
-
-  editRule(rule: RfcRiskRule, event?: Event): void {
-    event?.stopPropagation();
+  viewRule(rule: RfcRiskRule): void {
     this.selectedRule = { ...rule };
-    this.showEditor = true;
+    this.editMode = false;
+    this.drawerVisible = true;
+  }
+
+  editRule(rule: RfcRiskRule): void {
+    this.selectedRule = { ...rule };
+    this.editMode = true;
+    this.drawerVisible = true;
   }
 
   createRule(): void {
@@ -136,7 +113,14 @@ export class RfcRulesConfigComponent implements OnInit {
       scopeType: 'ALL',
       scopeValue: undefined,
     };
-    this.showEditor = true;
+    this.editMode = true;
+    this.drawerVisible = true;
+  }
+
+  closeDrawer(): void {
+    this.drawerVisible = false;
+    this.selectedRule = null;
+    this.editMode = false;
   }
 
   saveRule(): void {
@@ -145,8 +129,7 @@ export class RfcRulesConfigComponent implements OnInit {
       next: (resp) => {
         if (resp.success) {
           this.notificationService.success('Rule saved successfully');
-          this.showEditor = false;
-          this.selectedRule = null;
+          this.closeDrawer();
           this.loadRules();
         } else {
           this.notificationService.error(resp.message || 'Failed to save rule');
@@ -156,10 +139,19 @@ export class RfcRulesConfigComponent implements OnInit {
     });
   }
 
-  deleteRule(rule: RfcRiskRule, event?: Event): void {
-    event?.stopPropagation();
-    if (rule.isTemplate) return;
+  toggleRule(rule: RfcRiskRule): void {
+    this.rfcMonitoringService.toggleRiskRule(rule.id!).subscribe({
+      next: (resp) => {
+        if (resp.success) {
+          this.notificationService.success(resp.data.isEnabled ? 'Rule enabled' : 'Rule disabled');
+          this.loadRules();
+        }
+      },
+    });
+  }
 
+  deleteRule(rule: RfcRiskRule): void {
+    if (rule.isTemplate) return;
     this.modal.confirm({
       nzTitle: 'Delete Rule',
       nzContent: `Delete rule "${rule.ruleName}"?`,
@@ -170,22 +162,12 @@ export class RfcRulesConfigComponent implements OnInit {
           next: (resp) => {
             if (resp.success) {
               this.notificationService.success('Rule deleted');
-              if (this.previewRule?.id === rule.id) {
-                this.previewRule = null;
-                this.previewConditions = [];
-              }
               this.loadRules();
             }
           },
         });
       },
     });
-  }
-
-  cancelEdit(): void {
-    this.showEditor = false;
-    this.selectedRule = null;
-    this.loadRules();
   }
 
   getSeverityColor(severity: string): string {
@@ -200,11 +182,6 @@ export class RfcRulesConfigComponent implements OnInit {
 
   getOutcomeLabel(outcome: string): string {
     return this.outcomeOptions.find(o => o.value === outcome)?.label || outcome;
-  }
-
-  formatDate(epochMs: number): string {
-    if (!epochMs) return '-';
-    return new Date(epochMs).toLocaleString();
   }
 
   navigateBack(): void {

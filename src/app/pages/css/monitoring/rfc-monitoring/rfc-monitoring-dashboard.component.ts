@@ -122,6 +122,10 @@ export class RfcMonitoringDashboardComponent implements OnInit {
     this.loadDashboardData();
   }
 
+  navigateToNetworkGraph(): void {
+    this.router.navigate(['/css/monitoring/rfc-monitoring/network-graph']);
+  }
+
   navigateToConnections(params?: any): void {
     this.router.navigate(['/css/monitoring/rfc-monitoring/connections'], {
       queryParams: params || {},

@@ -1,179 +1,126 @@
 <div style="padding: 16px;">
-  <!-- Header -->
-  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-    <div style="display: flex; align-items: center; gap: 8px;">
+  <app-advanced-table
+    [showColumnSettings]="true"
+    storageKey="css-rfc-risk-rules"
+    title="RFC Risk Rules"
+    [columns]="columns"
+    [data]="rules"
+    [totalRecords]="totalRecords"
+    [loading]="loading"
+    [actions]="tableActions"
+    [showPagination]="false"
+    emptyText="No risk rules configured"
+    size="small">
+    <ng-template #extraToolbar>
       <button nz-button nzType="text" nzShape="circle" (click)="navigateBack()" nz-tooltip nzTooltipTitle="Back">
         <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
       </button>
-      <h4 style="margin: 0; font-weight: 600;">RFC Risk Rules</h4>
-    </div>
-    <button nz-button nzType="primary" nzSize="small" (click)="createRule()" *ngIf="!showEditor">
-      <span nz-icon nzType="plus"></span> Create Rule
-    </button>
-  </div>
-
-  <nz-spin [nzSpinning]="loading">
-    <!-- Master-Detail Layout -->
-    <nz-row [nzGutter]="16" *ngIf="!showEditor">
-      <!-- Left: Rules List -->
-      <nz-col [nzSpan]="10">
-        <nz-card nzTitle="Rules" nzSize="small">
-          <div *ngIf="rules.length > 0">
-            <div *ngFor="let rule of rules" class="rule-item"
-              [class.selected]="previewRule?.id === rule.id"
-              [class.disabled]="!rule.isEnabled"
-              (click)="selectRule(rule)">
-              <div class="rule-info">
-                <div class="rule-name">{{ rule.ruleName }}</div>
-                <div class="rule-badges">
-                  <nz-tag [nzColor]="getSeverityColor(rule.severity)">{{ rule.severity }}</nz-tag>
-                  <nz-tag *ngIf="rule.isTemplate" nzColor="purple">Template</nz-tag>
-                </div>
-              </div>
-              <div class="rule-actions" (click)="$event.stopPropagation()">
-                <nz-switch [ngModel]="rule.isEnabled" (ngModelChange)="toggleRule(rule, $event)"
-                  nzSize="small"></nz-switch>
-                <button nz-button nzType="text" nzSize="small" (click)="editRule(rule, $event)"
-                  nz-tooltip="Edit"><span nz-icon nzType="edit"></span></button>
-                <button nz-button nzType="text" nzSize="small" nzDanger
-                  *ngIf="!rule.isTemplate" (click)="deleteRule(rule, $event)"
-                  nz-tooltip="Delete"><span nz-icon nzType="delete"></span></button>
-              </div>
-            </div>
-          </div>
-          <nz-empty *ngIf="rules.length === 0" nzNotFoundContent="No rules configured"></nz-empty>
-        </nz-card>
-      </nz-col>
-
-      <!-- Right: Rule Preview -->
-      <nz-col [nzSpan]="14">
-        <nz-card nzTitle="Rule Preview" nzSize="small">
-          <div *ngIf="previewRule; else noRule">
-            <div style="margin-bottom: 12px">
-              <span style="font-weight: 600; font-size: 16px; margin-right: 8px">{{ previewRule.ruleName }}</span>
-              <nz-tag [nzColor]="getSeverityColor(previewRule.severity)">{{ previewRule.severity }}</nz-tag>
-              <nz-tag *ngIf="previewRule.isTemplate" nzColor="purple">Template</nz-tag>
-              <nz-tag [nzColor]="previewRule.isEnabled ? 'green' : 'default'">
-                {{ previewRule.isEnabled ? 'Enabled' : 'Disabled' }}
-              </nz-tag>
-            </div>
-
-            <p *ngIf="previewRule.ruleDescription" style="color: #595959; margin-bottom: 16px">
-              {{ previewRule.ruleDescription }}
-            </p>
-
-            <nz-descriptions nzBordered nzSize="small" [nzColumn]="3" style="margin-bottom: 16px">
-              <nz-descriptions-item nzTitle="Outcome">{{ getOutcomeLabel(previewRule.outcome) }}</nz-descriptions-item>
-              <nz-descriptions-item nzTitle="Scope">{{ previewRule.scopeType }}</nz-descriptions-item>
-              <nz-descriptions-item nzTitle="Version" *ngIf="previewRule.version">{{ previewRule.version }}</nz-descriptions-item>
-            </nz-descriptions>
-
-            <!-- Conditions -->
-            <div style="margin-bottom: 8px; font-weight: 600">Conditions</div>
-            <div *ngIf="previewConditions.length > 0">
-              <nz-steps nzDirection="vertical" nzSize="small" [nzCurrent]="previewConditions.length">
-                <nz-step *ngFor="let cond of previewConditions"
-                  [nzTitle]="cond.fieldLabel"
-                  [nzDescription]="cond.operatorLabel + ' ' + cond.valueFormatted"
-                  nzIcon="filter">
-                </nz-step>
-                <nz-step nzTitle="Flag as Risk" nzIcon="flag" nzStatus="finish"></nz-step>
-              </nz-steps>
-            </div>
-            <div *ngIf="previewConditions.length === 0">
-              <code style="font-size: 12px">{{ previewRule.ruleConditions }}</code>
-            </div>
-          </div>
-          <ng-template #noRule>
-            <nz-empty nzNotFoundContent="Select a rule to view details"></nz-empty>
-          </ng-template>
-        </nz-card>
-      </nz-col>
-    </nz-row>
-
-    <!-- Rule Editor -->
-    <nz-card *ngIf="showEditor && selectedRule" nzSize="small">
-      <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-        <button nz-button nzType="text" nzShape="circle" (click)="cancelEdit()">
-          <span nz-icon nzType="arrow-left"></span>
-        </button>
-        <span style="font-weight: 600; font-size: 16px">
-          {{ selectedRule.id ? 'Edit' : 'Add' }} Risk Rule
-        </span>
-      </div>
-
-      <nz-row [nzGutter]="16">
-        <nz-col [nzSpan]="16">
-          <nz-form-item>
-            <nz-form-label>Rule Name</nz-form-label>
-            <nz-form-control>
-              <input nz-input [(ngModel)]="selectedRule.ruleName" placeholder="Enter rule name" />
-            </nz-form-control>
-          </nz-form-item>
-        </nz-col>
-        <nz-col [nzSpan]="8">
-          <nz-form-item>
-            <nz-form-label>Severity</nz-form-label>
-            <nz-form-control>
-              <nz-select [(ngModel)]="selectedRule.severity">
-                <nz-option *ngFor="let s of severityOptions" [nzValue]="s" [nzLabel]="s"></nz-option>
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-        </nz-col>
-      </nz-row>
-
-      <nz-form-item>
-        <nz-form-label>Description</nz-form-label>
-        <nz-form-control>
-          <textarea nz-input [(ngModel)]="selectedRule.ruleDescription" [nzAutosize]="{ minRows: 2 }"
-            placeholder="Describe what this rule detects"></textarea>
-        </nz-form-control>
-      </nz-form-item>
-
-      <nz-row [nzGutter]="16">
-        <nz-col [nzSpan]="8">
-          <nz-form-item>
-            <nz-form-label>Outcome</nz-form-label>
-            <nz-form-control>
-              <nz-select [(ngModel)]="selectedRule.outcome">
-                <nz-option *ngFor="let o of outcomeOptions" [nzValue]="o.value" [nzLabel]="o.label"></nz-option>
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-        </nz-col>
-        <nz-col [nzSpan]="8">
-          <nz-form-item>
-            <nz-form-label>Scope</nz-form-label>
-            <nz-form-control>
-              <nz-select [(ngModel)]="selectedRule.scopeType">
-                <nz-option *ngFor="let s of scopeTypeOptions" [nzValue]="s.value" [nzLabel]="s.label"></nz-option>
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-        </nz-col>
-        <nz-col [nzSpan]="8" *ngIf="selectedRule.scopeType !== 'ALL'">
-          <nz-form-item>
-            <nz-form-label>Scope Value</nz-form-label>
-            <nz-form-control>
-              <input nz-input [(ngModel)]="selectedRule.scopeValue" placeholder='["PRD","QAS"]' />
-            </nz-form-control>
-          </nz-form-item>
-        </nz-col>
-      </nz-row>
-
-      <nz-form-item>
-        <nz-form-label>Rule Conditions (JSON)</nz-form-label>
-        <nz-form-control>
-          <textarea nz-input [(ngModel)]="selectedRule.ruleConditions"
-            [nzAutosize]="{ minRows: 4 }" style="font-family: monospace; font-size: 12px"></textarea>
-        </nz-form-control>
-      </nz-form-item>
-
-      <div>
-        <button nz-button (click)="cancelEdit()" style="margin-right: 8px">Cancel</button>
-        <button nz-button nzType="primary" (click)="saveRule()" [disabled]="!selectedRule.ruleName">Save</button>
-      </div>
-    </nz-card>
-  </nz-spin>
+    </ng-template>
+  </app-advanced-table>
 </div>
+
+<!-- Rule Detail / Edit Drawer -->
+<nz-drawer
+  [nzVisible]="drawerVisible"
+  [nzTitle]="selectedRule?.id ? (editMode ? 'Edit Rule' : 'Rule Details') : 'Create Rule'"
+  [nzWidth]="480"
+  nzPlacement="right"
+  (nzOnClose)="closeDrawer()">
+  <ng-container *nzDrawerContent>
+    <ng-container *ngIf="selectedRule">
+      <!-- View Mode -->
+      <ng-container *ngIf="!editMode">
+        <div style="margin-bottom: 12px">
+          <nz-tag [nzColor]="getSeverityColor(selectedRule.severity)">{{ selectedRule.severity }}</nz-tag>
+          <nz-tag *ngIf="selectedRule.isTemplate" nzColor="purple">Template</nz-tag>
+          <nz-tag [nzColor]="selectedRule.isEnabled ? 'green' : 'default'">
+            {{ selectedRule.isEnabled ? 'Enabled' : 'Disabled' }}
+          </nz-tag>
+        </div>
+
+        <nz-descriptions nzBordered nzSize="small" [nzColumn]="1">
+          <nz-descriptions-item nzTitle="Rule Name">{{ selectedRule.ruleName }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Description">{{ selectedRule.ruleDescription || '-' }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Outcome">{{ getOutcomeLabel(selectedRule.outcome) }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Scope">{{ selectedRule.scopeType }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Scope Value" *ngIf="selectedRule.scopeValue">{{ selectedRule.scopeValue }}</nz-descriptions-item>
+          <nz-descriptions-item nzTitle="Version" *ngIf="selectedRule.version">{{ selectedRule.version }}</nz-descriptions-item>
+        </nz-descriptions>
+
+        <div style="margin-top: 16px; font-weight: 600; margin-bottom: 8px">Conditions</div>
+        <pre style="font-size: 12px; background: #fafafa; padding: 12px; border-radius: 4px; white-space: pre-wrap; word-break: break-word;">{{ selectedRule.ruleConditions }}</pre>
+
+        <div style="margin-top: 16px">
+          <button nz-button nzType="primary" nzSize="small" (click)="editMode = true" style="margin-right: 8px">
+            <span nz-icon nzType="edit"></span> Edit
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- Edit Mode -->
+      <ng-container *ngIf="editMode">
+        <nz-form-item>
+          <nz-form-label>Rule Name</nz-form-label>
+          <nz-form-control>
+            <input nz-input [(ngModel)]="selectedRule.ruleName" placeholder="Enter rule name" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>Severity</nz-form-label>
+          <nz-form-control>
+            <nz-select [(ngModel)]="selectedRule.severity" style="width: 100%">
+              <nz-option *ngFor="let s of severityOptions" [nzValue]="s" [nzLabel]="s"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>Description</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input [(ngModel)]="selectedRule.ruleDescription" [nzAutosize]="{ minRows: 2 }"
+              placeholder="Describe what this rule detects"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>Outcome</nz-form-label>
+          <nz-form-control>
+            <nz-select [(ngModel)]="selectedRule.outcome" style="width: 100%">
+              <nz-option *ngFor="let o of outcomeOptions" [nzValue]="o.value" [nzLabel]="o.label"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>Scope</nz-form-label>
+          <nz-form-control>
+            <nz-select [(ngModel)]="selectedRule.scopeType" style="width: 100%">
+              <nz-option *ngFor="let s of scopeTypeOptions" [nzValue]="s.value" [nzLabel]="s.label"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item *ngIf="selectedRule.scopeType !== 'ALL'">
+          <nz-form-label>Scope Value</nz-form-label>
+          <nz-form-control>
+            <input nz-input [(ngModel)]="selectedRule.scopeValue" placeholder='["PRD","QAS"]' />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label>Rule Conditions (JSON)</nz-form-label>
+          <nz-form-control>
+            <textarea nz-input [(ngModel)]="selectedRule.ruleConditions"
+              [nzAutosize]="{ minRows: 4 }" style="font-family: monospace; font-size: 12px"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+
+        <div>
+          <button nz-button (click)="closeDrawer()" style="margin-right: 8px">Cancel</button>
+          <button nz-button nzType="primary" (click)="saveRule()" [disabled]="!selectedRule.ruleName">Save</button>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</nz-drawer>
